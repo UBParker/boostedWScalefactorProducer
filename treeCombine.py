@@ -27,7 +27,7 @@ def treeCombine(argv) :
     parser.add_option('--type', type='string', action='store',
                       dest='type',
                       default = '',
-                      help='type of files to combine: data or MC (all MC combined is pseudodata)') 
+                      help='type of files to combine: data or ttbar currently implemented - soon - Wjets (all HT binned samples) , ST (all Single Top samples) and pseudodata (all MC combined)') 
 
     parser.add_option('--maxEvents', type='int', action='store',
                       dest='maxEvents',
@@ -38,6 +38,11 @@ def treeCombine(argv) :
                       default=False,
                       dest='isMC',
                       help='is it MC?')
+
+    parser.add_option('--80X', action='store_true',
+                      default=False,
+                      dest='80X',
+                      help='Are the ttrees produced using CMSSW 80X?')
 
     parser.add_option('--tau32Cut', type='float', action='store',
                       dest='tau32Cut',
@@ -51,7 +56,7 @@ def treeCombine(argv) :
 
     parser.add_option('--tau21Cut', type='float', action='store',
                       dest='tau21Cut',
-                      default = 0.6,
+                      default = 1.1,
                       help='Tau21 < tau21Cut')
 
 
@@ -94,6 +99,8 @@ def treeCombine(argv) :
     FatJetSDsubjetWtau3 = array.array('f', [-1.])
     FatJetSDsubjetWtau21 = array.array('f', [-1.])
 
+    FatJetSDsubjet_isRealW = array.array('f', [-1.])
+    FatJetSDsubjet_isFakeW = array.array('f', [-1.])
 
     FatJetSDsubjetBpt   = array.array('f', [-1.])
     FatJetSDsubjetBmass = array.array('f', [-1.])
@@ -130,6 +137,9 @@ def treeCombine(argv) :
     TTreeSemiLept.Branch('FatJetSDsubjetWtau3'   , FatJetSDsubjetWtau3   ,  'FatJetSDsubjetWtau3/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau21'   , FatJetSDsubjetWtau21   ,  'FatJetSDsubjetWtau21/F'   )
 
+    TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW   ,  'FatJetSDsubjet_isRealW/F'   )
+    TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW   ,  'FatJetSDsubjet_isFakeW/F'   )
+
     TTreeSemiLept.Branch('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt   ,  'FatJetSDsubjetBpt/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetBmass' , FatJetSDsubjetBmass ,  'FatJetSDsubjetBmass/F' )
     TTreeSemiLept.Branch('FatJetSDsubjetBbdisc' , FatJetSDsubjetBbdisc ,  'FatJetSDsubjetBbdisc/F' )
@@ -155,8 +165,11 @@ def treeCombine(argv) :
 
     # Input the existing trees to read them in and comine them into 1 tree
 
-    filesin = [ ROOT.TFile('./b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
+    if options.type == 'data' :
+        filesin = [ ROOT.TFile('./b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
                 ROOT.TFile('./b2gttbar_ttrees/singlemu_ttree_76x_v1p2_puppi.root') ] #  'b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root',
+    if options.type == 'ttbar' :
+            filesin = [ROOT.TFile('./b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root')]         
 
     filetitles =  ["ElData_PUPPI",
                    "MuData_PUPPI"] #"ttjets_PUPPI",
@@ -273,11 +286,13 @@ def treeCombine(argv) :
         ttree.SetBranchStatus('FatJetSDsubjetBtau3',1)
 
 
-        ttree.SetBranchStatus ('LeptonType'          , 1 )
+        ttree.SetBranchStatus ('LeptonType'          , 1)
         ttree.SetBranchStatus ('LeptonPt'            , 1)
 
         ttree.SetBranchStatus ('LeptonPtRel'         , 1)
         ttree.SetBranchStatus ('LeptonDRMin'         , 1)
+
+        ttree.SetBranchStatus ('SemiLepMETpt'        , 1)
 
         ttree.SetBranchStatus ('SemiLeptRunNum'      , 1)
         ttree.SetBranchStatus ('SemiLeptLumiBlock'   , 1)
@@ -327,10 +342,15 @@ def treeCombine(argv) :
             else :
                 FatJetSD_pt = 0.
             tau32 = FatJetTau32[0]
+            #print "Fat Jet tau 32 :" + str(tau32)
             tau21 = FatJetTau21[0]
+            #print "Fat Jet tau 21 :" + str(tau21)
+
 
             tau1 = FatJetTau1[0]
+            #print "Fat Jet tau 1 :" + str(tau1)
             tau2 = FatJetTau2[0]
+            #print "Fat Jet tau 2 :" + str(tau2)
             tau3 = FatJetTau3[0]
 
 
@@ -338,7 +358,10 @@ def treeCombine(argv) :
             W_pt = FatJetSDsubjetWpt[0]
             W_tau1 = FatJetSDsubjetWtau1[0]
             W_tau2 = FatJetSDsubjetWtau2[0]
+            #print "W Jet tau 2 :" + str(tau2)
             W_tau3 = FatJetSDsubjetWtau3[0]
+            #print "W Jet tau 3 :" + str(tau3)
+
 
             if FatJetSDsubjetWtau1[0] > 0.001 :
                 W_tau21 = FatJetSDsubjetWtau2[0] / FatJetSDsubjetWtau1[0]
@@ -346,16 +369,20 @@ def treeCombine(argv) :
                 W_tau21 = 1.0
             B_pt = FatJetSDsubjetBpt[0]
             B_m = FatJetSDsubjetBmass[0]
+            #print "B Jet Mass :" + str(B_m)
+
             #B_bdisc = 
             MET_pt = SemiLepMETpt[0]
+            #print "MET_pt:" + str(MET_pt)
             W_pt2 = FatJetPt[0]
  
             #typE = BoosttypE[0]
             #evWeight = SemiLeptWeight[0]
 
 
-            leptonType = LeptonType[0]
+            lepton_Type = LeptonType[0]
             lepton_pt = LeptonPt[0]
+            #print "lepton_pt:" + str(lepton_pt)
             lepton_ptRel = LeptonPtRel[0]
             lepton_DRmin = LeptonDRMin[0] 
 
@@ -386,9 +413,9 @@ def treeCombine(argv) :
             passWPosttau = W_tau21 < options.tau21Cut  #W_tau21 < 0.6 
             passWPost2M = (65.0 < W_m < 105.)  #(55. < FatJetSD_m < 105.)
             passWPost2tau = tau21 < options.tau21Cut
-            passEleMETcut =  leptonType == 1 and MET_pt > 120. and lepton_pt > 55. #110.
+            passEleMETcut =  lepton_Type == 1 and MET_pt > 120. and lepton_pt > 55. #110.
             # B2G-15-002  uses ( theLepton.Perp() + MET_pt ) > 150. (was previously 250 here) 
-            passMuHtLepcut = leptonType == 2 and ( lepton_pt + MET_pt ) > 150. and lepton_pt > 55.
+            passMuHtLepcut = lepton_Type == 2 and ( lepton_pt + MET_pt ) > 150. and lepton_pt > 55.
             passLepcut = passEleMETcut or passMuHtLepcut 
   
 
@@ -399,7 +426,7 @@ def treeCombine(argv) :
 
                     FatJetRhoRatio      [0] = Rhorat
                     FatJetMass          [0] = fatmass
-                    FatJetPt            [0] = fatmass
+                    FatJetPt            [0] = fatpt
                     FatJetMassSoftDrop  [0] = fatmass_sd
                     FatJetPtSoftDrop    [0] = fatpt_sd
                     FatJetTau1          [0] = tau1
@@ -420,7 +447,7 @@ def treeCombine(argv) :
                     FatJetSDsubjetBmass [0] = B_m
                     #FatJetSDsubjetBbdisc[0] = B_bdisc
 
-                    LeptonType          [0] = leptonType
+                    LeptonType          [0] = lepton_Type
                     LeptonPt            [0] = lepton_pt
 
                     LeptonPtRel         [0] = lepton_ptRel
