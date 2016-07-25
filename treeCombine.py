@@ -44,6 +44,11 @@ def treeCombine(argv) :
                       dest='80X',
                       help='Are the ttrees produced using CMSSW 80X?')
 
+    parser.add_option('--verbose', action='store_true',
+                      default=False,
+                      dest='verbose',
+                      help='Do you want to print values of key variables?')
+
     parser.add_option('--tau32Cut', type='float', action='store',
                       dest='tau32Cut',
                       default = 0.7,
@@ -80,6 +85,8 @@ def treeCombine(argv) :
     fout.cd()
 
     TTreeSemiLept = ROOT.TTree("TreeSemiLept", "TreeSemiLept")
+
+    SemiLeptWeight      = array.array('f', [-1.])
 
     FatJetRhoRatio      = array.array('f', [-1.])
     FatJetMass          = array.array('f', [-1.])
@@ -118,6 +125,7 @@ def treeCombine(argv) :
     SemiLeptLumiBlock     = array.array('f', [-1.])   
     SemiLeptEventNum      = array.array('f', [-1.])   
 
+    TTreeSemiLept.Branch('SemiLeptWeight'      , SemiLeptWeight      ,  'SemiLeptWeight/F'      )
    
     TTreeSemiLept.Branch('FatJetRhoRatio'      , FatJetRhoRatio      ,  'FatJetRhoRatio/F'      )
     TTreeSemiLept.Branch('FatJetMass'          , FatJetMass          ,  'FatJetMass/F'          )
@@ -137,8 +145,9 @@ def treeCombine(argv) :
     TTreeSemiLept.Branch('FatJetSDsubjetWtau3'   , FatJetSDsubjetWtau3   ,  'FatJetSDsubjetWtau3/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau21'   , FatJetSDsubjetWtau21   ,  'FatJetSDsubjetWtau21/F'   )
 
-    TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW   ,  'FatJetSDsubjet_isRealW/F'   )
-    TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW   ,  'FatJetSDsubjet_isFakeW/F'   )
+    if options.type == 'ttbar' :
+        TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW   ,  'FatJetSDsubjet_isRealW/F'   )
+        TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW   ,  'FatJetSDsubjet_isFakeW/F'   )
 
     TTreeSemiLept.Branch('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt   ,  'FatJetSDsubjetBpt/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetBmass' , FatJetSDsubjetBmass ,  'FatJetSDsubjetBmass/F' )
@@ -166,10 +175,10 @@ def treeCombine(argv) :
     # Input the existing trees to read them in and comine them into 1 tree
 
     if options.type == 'data' :
-        filesin = [ ROOT.TFile('./b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
-                ROOT.TFile('./b2gttbar_ttrees/singlemu_ttree_76x_v1p2_puppi.root') ] #  'b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root',
+        filesin = [ ROOT.TFile('../b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
+                ROOT.TFile('../b2gttbar_ttrees/singlemu_ttree_76x_v1p2_puppi.root') ] #  'b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root',
     if options.type == 'ttbar' :
-            filesin = [ROOT.TFile('./b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root')]         
+            filesin = [ROOT.TFile('../b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root')]         
 
     filetitles =  ["ElData_PUPPI",
                    "MuData_PUPPI"] #"ttjets_PUPPI",
@@ -180,6 +189,8 @@ def treeCombine(argv) :
         alltrees.append(ji.Get("TreeSemiLept"))
 
     for ittree, ttree in enumerate(alltrees) :
+
+        SemiLeptWeight      = array.array('f', [-1.])
 
         FatJetPt            = array.array('f', [-1.])
         FatJetRhoRatio      = array.array('f', [-1.])
@@ -221,6 +232,7 @@ def treeCombine(argv) :
         SemiLeptLumiBlock     = array.array('f', [-1.])   
         SemiLeptEventNum      = array.array('f', [-1.])
 
+        ttree.SetBranchAddress('SemiLeptWeight'            , SemiLeptWeight     )
 
         ttree.SetBranchAddress('FatJetPt'            , FatJetPt            )
         ttree.SetBranchAddress('FatJetRhoRatio'      , FatJetRhoRatio      )
@@ -261,6 +273,9 @@ def treeCombine(argv) :
         ttree.SetBranchAddress('SemiLeptEventNum'       ,  SemiLeptEventNum     )
 
         ttree.SetBranchStatus ('*', 0)
+
+        ttree.SetBranchStatus ('SemiLeptWeight', 1)
+
         ttree.SetBranchStatus ('FatJetPt', 1)
         ttree.SetBranchStatus ('FatJetMass', 1)
         ttree.SetBranchStatus ('FatJetMassSoftDrop', 1)
@@ -330,6 +345,8 @@ def treeCombine(argv) :
             #theLepton.SetPtEtaPhiE( LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0] ) # Assume massless
             
             # FatJetSDpt = m / (R*sqrt(rhoRatio)) 
+            weightS = SemiLeptWeight[0]
+            if options.verbose : print "event weight is " + str(weightS)
 
             fatmass_sd = FatJetMassSoftDrop[0]
             fatmass = FatJetMass[0]
@@ -422,7 +439,7 @@ def treeCombine(argv) :
             if  passTopTag and pass2DCut and passLepcut: # and passBtag :  
                 if passKin :
                     #BoosttypE           [0] = typE
-                    #SemiLeptWeight      [0] = evWeight
+                    SemiLeptWeight      [0] = weightS
 
                     FatJetRhoRatio      [0] = Rhorat
                     FatJetMass          [0] = fatmass
@@ -442,6 +459,9 @@ def treeCombine(argv) :
                     FatJetSDsubjetWtau3 [0] = W_tau3
                     FatJetSDsubjetWtau21 [0] = W_tau21
 
+                    if options.type == 'ttbar' :
+                        FatJetSDsubjet_isRealW[0] = 0.0  # correct this once gen matching is implemented
+                        FatJetSDsubjet_isFakeW[0] = 0.0  # correct this once gen matching is implemented
 
                     FatJetSDsubjetBpt   [0] = B_pt 
                     FatJetSDsubjetBmass [0] = B_m
