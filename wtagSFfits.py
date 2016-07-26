@@ -126,7 +126,7 @@ def drawFrameGetChi2(variable,fitResult,dataset,pdfModel):
     return chi2
     
 def getSF():
-    print "Getting W-tagging SF for cut " ,options.tau2tau1cutHP
+    print "Getting W-tagging SF for cut " ,options.tau2tau1cutLP ### ??? I changed this to LP
     if options.useDDT: 
       options.usePuppiSD = True
       options.use76X = True
@@ -295,9 +295,9 @@ class doWtagFits:
         sample_type.defineType("em_fail")
 
         #Importing fit variables ???
-        FatJetSDsubjetWmass = self.workspace4fit_.var("FatJetSDsubjetWmass")
-        # event weight was "SemiLeptWeight"
-        SemiLeptWeight = RooRealVar("SemiLeptWeight","SemiLeptWeight",0. ,10000000.)
+        rrv_mass_j = self.workspace4fit_.var("rrv_mass_j")
+        # event weight was "rrv_weight"
+        rrv_weight = RooRealVar("rrv_weight","rrv_weight",0. ,10000000.)
         
         #-------------IMPORT DATA-------------
         #Importing datasets
@@ -320,11 +320,11 @@ class doWtagFits:
             rdataset_data_em_mj_fail_2.add(rdatahist_data_em_mj_fail.get(i),rdatahist_data_em_mj_fail.weight())
 
           #Combined dataset
-          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj_2),RooFit.Import("em_fail",rdataset_data_em_mj_fail_2) )
+          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj_2),RooFit.Import("em_fail",rdataset_data_em_mj_fail_2) )
 
         #For unbinned fit
         else:
-          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj),RooFit.Import("em_fail",rdataset_data_em_mj_fail) )
+          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj),RooFit.Import("em_fail",rdataset_data_em_mj_fail) )
 
         #-------------IMPORT MC-------------
         #Importing MC datasets
@@ -346,10 +346,10 @@ class doWtagFits:
             rdataset_TotalMC_em_mj_fail_2.add(rdatahist_TotalMC_em_mj_fail.get(i),rdatahist_TotalMC_em_mj_fail.weight())
 
           #Combined MC dataset
-          combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj_2),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail_2) )
+          combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj_2),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail_2) )
 
         else:
-         combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail) )
+         combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail) )
 
         #-------------Define and perform fit to data-------------
         #Import pdf from single fits and define the simultaneous total pdf
@@ -379,8 +379,8 @@ class doWtagFits:
           rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em), RooFit.SumW2Error(kTRUE))
 
         #Draw       
-        chi2FailData = drawFrameGetChi2(FatJetSDsubjetWmass,rfresult_data,rdataset_data_em_mj_fail,model_data_fail_em)
-        chi2PassData = drawFrameGetChi2(FatJetSDsubjetWmass,rfresult_data,rdataset_data_em_mj,model_data_em)
+        chi2FailData = drawFrameGetChi2(rrv_mass_j,rfresult_data,rdataset_data_em_mj_fail,model_data_fail_em)
+        chi2PassData = drawFrameGetChi2(rrv_mass_j,rfresult_data,rdataset_data_em_mj,model_data_em)
 
         #Print final data fit results
         print "FIT parameters (DATA) :"; print ""
@@ -413,8 +413,8 @@ class doWtagFits:
           rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em), RooFit.SumW2Error(kTRUE))
           
           
-        chi2FailMC = drawFrameGetChi2(FatJetSDsubjetWmass,rfresult_TotalMC,rdataset_TotalMC_em_mj_fail,model_TotalMC_fail_em)
-        chi2PassMC = drawFrameGetChi2(FatJetSDsubjetWmass,rfresult_TotalMC,rdataset_TotalMC_em_mj,model_TotalMC_em)
+        chi2FailMC = drawFrameGetChi2(rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj_fail,model_TotalMC_fail_em)
+        chi2PassMC = drawFrameGetChi2(rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj,model_TotalMC_em)
         
         #Print final MC fit results
         print "FIT Par. (MC) :"; print ""
@@ -459,14 +459,14 @@ class initialiseFits:
       self.mj_shape["WJets0"]             = "ErfExp"
       self.mj_shape["WJets0_fail"]        = "ErfExp"
       self.mj_shape["STop"]               = "ErfExpGaus_sp"       
-      self.mj_shape["STop_fail"]          = "ExpGaus"  
+      self.mj_shape["STop_fail"]          = "ExpGaus"
           
       #if (options.tau2tau1cutHP==0.60): self.mj_shape["VV"]                 = "ErfExpGaus_sp"
         
       if (options.useDDT):
         #self.mj_shape["VV"]                 = "ExpGaus"
         #self.mj_shape["VV_fail"]            = "ErfExpGaus_sp"
-        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp" 
+        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"
         self.mj_shape["STop"]               = "ExpGaus"  
         
       # Fit functions used in simultaneous fit of pass and fail categories
@@ -506,30 +506,30 @@ class initialiseFits:
       jetMass = "pruned jet mass"
       if options.usePuppiSD: jetMass = "PUPPI softdrop jet mass"
 
-      ### ??? "FatJetSDsubjetWmass"
-      FatJetSDsubjetWmass = RooRealVar("FatJetSDsubjetWmass", jetMass ,(in_mj_min+in_mj_max)/2.,in_mj_min,in_mj_max,"GeV")
-      FatJetSDsubjetWmass.setBins(nbins_mj)
+     
+      rrv_mass_j = RooRealVar("rrv_mass_j", jetMass ,(in_mj_min+in_mj_max)/2.,in_mj_min,in_mj_max,"GeV")
+      rrv_mass_j.setBins(nbins_mj)
  
       # Create workspace and import fit variable
       if input_workspace is None:
           self.workspace4fit_ = RooWorkspace("workspace4fit_","Workspace4fit_")
       else:
           self.workspace4fit_ = input_workspace
-      getattr(self.workspace4fit_,"import")(FatJetSDsubjetWmass)
+      getattr(self.workspace4fit_,"import")(rrv_mass_j)
 
       # Signal region between 65 and 105 GeV
       self.mj_sideband_lo_min = in_mj_min
-      self.mj_sideband_lo_max = 65
-      self.mj_signal_min      = 65
-      self.mj_signal_max      = 105
-      self.mj_sideband_hi_min = 105
+      self.mj_sideband_lo_max = 55 #65
+      self.mj_signal_min      = 55 #65
+      self.mj_signal_max      = 115 #105
+      self.mj_sideband_hi_min = 115 #105 ??? I broadened the signal region definition
       self.mj_sideband_hi_max = in_mj_max
  
       # Setting ranges...
-      FatJetSDsubjetWmass.setRange("sb_lo",self.mj_sideband_lo_min,self.mj_sideband_lo_max) # 30-65 GeV
-      FatJetSDsubjetWmass.setRange("signal_region",self.mj_signal_min,self.mj_signal_max)   # 65-105 GeV
-      FatJetSDsubjetWmass.setRange("sb_hi",self.mj_sideband_hi_min,self.mj_sideband_hi_max) # 105-135 GeV
-      FatJetSDsubjetWmass.setRange("controlsample_fitting_range",40,130) # ---> what is this????
+      rrv_mass_j.setRange("sb_lo",self.mj_sideband_lo_min,self.mj_sideband_lo_max) # 30-65 GeV
+      rrv_mass_j.setRange("signal_region",self.mj_signal_min,self.mj_signal_max)   # 65-105 GeV
+      rrv_mass_j.setRange("sb_hi",self.mj_sideband_hi_min,self.mj_sideband_hi_max) # 105-135 GeV
+      rrv_mass_j.setRange("controlsample_fitting_range",40,130) # ---> what is this????
         
 
       # Directory and input files
@@ -593,7 +593,7 @@ class initialiseFits:
 
     def get_datasets_fit_minor_bkg(self):
         
-        FatJetSDsubjetWmass = self.workspace4fit_.var("FatJetSDsubjetWmass")
+        rrv_mass_j = self.workspace4fit_.var("rrv_mass_j")
   
         # Build single-t fit pass and fail distributions
         print "##################################################"
@@ -747,33 +747,33 @@ class initialiseFits:
       treeIn      = fileIn.Get("TreeSemiLept")
       
       ### $$$ problem related to this line below
-      FatJetSDsubjetWmass = self.workspace4fit_.var("FatJetSDsubjetWmass")
-      SemiLeptWeight = RooRealVar("SemiLeptWeight","SemiLeptWeight",0. ,10000000.)
+      rrv_mass_j = self.workspace4fit_.var("rrv_mass_j")
+      rrv_weight = RooRealVar("rrv_weight","rrv_weight",0. ,10000000.)
 
       # Mj dataset before tau2tau1 cut : Passed
-      rdataset_mj     = RooDataSet("rdataset"     +label+"_"+self.channel+"_mj","rdataset"    +label+"_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
-      rdataset4fit_mj = RooDataSet("rdataset4fit" +label+"_"+self.channel+"_mj","rdataset4fit"+label+"_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
+      rdataset_mj     = RooDataSet("rdataset"     +label+"_"+self.channel+"_mj","rdataset"    +label+"_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
+      rdataset4fit_mj = RooDataSet("rdataset4fit" +label+"_"+self.channel+"_mj","rdataset4fit"+label+"_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
       rrv_number_pass = RooRealVar("rrv_number_ttbar"+label+"_passtau2tau1cut_em_mj","rrv_number_ttbar"+label+"_passtau2tau1cut_em_mj",0.,10000000.) #LUCA
   
       # Mj dataset before tau2tau1 cut : Total
-      rdataset_beforetau2tau1cut_mj     = RooDataSet("rdataset"     +label+"_beforetau2tau1cut_"+self.channel+"_mj","rdataset"    +label+"_beforetau2tau1cut_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
-      rdataset4fit_beforetau2tau1cut_mj = RooDataSet("rdataset4fit" +label+"_beforetau2tau1cut_"+self.channel+"_mj","rdataset4fit"+label+"_beforetau2tau1cut_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
+      rdataset_beforetau2tau1cut_mj     = RooDataSet("rdataset"     +label+"_beforetau2tau1cut_"+self.channel+"_mj","rdataset"    +label+"_beforetau2tau1cut_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
+      rdataset4fit_beforetau2tau1cut_mj = RooDataSet("rdataset4fit" +label+"_beforetau2tau1cut_"+self.channel+"_mj","rdataset4fit"+label+"_beforetau2tau1cut_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
       rrv_number_before = RooRealVar("rrv_number_ttbar"+label+"_beforetau2tau1cut_em_mj","rrv_number_ttbar"+label+"_beforetau2tau1cut_em_mj",0.,10000000.) #LUCA
  
       ### Mj dataset failed tau2tau1 cut :
-      rdataset_failtau2tau1cut_mj     = RooDataSet("rdataset"     +label+"_failtau2tau1cut_"+self.channel+"_mj","rdataset"    +label+"_failtau2tau1cut_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
-      rdataset4fit_failtau2tau1cut_mj = RooDataSet("rdataset4fit" +label+"_failtau2tau1cut_"+self.channel+"_mj","rdataset4fit"+label+"_failtau2tau1cut_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
+      rdataset_failtau2tau1cut_mj     = RooDataSet("rdataset"     +label+"_failtau2tau1cut_"+self.channel+"_mj","rdataset"    +label+"_failtau2tau1cut_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
+      rdataset4fit_failtau2tau1cut_mj = RooDataSet("rdataset4fit" +label+"_failtau2tau1cut_"+self.channel+"_mj","rdataset4fit"+label+"_failtau2tau1cut_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
       rrv_number_fail = RooRealVar("rrv_number_ttbar"+label+"_failtau2tau1cut_em_mj","rrv_number_ttbar"+label+"_failtau2tau1cut_em_mj",0.,10000000.) #LUCA
 
       ### Mj dataset extreme failed tau2tau1 cut: > 0.75
-      rdataset_extremefailtau2tau1cut_mj     = RooDataSet("rdataset"    +label+"_extremefailtau2tau1cut_"+self.channel+"_mj","rdataset"     +label+"_extremefailtau2tau1cut_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
-      rdataset4fit_extremefailtau2tau1cut_mj = RooDataSet("rdataset4fit"+label+"_extremefailtau2tau1cut_"+self.channel+"_mj","rdataset4fit" +label+"_extremefailtau2tau1cut_"+self.channel+"_mj",RooArgSet(FatJetSDsubjetWmass,SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
+      rdataset_extremefailtau2tau1cut_mj     = RooDataSet("rdataset"    +label+"_extremefailtau2tau1cut_"+self.channel+"_mj","rdataset"     +label+"_extremefailtau2tau1cut_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
+      rdataset4fit_extremefailtau2tau1cut_mj = RooDataSet("rdataset4fit"+label+"_extremefailtau2tau1cut_"+self.channel+"_mj","rdataset4fit" +label+"_extremefailtau2tau1cut_"+self.channel+"_mj",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight) )
       rrv_number_extremefail = RooRealVar("rrv_number_ttbar"+label+"_extremefailtau2tau1cut_em_mj","rrv_number_ttbar"+label+"_extremefailtau2tau1cut_em_mj",0.,10000000.) #LUCA
       
       # category_cut = RooCategory("category_cut"+"_"+self.channel,"category_cut"+"_"+self.channel) #---->Think this can be removed!!!!
  #      category_cut.defineType("cut",1)
  #      category_cut.defineType("beforecut",2)
- #      combData4cut = RooDataSet("combData4cut"+"_"+self.channel,"combData4cut"+"_"+self.channel,RooArgSet(FatJetSDsubjetWmass, category_cut, SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight) )
+ #      combData4cut = RooDataSet("combData4cut"+"_"+self.channel,"combData4cut"+"_"+self.channel,RooArgSet(rrv_mass_j, category_cut, rrv_weight),RooFit.WeightVar(rrv_weight) )
       
       
       # Define categories
@@ -785,7 +785,7 @@ class initialiseFits:
         category_p_f.defineType("fail")
         getattr(self.workspace4fit_,"import")(category_p_f)
       
-      combData_p_f = RooDataSet("combData_p_f"+label+"_"+self.channel,"combData_p_f"+label+"_"+self.channel,RooArgSet(FatJetSDsubjetWmass, category_p_f, SemiLeptWeight),RooFit.WeightVar(SemiLeptWeight))
+      combData_p_f = RooDataSet("combData_p_f"+label+"_"+self.channel,"combData_p_f"+label+"_"+self.channel,RooArgSet(rrv_mass_j, category_p_f, rrv_weight),RooFit.WeightVar(rrv_weight))
       
       print "N entries: ", treeIn.GetEntries()
       
@@ -812,13 +812,17 @@ class initialiseFits:
             continue
           if TString(label).Contains("fakeW") and     getattr(treeIn,"FatJetSDsubjet_isRealW"): 
             continue
-          
-          wtagger = getattr(treeIn,"FatJetSDsubjetWtau2")/getattr(treeIn,"FatJetSDsubjetWtau1")
-          if options.usePuppiSD:
+          if getattr(treeIn,"FatJetSDsubjetWtau1") >= 0.001 :
             wtagger = getattr(treeIn,"FatJetSDsubjetWtau2")/getattr(treeIn,"FatJetSDsubjetWtau1")
+          else : wtagger = 10.
+          if options.usePuppiSD:
+            if getattr(treeIn,"FatJetSDsubjetWtau1") >= 0.001 :
+              wtagger = getattr(treeIn,"FatJetSDsubjetWtau2")/getattr(treeIn,"FatJetSDsubjetWtau1")
+            else : wtagger = 10.
           if options.useDDT:
-            wtagger = getattr(treeIn,"FatJetSDsubjetWtau2")/getattr(treeIn,"FatJetSDsubjetWtau1")+ (0.063 * TMath.log( (pow( getattr(treeIn,"FatJetSDsubjetWmass"),2))/getattr(treeIn,"FatJetSDsubjetWpt") ))        
-            
+            if (getattr(treeIn,"FatJetSDsubjetWtau1") >= 0.001) and (getattr(treeIn,"FatJetSDsubjetWpt") >= 0.001) :
+              wtagger = getattr(treeIn,"FatJetSDsubjetWtau2")/getattr(treeIn,"FatJetSDsubjetWtau1")+ (0.063 * TMath.log( (pow( getattr(treeIn,"FatJetSDsubjetWmass"),2))/getattr(treeIn,"FatJetSDsubjetWpt") ))        
+            else : wtagger = 10.
           discriminantCut = 0
           if wtagger <= options.tau2tau1cutHP: # HP
               discriminantCut = 2
@@ -854,11 +858,11 @@ class initialiseFits:
                    
 
           #  HP category
-          if discriminantCut == 2  and tmp_jet_mass > FatJetSDsubjetWmass.getMin() and tmp_jet_mass < FatJetSDsubjetWmass.getMax():   
-             FatJetSDsubjetWmass.setVal(tmp_jet_mass)
+          if discriminantCut == 2  and tmp_jet_mass > rrv_mass_j.getMin() and tmp_jet_mass < rrv_mass_j.getMax():   
+             rrv_mass_j.setVal(tmp_jet_mass)
              
-             rdataset_mj    .add(RooArgSet(FatJetSDsubjetWmass), tmp_event_weight)
-             rdataset4fit_mj.add(RooArgSet(FatJetSDsubjetWmass), tmp_event_weight4fit)
+             rdataset_mj    .add(RooArgSet(rrv_mass_j), tmp_event_weight)
+             rdataset4fit_mj.add(RooArgSet(rrv_mass_j), tmp_event_weight4fit)
 
              if tmp_jet_mass >= self.mj_sideband_lo_min and tmp_jet_mass < self.mj_sideband_lo_max:
                  hnum_4region.Fill(-1,tmp_event_weight )
@@ -873,36 +877,36 @@ class initialiseFits:
              hnum_4region.Fill(2,tmp_event_weight) 
              
              category_p_f.setLabel("pass")
-             combData_p_f.add(RooArgSet(FatJetSDsubjetWmass,category_p_f),tmp_event_weight)
+             combData_p_f.add(RooArgSet(rrv_mass_j,category_p_f),tmp_event_weight)
           
           # TOTAL category (no Tau21 )
-          if discriminantCut == 2 or discriminantCut == 1 or discriminantCut == 0 and (FatJetSDsubjetWmass.getMin() < tmp_jet_mass < FatJetSDsubjetWmass.getMax()):   
+          if discriminantCut == 2 or discriminantCut == 1 or discriminantCut == 0 and (rrv_mass_j.getMin() < tmp_jet_mass < rrv_mass_j.getMax()):   
 
-              FatJetSDsubjetWmass.setVal(tmp_jet_mass)
+              rrv_mass_j.setVal(tmp_jet_mass)
 
               if tmp_jet_mass >= self.mj_signal_min and tmp_jet_mass <self.mj_signal_max :
                  hnum_4region_before_cut.Fill(0,tmp_event_weight)
                  hnum_4region_before_cut_error2.Fill(0,tmp_event_weight*tmp_event_weight)
 
-              rdataset_beforetau2tau1cut_mj.add(RooArgSet(FatJetSDsubjetWmass),tmp_event_weight)
-              rdataset4fit_beforetau2tau1cut_mj.add(RooArgSet(FatJetSDsubjetWmass),tmp_event_weight4fit)
+              rdataset_beforetau2tau1cut_mj.add(RooArgSet(rrv_mass_j),tmp_event_weight)
+              rdataset4fit_beforetau2tau1cut_mj.add(RooArgSet(rrv_mass_j),tmp_event_weight4fit)
           
           # 1 minus HP category (LP+extreme fail)   
-          if (discriminantCut==1 or discriminantCut==0) and (FatJetSDsubjetWmass.getMin() < tmp_jet_mass < FatJetSDsubjetWmass.getMax()):
+          if (discriminantCut==1 or discriminantCut==0) and (rrv_mass_j.getMin() < tmp_jet_mass < rrv_mass_j.getMax()):
   
-              FatJetSDsubjetWmass.setVal(tmp_jet_mass)
+              rrv_mass_j.setVal(tmp_jet_mass)
 
-              rdataset_failtau2tau1cut_mj     .add(RooArgSet(FatJetSDsubjetWmass), tmp_event_weight)
-              rdataset4fit_failtau2tau1cut_mj .add(RooArgSet(FatJetSDsubjetWmass), tmp_event_weight4fit )
+              rdataset_failtau2tau1cut_mj     .add(RooArgSet(rrv_mass_j), tmp_event_weight)
+              rdataset4fit_failtau2tau1cut_mj .add(RooArgSet(rrv_mass_j), tmp_event_weight4fit )
     
               category_p_f.setLabel("fail");
-              combData_p_f.add(RooArgSet(FatJetSDsubjetWmass,category_p_f),tmp_event_weight)
+              combData_p_f.add(RooArgSet(rrv_mass_j,category_p_f),tmp_event_weight)
            #-------------------------------------------------------------------------------------------
            # Extreme fail category (Tau21 > LP_max)   
-          if discriminantCut==0 and (FatJetSDsubjetWmass.getMin() < tmp_jet_mass < FatJetSDsubjetWmass.getMax()):
+          if discriminantCut==0 and (rrv_mass_j.getMin() < tmp_jet_mass < rrv_mass_j.getMax()):
 
-            rdataset_extremefailtau2tau1cut_mj     .add(RooArgSet(FatJetSDsubjetWmass), tmp_event_weight)
-            rdataset4fit_extremefailtau2tau1cut_mj .add(RooArgSet(FatJetSDsubjetWmass), tmp_event_weight4fit )
+            rdataset_extremefailtau2tau1cut_mj     .add(RooArgSet(rrv_mass_j), tmp_event_weight)
+            rdataset4fit_extremefailtau2tau1cut_mj .add(RooArgSet(rrv_mass_j), tmp_event_weight4fit )
 
       print label
       print "rrv_scale_to_lumi"+label+"_"                       +self.channel
