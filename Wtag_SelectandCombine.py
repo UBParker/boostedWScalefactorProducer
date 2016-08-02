@@ -63,10 +63,24 @@ def Wtag_SelectandCombine(argv) :
     ROOT.gStyle.SetOptStat(0000000000)
 
 
-    if options.combineTrees :
+    if options.combineTrees and options.filestr == 'LooseWP':
 
         sys.argv.remove('--combineTrees')
+        sys.argv.remove('--filestr')
+        sys.argv.remove('LooseWP')
+        sys.argv.remove('--tau21Cut')
+        sys.argv.remove('0.6')
 
+    if options.combineTrees and options.filestr == 'TightWP':
+
+        sys.argv.remove('--combineTrees')
+        sys.argv.remove('--filestr')
+        sys.argv.remove('TightWP')
+        sys.argv.remove('--tau21Cut')
+        sys.argv.remove('0.45')
+
+
+    if options.combineTrees :
         sys.argv.append('--type')
         sys.argv.append('data')
  
