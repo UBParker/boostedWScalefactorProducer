@@ -38,6 +38,11 @@ parser.add_option('--maxval', type='float', action='store',
                   default = 250.,
                   help='Maxval for the plot')
 
+parser.add_option('--80X', action='store_true',
+                  default=True,
+                  dest='80X',
+                  help='Are the ttrees produced using CMSSW 80X?')
+
 parser.add_option('--nbins', type='int', action='store',
                   dest='nbins',
                   default = 25,
@@ -111,7 +116,7 @@ tdrstyle.setTDRStyle()
 
 #change the CMS_lumi variables (see CMS_lumi.py)
 
-CMS_lumi.lumi_13TeV = "2.3 fb^{-1}"
+CMS_lumi.lumi_13TeV = "~12.3 fb^{-1}"
 CMS_lumi.writeExtraText = 1
 CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "13 TeV" # used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
@@ -142,7 +147,7 @@ if options.combineTrees : fout= ROOT.TFile('Wmass_meanrat_combinedTrees_' + opti
 if options.pre :
     fout= ROOT.TFile('Wmass_meanrat_preWTag_' + options.infile + '.root', "RECREATE")
 if options.pre and options.combineTrees :
-    fout= ROOT.TFile('Wmass_meanrat_preWTag_combinedTrees_' + options.infile + '.root', "RECREATE")
+    fout= ROOT.TFile('Wmass_meanrat_preWTag_combinedTrees_80x_' + str(options.infile) + '.root', "RECREATE")
 
 ptBs =  array.array('d', [200., 300., 400., 500., 800.])
 nptBs = len(ptBs) - 1
@@ -169,9 +174,11 @@ else:
 
 
  
-if options.combineTrees : filein = ROOT.TFile.Open('Wmass_pt_binned_CombinedTrees_' + options.infile + '.root') 
-else : filein = ROOT.TFile.Open('Wmass_pt_binned_' + options.infile + '.root')
-lumi = 2.3 #2136.0
+if options.combineTrees : 
+    filein = ROOT.TFile.Open('./output80x/Wmass_pt_binned_CombinedTrees_80x_' + str(options.infile) + '.root') 
+else : 
+    filein = ROOT.TFile.Open('Wmass_pt_binned_' + options.infile + '.root')
+lumi = 12.3 #2136.0
 
 httbar = filein.Get("h_mWsubjet_ttjets")
 ttbar_pt = filein.Get("h_ptWsubjet_ttjets")
@@ -261,7 +268,7 @@ nMCupost = array.array('d', [0., 0., 0., 0.])
 nDataupost = array.array('d', [0., 0., 0., 0.])
 
 if not options.pre :
-    if options.combineTrees : filein2 = ROOT.TFile.Open('Wmass_meanrat_preWTag_combinedTrees_' + options.infile + '.root') 
+    if options.combineTrees : filein2 = ROOT.TFile.Open('./Wmass_meanrat_preWTag_combinedTrees_80x_' + options.infile + '.root') 
     else : filein2 = ROOT.TFile.Open('Wmass_meanrat_preWTag_' + options.infile + '.root') 
     h_NpassDataPre = filein2.Get("hNpassDataPre")
     h_NpassMCPre = filein2.Get("hNpassMCPre")
