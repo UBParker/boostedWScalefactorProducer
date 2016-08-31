@@ -25,18 +25,18 @@ def treeCombiner(argv) :
     parser = OptionParser()
 
     parser.add_option('--type', type='string', action='store',
-                      dest='type',
+                      dest='dtype',
                       default = '',
-                      help='type of files to combine: data or ttjets currently implemented - soon - Wjets (all HT binned samples) , ST (all Single Top samples) and pseudodata (all MC combined)') 
+                      help='type of files to combine: data , ttjets, wjets , st and pseudodata (all MC combined)') 
 
     parser.add_option('--maxEvents', type='int', action='store',
                       dest='maxEvents',
                       default = None,
                       help='Max events')
 
-    parser.add_option('--80X', action='store_true',
-                      default=False,
-                      dest='80X',
+    parser.add_option('--is80x', action='store_true',
+                      default=True,
+                      dest='is80x',
                       help='Are the ttrees produced using CMSSW 80X?')
 
     parser.add_option('--verbose', action='store_true',
@@ -59,8 +59,12 @@ def treeCombiner(argv) :
 
     # @@@ Create output root file
     import ROOT
-
-    fout = ROOT.TFile( './alphaMethod/'+ options.type +'_combinedttree_76x_v1p2_puppi.root', 'RECREATE')
+    if options.is80x :     
+        fout = ROOT.TFile( './output80x/'+ options.dtype +'_combinedttree_80x_v1p2_puppi.root', 'RECREATE')
+        print "Using 80X ttrees!"
+    else : 
+        fout = ROOT.TFile( './output76x/'+ options.dtype +'_combinedttree_76x_v1p2_puppi.root', 'RECREATE')
+        print "Using 76X ttrees!"
     fout.cd()
 
     TTreeSemiLept = ROOT.TTree("TreeSemiLept", "TreeSemiLept")
@@ -78,6 +82,7 @@ def treeCombiner(argv) :
     FatJetTau32_         = array.array('f', [-1.])
     FatJetTau21_         = array.array('f', [-1.]) 
 
+    FatJetSDbdiscW_      = array.array('f', [-1.])
     FatJetSDsubjetWpt_   = array.array('f', [-1.])
     FatJetSDsubjetWmass_ = array.array('f', [-1.])
     FatJetSDsubjetWtau1_ = array.array('f', [-1.])
@@ -90,13 +95,14 @@ def treeCombiner(argv) :
 
     FatJetSDsubjetBpt_   = array.array('f', [-1.])
     FatJetSDsubjetBmass_ = array.array('f', [-1.])
-    FatJetSDsubjetBbdisc_ = array.array('f', [-1.])
+    FatJetSDbdiscB_      = array.array('f', [-1.])
 
     LeptonType_          = array.array('i', [-1])
     LeptonPt_            = array.array('f', [-1.])
 
     LeptonPtRel_         = array.array('f', [-1.])
     LeptonDRMin_         = array.array('f', [-1.])
+    DeltaPhiLepFat_       = array.array('f', [-1.])
 
     SemiLepMETpt_        = array.array('f', [-1.])
 
@@ -117,6 +123,7 @@ def treeCombiner(argv) :
     TTreeSemiLept.Branch('FatJetTau21'         , FatJetTau21_         ,  'FatJetTau21/F'         )
     TTreeSemiLept.Branch('FatJetTau32'         , FatJetTau32_         ,  'FatJetTau32/F'         )
 
+    TTreeSemiLept.Branch('FatJetSDbdiscW'   , FatJetSDbdiscW_   ,  'FatJetSDbdiscW/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt_   ,  'FatJetSDsubjetWpt/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWmass' , FatJetSDsubjetWmass_ ,  'FatJetSDsubjetWmass/F' )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau1'   , FatJetSDsubjetWtau1_   ,  'FatJetSDsubjetWtau1/F'   )
@@ -124,19 +131,21 @@ def treeCombiner(argv) :
     TTreeSemiLept.Branch('FatJetSDsubjetWtau3'   , FatJetSDsubjetWtau3_   ,  'FatJetSDsubjetWtau3/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau21'   , FatJetSDsubjetWtau21_   ,  'FatJetSDsubjetWtau21/F'   )
 
-    if options.type == 'ttjets' :
-        TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW_   ,  'FatJetSDsubjet_isRealW/F'   )
-        TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW_   ,  'FatJetSDsubjet_isFakeW/F'   )
+    
+    TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW_   ,  'FatJetSDsubjet_isRealW/F'   )
+    TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW_   ,  'FatJetSDsubjet_isFakeW/F'   )
 
     TTreeSemiLept.Branch('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt_   ,  'FatJetSDsubjetBpt/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetBmass' , FatJetSDsubjetBmass_ ,  'FatJetSDsubjetBmass/F' )
-    TTreeSemiLept.Branch('FatJetSDsubjetBbdisc' , FatJetSDsubjetBbdisc_ ,  'FatJetSDsubjetBbdisc/F' )
+    TTreeSemiLept.Branch('FatJetSDbdiscB' , FatJetSDbdiscB_ ,  'FatJetSDbdiscB/F' )
 
     TTreeSemiLept.Branch('LeptonType'          , LeptonType_          ,  'LeptonType/I'          )
     TTreeSemiLept.Branch('LeptonPt'            , LeptonPt_            ,  'LeptonPt/F'            )
 
     TTreeSemiLept.Branch('LeptonPtRel'         , LeptonPtRel_         ,  'LeptonPtRel/F'         )
     TTreeSemiLept.Branch('LeptonDRMin'         , LeptonDRMin_         ,  'LeptonDRMin/F'         ) 
+
+    TTreeSemiLept.Branch('DeltaPhiLepFat'      , DeltaPhiLepFat_      ,  'DeltaPhiLepFat/F'      ) 
 
     TTreeSemiLept.Branch('SemiLepMETpt'        , SemiLepMETpt_        ,  'SemiLepMETpt/F'        )
 
@@ -153,20 +162,140 @@ def treeCombiner(argv) :
 
     # Input the existing trees to read them in and comine them into 1 tree
 
-    if options.type == 'data' :
-        filesin = [ ROOT.TFile('./b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
-                ROOT.TFile('./b2gttbar_ttrees/singlemu_ttree_76x_v1p2_puppi.root') ] 
-    if options.type == 'ttjets' :
-            filesin = [ROOT.TFile('./b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root')]         
+       
+    if options.is80x: 
+        if options.dtype == 'data' :
+            filesin = [ ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_2.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_3.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_4.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_5.root'), 
+                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_6.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_7.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_8.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_9.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_10.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_11.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_12.root'), 
+                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_13.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_14.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_15.root'), 
+                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_16.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_17.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_18.root'), 
+                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_19.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_20.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_21.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_22.root'), 
+                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_23.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_24.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_25.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_26.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_2.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_3.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_4.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_5.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_6.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_7.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_8.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_9.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_10.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_11.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_12.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_13.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_14.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_15.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_16.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_17.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_18.root'),
+                        #ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_19.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_20.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_21.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_22.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_23.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_24.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_25.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_26.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_27.root')] 
+        if options.dtype == 'ttjets' :
+                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_2.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_3.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_4.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_5.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_6.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_7.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_8.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_9.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_10.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_11.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_12.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_13.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_14.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_15.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_16.root'), 
+                            #ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_17.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_18.root'), 
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_19.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_20.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_21.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_22.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_23.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_24.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_25.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_26.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_27.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_28.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_29.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_30.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_31.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_32.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_33.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_34.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_35.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_36.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_37.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_38.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_39.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_40.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_41.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_42.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_43.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_44.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_45.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_46.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_47.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_48.root'),
+                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_49.root')]         
+        if options.dtype == 'wjets' :
+                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_48.root')]
 
+
+        if options.dtype == 'st' :
+                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_48.root')]
+
+        if options.dtype == 'pseudodata' :
+                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root')]
+
+    else :
+        if options.dtype == 'data' :
+            filesin = [ ROOT.TFile('./b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
+                    ROOT.TFile('./b2gttbar_ttrees/singlemu_ttree_76x_v1p2_puppi.root') ] 
+        if options.dtype == 'ttjets' :
+                filesin = [ROOT.TFile('./b2gttbar_ttrees/ttjets_ttree_76x_v1p2_puppi.root')] 
+        if options.dtype != 'ttjets' and options.dtype != 'data' :
+                print "No input files for 76x in types other than ttjets and data!"
 
     # create list of trees to be combined
     alltrees = []
 
     for ji in filesin:
+        if options.verbose: print "File is " + str(ji)
         alltrees.append(ji.Get("TreeSemiLept"))
 
     for ittree, ttree in enumerate(alltrees) :
+        tempevnum = 0.
     # create arrays to store the data
         SemiLeptWeight      = array.array('f', [-1.])
 
@@ -180,27 +309,31 @@ def treeCombiner(argv) :
         FatJetTau32         = array.array('f', [-1.])
         FatJetTau21         = array.array('f', [-1.]) 
 
-        #FatJetSDbdiscW      = array.array('f', [-1.])
+        FatJetSDbdiscW      = array.array('f', [-1.])
         FatJetSDsubjetWpt   = array.array('f', [-1.])
         FatJetSDsubjetWmass = array.array('f', [-1.])
         FatJetSDsubjetWtau1 = array.array('f', [-1.])
         FatJetSDsubjetWtau2 = array.array('f', [-1.])
         FatJetSDsubjetWtau3 = array.array('f', [-1.])
+        FatJetSDsubjetWtau21 = array.array('f', [-1.])
 
-        #FatJetSDbdiscB      = array.array('f', [-1.])
+        FatJetSDbdiscB      = array.array('f', [-1.])
         FatJetSDsubjetBpt   = array.array('f', [-1.])
         FatJetSDsubjetBmass = array.array('f', [-1.])
         FatJetSDsubjetBtau1 = array.array('f', [-1.])
         FatJetSDsubjetBtau2 = array.array('f', [-1.])
         FatJetSDsubjetBtau3 = array.array('f', [-1.])
 
-        #BJetbDisc           = array.array('f', [-1.])
+        FatJetSDsubjet_isRealW = array.array('f', [-1.])
+        FatJetSDsubjet_isFakeW = array.array('f', [-1.])
 
         LeptonType          = array.array('i', [-1])
         LeptonPt            = array.array('f', [-1.])
 
         LeptonPtRel         = array.array('f', [-1.])
         LeptonDRMin         = array.array('f', [-1.])
+
+        DeltaPhiLepFat        = array.array('f', [-1.])
 
         SemiLepMETpt        = array.array('f', [-1.])
 
@@ -209,6 +342,49 @@ def treeCombiner(argv) :
         SemiLeptRunNum        = array.array('f', [-1.])   
         SemiLeptLumiBlock     = array.array('f', [-1.])   
         SemiLeptEventNum      = array.array('f', [-1.])
+
+        ttree.SetBranchAddress('SemiLeptWeight'      , SemiLeptWeight      )
+
+        ttree.SetBranchAddress('FatJetPt'            , FatJetPt            )
+        ttree.SetBranchAddress('FatJetRhoRatio'      , FatJetRhoRatio      )
+        ttree.SetBranchAddress('FatJetMass'          , FatJetMass          )
+        ttree.SetBranchAddress('FatJetMassSoftDrop'  , FatJetMassSoftDrop  )
+        ttree.SetBranchAddress('FatJetTau1'         , FatJetTau1           )
+        ttree.SetBranchAddress('FatJetTau2'         , FatJetTau2           )
+        ttree.SetBranchAddress('FatJetTau3'         , FatJetTau3           )
+        ttree.SetBranchAddress('FatJetTau32'         , FatJetTau32         )
+        ttree.SetBranchAddress('FatJetTau21'         , FatJetTau21         )
+
+        ttree.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
+        ttree.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
+        ttree.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
+        ttree.SetBranchAddress('FatJetSDsubjetWtau1' , FatJetSDsubjetWtau1 )
+        ttree.SetBranchAddress('FatJetSDsubjetWtau2' , FatJetSDsubjetWtau2 )
+        ttree.SetBranchAddress('FatJetSDsubjetWtau3' , FatJetSDsubjetWtau3 )
+        ttree.SetBranchAddress('FatJetSDsubjetWtau21' , FatJetSDsubjetWtau21 )
+
+        ttree.SetBranchAddress('FatJetSDbdiscB'      , FatJetSDbdiscB      )
+        ttree.SetBranchAddress('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt   )
+        ttree.SetBranchAddress('FatJetSDsubjetBmass' , FatJetSDsubjetBmass )
+        ttree.SetBranchAddress('FatJetSDsubjetBtau1' , FatJetSDsubjetBtau1 )
+        ttree.SetBranchAddress('FatJetSDsubjetBtau2' , FatJetSDsubjetBtau2 )
+        ttree.SetBranchAddress('FatJetSDsubjetBtau3' , FatJetSDsubjetBtau3 )
+
+        ttree.SetBranchAddress('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW ) 
+        ttree.SetBranchAddress('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW )
+
+        ttree.SetBranchAddress('LeptonType'          , LeptonType          )
+        ttree.SetBranchAddress('LeptonPt'            , LeptonPt            )
+
+        ttree.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
+        ttree.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
+        ttree.SetBranchAddress('DeltaPhiLepFat'         , DeltaPhiLepFat   )
+
+        ttree.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
+
+        ttree.SetBranchAddress('SemiLeptRunNum'         ,  SemiLeptRunNum       )
+        ttree.SetBranchAddress('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock    )
+        ttree.SetBranchAddress('SemiLeptEventNum'       ,  SemiLeptEventNum     )
 
         ttree.SetBranchStatus ('*', 0)
 
@@ -225,73 +401,35 @@ def treeCombiner(argv) :
         ttree.SetBranchStatus ('FatJetTau32', 1)
         ttree.SetBranchStatus ('FatJetTau21', 1)
 
-
-        #ttree.SetBranchStatus('BJetbDisc' , 1 )
-
+        ttree.SetBranchStatus('FatJetSDbdiscW',1)
         ttree.SetBranchStatus('FatJetSDsubjetWpt',1)
         ttree.SetBranchStatus('FatJetSDsubjetWmass',1)
         ttree.SetBranchStatus('FatJetSDsubjetWtau1',1)
         ttree.SetBranchStatus('FatJetSDsubjetWtau2',1)
         ttree.SetBranchStatus('FatJetSDsubjetWtau3',1)
+        ttree.SetBranchStatus('FatJetSDsubjetWtau21',1)
 
+        ttree.SetBranchStatus('FatJetSDbdiscB',1)
         ttree.SetBranchStatus('FatJetSDsubjetBpt',1)
         ttree.SetBranchStatus('FatJetSDsubjetBmass',1)
         ttree.SetBranchStatus('FatJetSDsubjetBtau1',1)
         ttree.SetBranchStatus('FatJetSDsubjetBtau2',1)
         ttree.SetBranchStatus('FatJetSDsubjetBtau3',1)
 
+        ttree.SetBranchStatus('FatJetSDsubjet_isRealW',1)
+        ttree.SetBranchStatus('FatJetSDsubjet_isFakeW',1)
 
         ttree.SetBranchStatus ('LeptonType'          , 1)
         ttree.SetBranchStatus ('LeptonPt'            , 1)
 
         ttree.SetBranchStatus ('LeptonPtRel'         , 1)
         ttree.SetBranchStatus ('LeptonDRMin'         , 1)
-
+        ttree.SetBranchStatus ('DeltaPhiLepFat'      , 1)
         ttree.SetBranchStatus ('SemiLepMETpt'        , 1)
 
         ttree.SetBranchStatus ('SemiLeptRunNum'      , 1)
         ttree.SetBranchStatus ('SemiLeptLumiBlock'   , 1)
         ttree.SetBranchStatus ('SemiLeptEventNum'    , 1)
-        ttree.SetBranchAddress('SemiLeptWeight'            , SemiLeptWeight     )
-
-        ttree.SetBranchAddress('FatJetPt'            , FatJetPt            )
-        ttree.SetBranchAddress('FatJetRhoRatio'      , FatJetRhoRatio      )
-        ttree.SetBranchAddress('FatJetMass'          , FatJetMass          )
-        ttree.SetBranchAddress('FatJetMassSoftDrop'  , FatJetMassSoftDrop  )
-        ttree.SetBranchAddress('FatJetTau1'         , FatJetTau1         )
-        ttree.SetBranchAddress('FatJetTau2'         , FatJetTau2         )
-        ttree.SetBranchAddress('FatJetTau3'         , FatJetTau3         )
-        ttree.SetBranchAddress('FatJetTau32'         , FatJetTau32         )
-        ttree.SetBranchAddress('FatJetTau21'         , FatJetTau21         )
-
-        #ttree.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
-        ttree.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
-        ttree.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
-        ttree.SetBranchAddress('FatJetSDsubjetWtau1' , FatJetSDsubjetWtau1 )
-        ttree.SetBranchAddress('FatJetSDsubjetWtau2' , FatJetSDsubjetWtau2 )
-        ttree.SetBranchAddress('FatJetSDsubjetWtau3' , FatJetSDsubjetWtau3 )
-
-        #ttree.SetBranchAddress('FatJetSDbdiscB'      , FatJetSDbdiscB      )
-        ttree.SetBranchAddress('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt   )
-        ttree.SetBranchAddress('FatJetSDsubjetBmass' , FatJetSDsubjetBmass )
-        ttree.SetBranchAddress('FatJetSDsubjetBtau1' , FatJetSDsubjetBtau1 )
-        ttree.SetBranchAddress('FatJetSDsubjetBtau2' , FatJetSDsubjetBtau2 )
-        ttree.SetBranchAddress('FatJetSDsubjetBtau3' , FatJetSDsubjetBtau3 )
-
-        #ttree.SetBranchAddress('BJetbDisc' , BJetbDisc )
-
-        ttree.SetBranchAddress('LeptonType'          , LeptonType          )
-        ttree.SetBranchAddress('LeptonPt'            , LeptonPt            )
-
-        ttree.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
-        ttree.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
-
-        ttree.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
-
-        ttree.SetBranchAddress('SemiLeptRunNum'         ,  SemiLeptRunNum       )
-        ttree.SetBranchAddress('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock    )
-        ttree.SetBranchAddress('SemiLeptEventNum'       ,  SemiLeptEventNum     )
-
 
         entries = ttree.GetEntriesFast()
         if options.maxEvents != None :
@@ -308,10 +446,13 @@ def treeCombiner(argv) :
             if ientry < 0:
                 break
 
-            weightS = SemiLeptWeight[0]
-            #if options.verbose : print "event weight is : " + str(weightS)
-
             fatmass_sd = FatJetMassSoftDrop[0]
+            if ( fatmass_sd == -1. ) :
+                continue
+                print "skipping event, Fatmass is -1"
+
+            weightS = SemiLeptWeight[0]
+            #if fatmass_sd > 110. : print "Fat Jet mass SD  {0:6.3} in ttree number {1}".format(fatmass_sd, ittree)
             fatmass = FatJetMass[0]
             fatpt = FatJetPt[0]
             Rhorat = FatJetRhoRatio[0]
@@ -337,40 +478,57 @@ def treeCombiner(argv) :
             W_pt = FatJetSDsubjetWpt[0]
             W_tau1 = FatJetSDsubjetWtau1[0]
             W_tau2 = FatJetSDsubjetWtau2[0]
-            #print "W Jet tau 2 :" + str(tau2)
             W_tau3 = FatJetSDsubjetWtau3[0]
-            #print "W Jet tau 3 :" + str(tau3)
+            W_bdisc = FatJetSDbdiscW[0]
 
-
-            if W_tau1 > 0.001 :
-                W_tau21 = W_tau2 / W_tau1
+            if not options.is80x :
+                if abs(W_tau1) > 0.000001 :
+                    W_tau21 = W_tau2 / W_tau1
+                else :
+                    W_tau21 = 1.
             else :
-                W_tau21 = 1.0
+                W_tau21 = FatJetSDsubjetWtau21[0]
+
+            if options.dtype == 'ttjets':
+                realw = FatJetSDsubjet_isRealW[0]
+                fakew = FatJetSDsubjet_isFakeW[0]
+            else:
+                realw = 0
+                fakew = 0
             B_pt = FatJetSDsubjetBpt[0]
             B_m = FatJetSDsubjetBmass[0]
-            #print "B Jet Mass :" + str(B_m)
+            B_bdisc = FatJetSDbdiscB[0]
 
-            #B_bdisc = 
+
             MET_pt = SemiLepMETpt[0]
-            #print "MET_pt:" + str(MET_pt)
+
             W_pt2 = FatJetPt[0]
  
             #typE = BoosttypE[0]
-            #evWeight = SemiLeptWeight[0]
 
 
             lepton_Type = LeptonType[0]
             lepton_pt = LeptonPt[0]
-            #print "lepton_pt:" + str(lepton_pt)
             lepton_ptRel = LeptonPtRel[0]
             lepton_DRmin = LeptonDRMin[0] 
+
+            dphi =  DeltaPhiLepFat[0]
 
             runNum = SemiLeptRunNum[0]
             lumiBlock = SemiLeptLumiBlock[0]
             eventNum = SemiLeptEventNum[0]
+            
+            if (options.verbose): # and fatpt_sd > 350. 
+                print ">>>>>>>>>>>>>>treeCombiner>>>>>>>>>>"
+                print "Event Number : " + str(eventNum)
+                print "Fat Jet Pt SD : " + str(fatpt_sd)
+                print "Fat Jet mass SD : " + str(fatmass_sd)
+                print "Fat Jet Rho Ratio : " + str(Rhorat)
+                if eventNum == tempevnum :
+                    print "Repeated event: tree index in list "+str(ittree) 
+                print "-------------------------------------"
+            tempevnum = eventNum
 
-
-            fout.cd()
             SemiLeptWeight_      [0] = weightS
 
             FatJetRhoRatio_      [0] = Rhorat
@@ -378,12 +536,6 @@ def treeCombiner(argv) :
             FatJetPt_            [0] = fatpt
             FatJetMassSoftDrop_  [0] = fatmass_sd
             FatJetPtSoftDrop_    [0] = fatpt_sd
-            if (options.verbose and fatpt_sd > 350. ): 
-                print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-                print "Fat Jet Pt SD : " + str(fatpt_sd)
-                print "Fat Jet mass SD : " + str(fatmass_sd)
-                print "Fat Jet Rho Ratio : " + str(Rhorat)
-                print "-------------------------------------"
 
             FatJetTau1_          [0] = tau1
             FatJetTau2_          [0] = tau2
@@ -391,25 +543,26 @@ def treeCombiner(argv) :
             FatJetTau32_         [0] = tau32
             FatJetTau21_         [0] = tau21
 
-            FatJetSDsubjetWpt_   [0] = W_pt
-            FatJetSDsubjetWmass_ [0] = W_m
-            FatJetSDsubjetWtau1_ [0] = W_tau1
-            FatJetSDsubjetWtau2_ [0] = W_tau2
-            FatJetSDsubjetWtau3_ [0] = W_tau3
+            FatJetSDbdiscW_       [0] = W_bdisc
+            FatJetSDsubjetWpt_    [0] = W_pt
+            FatJetSDsubjetWmass_  [0] = W_m
+            FatJetSDsubjetWtau1_  [0] = W_tau1
+            FatJetSDsubjetWtau2_  [0] = W_tau2
+            FatJetSDsubjetWtau3_  [0] = W_tau3
             FatJetSDsubjetWtau21_ [0] = W_tau21
 
-            if options.type == 'ttjets' :
-                FatJetSDsubjet_isRealW_ [0] = 0.0  # correct this once gen matching is implemented ???
-                FatJetSDsubjet_isFakeW_ [0] = 0.0  # correct this once gen matching is implemented ???
+            FatJetSDsubjet_isRealW_ [0] = realw 
+            FatJetSDsubjet_isFakeW_ [0] = fakew 
 
             FatJetSDsubjetBpt_   [0] = B_pt 
             FatJetSDsubjetBmass_ [0] = B_m
-            #FatJetSDsubjetBbdisc[0] = B_bdisc
+            FatJetSDbdiscB_      [0] = B_bdisc
 
             LeptonType_          [0] = lepton_Type
             LeptonPt_            [0] = lepton_pt
             LeptonPtRel_         [0] = lepton_ptRel
             LeptonDRMin_         [0] = lepton_DRmin
+            DeltaPhiLepFat_      [0] = dphi
 
             SemiLepMETpt_        [0] = MET_pt
 
@@ -419,11 +572,10 @@ def treeCombiner(argv) :
 
             TTreeSemiLept.Fill()
 
-
     fout.cd() 
     fout.Write()
     fout.Close()
-    print "All Done. The "+ options.type +" TTrees were successfully combined!"
+    print "All Done. The "+ options.dtype +" TTrees were successfully combined!"
     print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 if __name__ == "__main__" :
     treeCombiner(sys.argv)
