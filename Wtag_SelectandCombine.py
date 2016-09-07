@@ -43,7 +43,7 @@ def Wtag_SelectandCombine(argv) :
                       help='Are the ttrees produced using CMSSW 80X?')
 
     parser.add_option('--useOld', action='store_true',
-                      default=False,
+                      default=True,
                       dest='useOld',
                       help='Want to use the existing combined TTrees (saves time)?')
 
@@ -62,6 +62,16 @@ def Wtag_SelectandCombine(argv) :
                       dest='verbose',
                       help='Do you want to print values of key variables?')
 
+    parser.add_option('--applyTheaCorr', action='store_true',
+                      default=False,
+                      dest='applyTheaCorr',
+                      help='Do you want to apply SD mass corrections from Thea ???')
+
+    parser.add_option('--applyHIPCorr', action='store_true',
+                      default=False,
+                      dest='applyHIPCorr',
+                      help='Do you want apply the HIP corrections to the muons ???')
+
     (options, args) = parser.parse_args(argv)
     argv = []
 
@@ -71,6 +81,26 @@ def Wtag_SelectandCombine(argv) :
 
     import ROOT
     ROOT.gStyle.SetOptStat(0000000000)
+
+    def getPUPPIweight(puppipt, puppieta) : #{
+
+        finCor1 = ROOT.TFile.Open( "./PuppiCorr/weights/puppiJecCorr.root","READ")
+        puppisd_corrGEN      = finCor1.Get("puppiJECcorr_gen")
+        puppisd_corrRECO_cen = finCor1.Get("puppiJECcorr_reco_0eta1v3")
+        puppisd_corrRECO_for = finCor1.Get("puppiJECcorr_reco_1v3eta2v5")
+      
+        genCorr  = 1.
+        recoCorr = 1.
+        totalWeight = 1.
+
+        genCorr =  puppisd_corrGEN.Eval( puppipt )
+        
+        if (abs(puppieta) <=1.3 ): recoCorr = puppisd_corrRECO_cen.Eval(puppipt)
+        if (abs(puppieta) > 1.3 ): recoCorr = puppisd_corrRECO_for.Eval(puppipt)
+        totalWeight = genCorr * recoCorr
+        return totalWeight
+        #} 
+
 
     if options.combineTrees and not options.useOld:
 
@@ -90,10 +120,9 @@ def Wtag_SelectandCombine(argv) :
             sys.argv.remove('--tau21Cut')
             sys.argv.remove('0.45')
 
-
         from treeCombiner import treeCombiner 
-    
-        types = ['data', 'ttjets', 'wjets', 'st', 'pseudodata' ]        
+   
+        types = ['data', 'ttjets', 'wjets1', 'wjets2','wjets3','wjets4','wjets5','wjets6','wjets7', 'st1', 'st2', 'pseudodata' ]        
 
         for itype, typee in enumerate(types):
 
@@ -112,8 +141,15 @@ def Wtag_SelectandCombine(argv) :
 
         if options.is80x:
             filesout = ['./output80x/pseudodata_combinedttree_afterSelection_80x_v1p2_puppi.root',
-                        './output80x/st_combinedttree_afterSelection_80x_v1p2_puppi.root',
-                        './output80x/wjets_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/st1_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/st2_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets1_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets2_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets3_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets4_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets5_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets6_combinedttree_afterSelection_80x_v1p2_puppi.root',
+                        './output80x/wjets7_combinedttree_afterSelection_80x_v1p2_puppi.root',
                         './output80x/ttjets_combinedttree_afterSelection_80x_v1p2_puppi.root',
                         './output80x/data_combinedttree_afterSelection_80x_v1p2_puppi.root']
         else:
@@ -155,6 +191,8 @@ def Wtag_SelectandCombine(argv) :
 
             FatJetSDbdiscW_         = array.array('f', [-1.])
             FatJetSDsubjetWpt_      = array.array('f', [-1.])
+            FatJetSDsubjetWEta_      = array.array('f', [-1.])
+            FatJetSDsubjetWPhi_      = array.array('f', [-1.])
             FatJetSDsubjetWmass_    = array.array('f', [-1.])
             FatJetSDsubjetWtau1_    = array.array('f', [-1.])
             FatJetSDsubjetWtau2_    = array.array('f', [-1.])
@@ -201,6 +239,8 @@ def Wtag_SelectandCombine(argv) :
 
             treelist[ifileo].Branch('FatJetSDbdiscW'   , FatJetSDbdiscW_   ,  'FatJetSDbdiscW/F'   )
             treelist[ifileo].Branch('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt_   ,  'FatJetSDsubjetWpt/F'   )
+            treelist[ifileo].Branch('FatJetSDsubjetWEta'   , FatJetSDsubjetWEta_   ,  'FatJetSDsubjetWEta/F'   )
+            treelist[ifileo].Branch('FatJetSDsubjetWPhi'   , FatJetSDsubjetWPhi_   ,  'FatJetSDsubjetWPhi/F'   )
             treelist[ifileo].Branch('FatJetSDsubjetWmass' , FatJetSDsubjetWmass_ ,  'FatJetSDsubjetWmass/F' )
             treelist[ifileo].Branch('FatJetSDsubjetWtau1'   , FatJetSDsubjetWtau1_   ,  'FatJetSDsubjetWtau1/F'   )
             treelist[ifileo].Branch('FatJetSDsubjetWtau2'   , FatJetSDsubjetWtau2_   ,  'FatJetSDsubjetWtau2/F'   )
@@ -231,8 +271,15 @@ def Wtag_SelectandCombine(argv) :
         if options.is80x :  
             fout= ROOT.TFile('./output80x/Wmass_pt_binned_CombinedTrees_80x_' + options.filestr + '.root', "RECREATE")
             filesin = [ './output80x/pseudodata_combinedttree_80x_v1p2_puppi.root',
-                        './output80x/st_combinedttree_80x_v1p2_puppi.root',
-                        './output80x/wjets_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/st1_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/st2_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets1_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets2_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets3_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets4_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets5_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets6_combinedttree_80x_v1p2_puppi.root',
+                        './output80x/wjets7_combinedttree_80x_v1p2_puppi.root',
                         './output80x/ttjets_combinedttree_80x_v1p2_puppi.root',
                         './output80x/data_combinedttree_80x_v1p2_puppi.root']
         else :  
@@ -254,7 +301,7 @@ def Wtag_SelectandCombine(argv) :
                             '../SalTrees/b2gttbar_ttrees/singlemu_ttree_76x_v1p2_puppi.root' ]
 
     binlimit = 200.
-    numbins = 200
+    numbins = 300
 
     '''
     Wsj_tt = []
@@ -356,18 +403,80 @@ def Wtag_SelectandCombine(argv) :
     h_mWsubjet_b3_ttjets  = ROOT.TH1F("h_mWsubjet_b3_ttjets", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b4_ttjets  = ROOT.TH1F("h_mWsubjet_b4_ttjets", "; ;  ", numbins, 0, binlimit)
 
+    h_mWsubjet_wjets = ROOT.TH1F("h_mWsubjet_wjets", "; ; ", numbins, 0, binlimit)
+    h_ptWsubjet_wjets = ROOT.TH1F("h_ptWsubjet_wjets", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+
+    h_mWsubjet_b1_wjets  = ROOT.TH1F("h_mWsubjet_b1_wjets", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets  = ROOT.TH1F("h_mWsubjet_b2_wjets", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets  = ROOT.TH1F("h_mWsubjet_b3_wjets", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets  = ROOT.TH1F("h_mWsubjet_b4_wjets", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets1  = ROOT.TH1F("h_mWsubjet_b1_wjets1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets1  = ROOT.TH1F("h_mWsubjet_b2_wjets1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets1  = ROOT.TH1F("h_mWsubjet_b3_wjets1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets1  = ROOT.TH1F("h_mWsubjet_b4_wjets1", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets2  = ROOT.TH1F("h_mWsubjet_b1_wjets2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets2  = ROOT.TH1F("h_mWsubjet_b2_wjets2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets2  = ROOT.TH1F("h_mWsubjet_b3_wjets2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets2  = ROOT.TH1F("h_mWsubjet_b4_wjets2", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets3  = ROOT.TH1F("h_mWsubjet_b1_wjets3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets3  = ROOT.TH1F("h_mWsubjet_b2_wjets3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets3  = ROOT.TH1F("h_mWsubjet_b3_wjets3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets3  = ROOT.TH1F("h_mWsubjet_b4_wjets3", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets4  = ROOT.TH1F("h_mWsubjet_b1_wjets4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets4  = ROOT.TH1F("h_mWsubjet_b2_wjets4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets4  = ROOT.TH1F("h_mWsubjet_b3_wjets4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets4  = ROOT.TH1F("h_mWsubjet_b4_wjets4", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets5  = ROOT.TH1F("h_mWsubjet_b1_wjets5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets5  = ROOT.TH1F("h_mWsubjet_b2_wjets5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets5  = ROOT.TH1F("h_mWsubjet_b3_wjets5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets5  = ROOT.TH1F("h_mWsubjet_b4_wjets5", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets6  = ROOT.TH1F("h_mWsubjet_b1_wjets6", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets6  = ROOT.TH1F("h_mWsubjet_b2_wjets6", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets6  = ROOT.TH1F("h_mWsubjet_b3_wjets6", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets6  = ROOT.TH1F("h_mWsubjet_b4_wjets6", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjets7  = ROOT.TH1F("h_mWsubjet_b1_wjets7", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjets7  = ROOT.TH1F("h_mWsubjet_b2_wjets7", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjets7  = ROOT.TH1F("h_mWsubjet_b3_wjets7", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjets7  = ROOT.TH1F("h_mWsubjet_b4_wjets7", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_st = ROOT.TH1F("h_mWsubjet_st", "; ; ", numbins, 0, binlimit)
+    h_ptWsubjet_st = ROOT.TH1F("h_ptWsubjet_st", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+
+    h_mWsubjet_b1_st  = ROOT.TH1F("h_mWsubjet_b1_st", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_st  = ROOT.TH1F("h_mWsubjet_b2_st", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_st  = ROOT.TH1F("h_mWsubjet_b3_st", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_st  = ROOT.TH1F("h_mWsubjet_b4_st", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_st1  = ROOT.TH1F("h_mWsubjet_b1_st1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_st1  = ROOT.TH1F("h_mWsubjet_b2_st1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_st1  = ROOT.TH1F("h_mWsubjet_b3_st1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_st1  = ROOT.TH1F("h_mWsubjet_b4_st1", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_st2  = ROOT.TH1F("h_mWsubjet_b1_st2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_st2  = ROOT.TH1F("h_mWsubjet_b2_st2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_st2  = ROOT.TH1F("h_mWsubjet_b3_st2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_st2  = ROOT.TH1F("h_mWsubjet_b4_st2", "; ;  ", numbins, 0, binlimit)
+
+
     h_mWjet_b1_ttjets  = ROOT.TH1F("h_mWjet_b1_ttjets", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
     h_mWjet_b2_ttjets  = ROOT.TH1F("h_mWjet_b2_ttjets", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
     h_mWjet_b3_ttjets  = ROOT.TH1F("h_mWjet_b3_ttjets", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
     h_mWjet_b4_ttjets  = ROOT.TH1F("h_mWjet_b4_ttjets", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
 
-    h_mWsubjet_EleData = ROOT.TH1F("h_mWsubjet_EleData", "; ;  ", numbins, 0, binlimit)
-    h_ptWsubjet_EleData = ROOT.TH1F("h_ptWsubjet_EleData", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+    h_mWsubjet_ElData = ROOT.TH1F("h_mWsubjet_ElData", "; ;  ", numbins, 0, binlimit)
+    h_ptWsubjet_ElData = ROOT.TH1F("h_ptWsubjet_ElData", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
 
-    h_mWsubjet_b1_EleData  = ROOT.TH1F("h_mWsubjet_b1_EleData", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2_EleData  = ROOT.TH1F("h_mWsubjet_b2_EleData", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3_EleData  = ROOT.TH1F("h_mWsubjet_b3_EleData", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4_EleData  = ROOT.TH1F("h_mWsubjet_b4_EleData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1_ElData  = ROOT.TH1F("h_mWsubjet_b1_ElData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_ElData  = ROOT.TH1F("h_mWsubjet_b2_ElData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_ElData  = ROOT.TH1F("h_mWsubjet_b3_ElData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_ElData  = ROOT.TH1F("h_mWsubjet_b4_ElData", "; ;  ", numbins, 0, binlimit)
 
     h_mWsubjet_MuData = ROOT.TH1F("h_mWsubjet_MuData", "; ;  ", numbins, 0, binlimit)
     h_ptWsubjet_MuData = ROOT.TH1F("h_ptWsubjet_MuData", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
@@ -393,6 +502,69 @@ def Wtag_SelectandCombine(argv) :
     h_mWsubjet_b3_ttjetsp  = ROOT.TH1F("h_mWsubjet_b3_ttjetsp", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b4_ttjetsp  = ROOT.TH1F("h_mWsubjet_b4_ttjetsp", "; ;  ", numbins, 0, binlimit)
 
+    h_mWsubjet_wjetsp = ROOT.TH1F("h_mWsubjet_wjetsp", "; ;  ", numbins, 0, binlimit)
+    h_ptWsubjet_wjetsp = ROOT.TH1F("h_ptWsubjet_wjetsp", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+
+    h_mWsubjet_b1_wjetsp  = ROOT.TH1F("h_mWsubjet_b1_wjetsp", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp  = ROOT.TH1F("h_mWsubjet_b2_wjetsp", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp  = ROOT.TH1F("h_mWsubjet_b3_wjetsp", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp  = ROOT.TH1F("h_mWsubjet_b4_wjetsp", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp1  = ROOT.TH1F("h_mWsubjet_b1_wjetsp1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp1  = ROOT.TH1F("h_mWsubjet_b2_wjetsp1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp1  = ROOT.TH1F("h_mWsubjet_b3_wjetsp1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp1  = ROOT.TH1F("h_mWsubjet_b4_wjetsp1", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp2  = ROOT.TH1F("h_mWsubjet_b1_wjetsp2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp2  = ROOT.TH1F("h_mWsubjet_b2_wjetsp2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp2  = ROOT.TH1F("h_mWsubjet_b3_wjetsp2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp2  = ROOT.TH1F("h_mWsubjet_b4_wjetsp2", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp3  = ROOT.TH1F("h_mWsubjet_b1_wjetsp3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp3  = ROOT.TH1F("h_mWsubjet_b2_wjetsp3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp3  = ROOT.TH1F("h_mWsubjet_b3_wjetsp3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp3  = ROOT.TH1F("h_mWsubjet_b4_wjetsp3", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp4  = ROOT.TH1F("h_mWsubjet_b1_wjetsp4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp4  = ROOT.TH1F("h_mWsubjet_b2_wjetsp4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp4  = ROOT.TH1F("h_mWsubjet_b3_wjetsp4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp4  = ROOT.TH1F("h_mWsubjet_b4_wjetsp4", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp5  = ROOT.TH1F("h_mWsubjet_b1_wjetsp5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp5  = ROOT.TH1F("h_mWsubjet_b2_wjetsp5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp5  = ROOT.TH1F("h_mWsubjet_b3_wjetsp5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp5  = ROOT.TH1F("h_mWsubjet_b4_wjetsp5", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp6  = ROOT.TH1F("h_mWsubjet_b1_wjetsp6", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp6  = ROOT.TH1F("h_mWsubjet_b2_wjetsp6", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp6  = ROOT.TH1F("h_mWsubjet_b3_wjetsp6", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp6  = ROOT.TH1F("h_mWsubjet_b4_wjetsp6", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_wjetsp7  = ROOT.TH1F("h_mWsubjet_b1_wjetsp7", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_wjetsp7  = ROOT.TH1F("h_mWsubjet_b2_wjetsp7", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_wjetsp7  = ROOT.TH1F("h_mWsubjet_b3_wjetsp7", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_wjetsp7  = ROOT.TH1F("h_mWsubjet_b4_wjetsp7", "; ;  ", numbins, 0, binlimit)
+
+
+    h_mWsubjet_stp = ROOT.TH1F("h_mWsubjet_stp", "; ;  ", numbins, 0, binlimit)
+    h_ptWsubjet_stp = ROOT.TH1F("h_ptWsubjet_stp", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+
+    h_mWsubjet_b1_stp  = ROOT.TH1F("h_mWsubjet_b1_stp", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_stp  = ROOT.TH1F("h_mWsubjet_b2_stp", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_stp  = ROOT.TH1F("h_mWsubjet_b3_stp", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_stp  = ROOT.TH1F("h_mWsubjet_b4_stp", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_stp1  = ROOT.TH1F("h_mWsubjet_b1_stp1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_stp1  = ROOT.TH1F("h_mWsubjet_b2_stp1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_stp1  = ROOT.TH1F("h_mWsubjet_b3_stp1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_stp1  = ROOT.TH1F("h_mWsubjet_b4_stp1", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_b1_stp2  = ROOT.TH1F("h_mWsubjet_b1_stp2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_stp2  = ROOT.TH1F("h_mWsubjet_b2_stp2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_stp2  = ROOT.TH1F("h_mWsubjet_b3_stp2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_stp2  = ROOT.TH1F("h_mWsubjet_b4_stp2", "; ;  ", numbins, 0, binlimit)
+
+
     h_mWsubjet_Datap = ROOT.TH1F("h_mWsubjet_Datap", "; ;  ", numbins, 0, binlimit)
     h_ptWsubjet_Datap = ROOT.TH1F("h_ptWsubjet_Datap", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
 
@@ -400,6 +572,22 @@ def Wtag_SelectandCombine(argv) :
     h_mWsubjet_b2_Datap  = ROOT.TH1F("h_mWsubjet_b2_Datap", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b3_Datap  = ROOT.TH1F("h_mWsubjet_b3_Datap", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b4_Datap  = ROOT.TH1F("h_mWsubjet_b4_Datap", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_MuDatap = ROOT.TH1F("h_mWsubjet_MuDatap", "; ;  ", numbins, 0, binlimit)
+    h_ptWsubjet_MuDatap = ROOT.TH1F("h_ptWsubjet_MuDatap", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+
+    h_mWsubjet_b1_MuDatap  = ROOT.TH1F("h_mWsubjet_b1_MuDatap", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_MuDatap  = ROOT.TH1F("h_mWsubjet_b2_MuDatap", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_MuDatap  = ROOT.TH1F("h_mWsubjet_b3_MuDatap", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_MuDatap  = ROOT.TH1F("h_mWsubjet_b4_MuDatap", "; ;  ", numbins, 0, binlimit)
+
+    h_mWsubjet_ElDatap = ROOT.TH1F("h_mWsubjet_ElDatap", "; ;  ", numbins, 0, binlimit)
+    h_ptWsubjet_ElDatap = ROOT.TH1F("h_ptWsubjet_ElDatap", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
+
+    h_mWsubjet_b1_ElDatap  = ROOT.TH1F("h_mWsubjet_b1_ElDatap", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2_ElDatap  = ROOT.TH1F("h_mWsubjet_b2_ElDatap", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3_ElDatap  = ROOT.TH1F("h_mWsubjet_b3_ElDatap", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4_ElDatap  = ROOT.TH1F("h_mWsubjet_b4_ElDatap", "; ;  ", numbins, 0, binlimit)
 
     h_mWjet_Data = ROOT.TH1F("h_mWjet_Data", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
     h_ptWjet_Data = ROOT.TH1F("h_ptWjet_Data", ";P_{T} SD jet0 (GeV);  ", 1300, 0, 1300)
@@ -431,13 +619,13 @@ def Wtag_SelectandCombine(argv) :
     h_ptWsubjet_MC_Type1 = ROOT.TH1F("h_ptWsubjet_MC_Type1", ";Jet P_{T} (GeV); ", 80, 0, 1500) # SD subjet0 
     h_ptWsubjet_MC_Type2 = ROOT.TH1F("h_ptWsubjet_MC_Type2", ";Jet P_{T} (GeV); ", 80, 0, 1500)#of leading AK8 jet
 
-    h_mWjet_EleData = ROOT.TH1F("h_mWjet_EleData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
-    h_ptWjet_EleData = ROOT.TH1F("h_ptWjet_EleData", ";P_{T} SD jet0 (GeV);  ", 1300, 0, 1300)
+    h_mWjet_ElData = ROOT.TH1F("h_mWjet_ElData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
+    h_ptWjet_ElData = ROOT.TH1F("h_ptWjet_ElData", ";P_{T} SD jet0 (GeV);  ", 1300, 0, 1300)
 
-    h_mWjet_b1_EleData  = ROOT.TH1F("h_mWjet_b1_EleData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
-    h_mWjet_b2_EleData  = ROOT.TH1F("h_mWjet_b2_EleData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
-    h_mWjet_b3_EleData  = ROOT.TH1F("h_mWjet_b3_EleData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
-    h_mWjet_b4_EleData  = ROOT.TH1F("h_mWjet_b4_EleData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
+    h_mWjet_b1_ElData  = ROOT.TH1F("h_mWjet_b1_ElData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
+    h_mWjet_b2_ElData  = ROOT.TH1F("h_mWjet_b2_ElData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
+    h_mWjet_b3_ElData  = ROOT.TH1F("h_mWjet_b3_ElData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
+    h_mWjet_b4_ElData  = ROOT.TH1F("h_mWjet_b4_ElData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
 
     h_mWjet_MuData = ROOT.TH1F("h_mWjet_MuData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
     h_ptWjet_MuData = ROOT.TH1F("h_ptWjet_MuData", ";P_{T} SD jet0 (GeV);  ", 1300, 0, 1300)
@@ -629,6 +817,8 @@ def Wtag_SelectandCombine(argv) :
             FatJetSDnsubjets    = array.array('f', [-1.])
             FatJetSDmaxbdisc    = array.array('f', [-1.])
             FatJetSDsubjetWpt   = array.array('f', [-1.])
+            FatJetSDsubjetWEta   = array.array('f', [-1.])
+            FatJetSDsubjetWPhi   = array.array('f', [-1.])
             FatJetSDsubjetWmass = array.array('f', [-1.])
             FatJetSDsubjetWtau1   = array.array('f', [-1.])
             FatJetSDsubjetWtau2   = array.array('f', [-1.])
@@ -734,6 +924,8 @@ def Wtag_SelectandCombine(argv) :
             t.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
             t.SetBranchAddress('FatJetSDbdiscB'      , FatJetSDbdiscB      )
             t.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
+            t.SetBranchAddress('FatJetSDsubjetWEta'   , FatJetSDsubjetWEta )
+            t.SetBranchAddress('FatJetSDsubjetWPhi'   , FatJetSDsubjetWPhi )
             t.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
             t.SetBranchAddress('FatJetSDsubjetWtau1' , FatJetSDsubjetWtau1 )
             t.SetBranchAddress('FatJetSDsubjetWtau2' , FatJetSDsubjetWtau2 )
@@ -802,6 +994,8 @@ def Wtag_SelectandCombine(argv) :
             t.SetBranchStatus('FatJetSDsubjetWtau21',1)
             t.SetBranchStatus('FatJetSDsubjetWtau32',1)
             t.SetBranchStatus('FatJetSDbdiscW',1)
+            t.SetBranchStatus('FatJetSDsubjetWEta',1)
+            t.SetBranchStatus('FatJetSDsubjetWPhi',1)
             t.SetBranchStatus('FatJetSDsubjetBtau1',1)
             t.SetBranchStatus('FatJetSDsubjetBtau2',1)
             t.SetBranchStatus('FatJetSDsubjetBtau3',1)
@@ -890,16 +1084,27 @@ def Wtag_SelectandCombine(argv) :
             #tau2 = FatJetTau2[0]
             #tau1 = FatJetTau1[0]
             tau32 = FatJetTau32[0]
-            #tau21 = FatJetTau21[0]
+            tau21 = FatJetTau21[0]
            #mass_sd = FatJetMassSoftDrop[0]
 
 
             W_m = FatJetSDsubjetWmass[0]
             W_pt = FatJetSDsubjetWpt[0]
+            W_eta = -5.
+            W_phi = -10000.
             W_tau1 = FatJetSDsubjetWtau1[0]
             W_tau2 = FatJetSDsubjetWtau2[0]
             W_tau3 = FatJetSDsubjetWtau3[0]
             W_bdisc = FatJetSDbdiscW[0]
+
+            #applying Thea's corrections
+            if options.applyTheaCorr :
+                W_mRaw = FatJetSDsubjetWmassRaw[0]
+                W_ptRaw = FatJetSDsubjetWptRaw[0]
+                W_eta = FatJetSDsubjetWEta[0]
+                W_phi = FatJetSDsubjetWPhi[0]
+                puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
+                W_m = FatJetSDsubjetWmass[0] * puppiCorr
 
             if not options.is80x :
                 if  W_tau1 > 0.001 :
@@ -962,7 +1167,7 @@ def Wtag_SelectandCombine(argv) :
             #print "tau21 w is :" + str(W_tau21)
             passWPosttag = W_tau21 < options.tau21Cut  and W_tau21 > 0.1   #W_tau21 < 0.6 
             passWPost2M = (50.0 < W_m < 150.)  #(55. < FatJetSD_m < 105.)
-            #passWPost2tau = tau21 < options.tau21Cut
+            passWPost2tau = tau21 < options.tau21Cut
             passEleMETcut =  LeptonType[0] == 1 and MET_pt > 120. and LepPt > 55. #110.
             # B2G-15-002  uses ( theLepton.Perp() + MET_pt ) > 150. (was previously 250 here) 
             passMuHtLepcut = LeptonType[0] == 2 and ( LepPt + MET_pt ) > 150. and LepPt > 55.
@@ -995,6 +1200,14 @@ def Wtag_SelectandCombine(argv) :
                 #print "Pt of W tagged AK8 jet for events 5 and 500 : " + str( W_pt)      
             if  (passTopTag and pass2DCut and passLepcut and passHemidPhi) : # and passBtag :  
                 if options.verbose and (15. < W_m < 40.): print "Fat Jet: SD Mass {0:6.3}, Pt {1:6.3}, tau32 {2:0.4} - W Subjet: SD Mass {3:6.3}, Pt {4:6.3}, tau21 {5:0.4} - dphiLepFat {6:6.3} ".format(FatJetSD_m, FatJetSD_pt, tau32, W_m, W_pt, W_tau21, DeltaPhiLepFat[0] )
+                #print "SD pt of W subjet {0:6.3} and Pt is {1:6.3}".format()
+                if passKin2 :
+                    if passWPost2tau :
+                        if passWPost2M :     
+                            if (ifile == 11) :
+                                h_ptWsubjet_Data_Type2.Fill(W_pt,TheWeight)
+                            if (ifile == 10 ) : #ttjets.root
+                                h_ptWsubjet_MC_Type2.Fill(W_pt,TheWeight )
                 if passKin :
                     #if ( ifile == 1 or ifile == 2 ):
                     #    h_ptWsubjet_Data_Type1.Fill(W_pt, 1)
@@ -1013,9 +1226,11 @@ def Wtag_SelectandCombine(argv) :
                         #FatJetTau2_          [0] = tau2
                         #FatJetTau3_          [0] = tau3
                         FatJetTau32_         [0] = tau32
-                        #FatJetTau21_         [0] = tau21
+                        FatJetTau21_         [0] = tau21
 
                         FatJetSDsubjetWpt_   [0] = W_pt
+                        FatJetSDsubjetWEta_   [0] = W_eta
+                        FatJetSDsubjetWPhi_   [0] = W_phi
                         FatJetSDsubjetWmass_ [0] = W_m
                         FatJetSDsubjetWtau1_ [0] = W_tau1
                         FatJetSDsubjetWtau2_ [0] = W_tau2
@@ -1046,116 +1261,989 @@ def Wtag_SelectandCombine(argv) :
                         
 
                     fout.cd() 
-                    if (ifile == 3 ): #ttjets
-                        h_mWsubjet_ttjetsp.Fill(W_m , 1 )
-                        h_ptWsubjet_ttjetsp.Fill(W_pt , 1 )
+
+                    TheWeight = 1. # weightS
+
+                    if (ifile == 1 ): #st top
+                        #h_mWsubjet_stp.Fill(W_m ,TheWeight )
+                        #h_ptWsubjet_stp.Fill(W_pt , TheWeight )
 
                         if ( W_pt > 200.0 and W_pt < 300.0 ) :
                             #Wsj_ttp[0].Fill(W_m , 1 )
-                            h_mWsubjet_b1_ttjetsp.Fill(W_m , 1 )
+                            h_mWsubjet_b1_stp1.Fill(W_m , TheWeight )
 
                         if ( W_pt > 300.0 and W_pt < 400.0 ) :
                             #Wsj_ttp[1].Fill(W_m , 1 )                           
-                            h_mWsubjet_b2_ttjetsp.Fill(W_m , 1 )
+                            h_mWsubjet_b2_stp1.Fill(W_m ,TheWeight )
                         if ( W_pt > 400.0 and W_pt < 500.0 ) : 
                             #Wsj_ttp[2].Fill(W_m , 1 )
-                            h_mWsubjet_b3_ttjetsp.Fill(W_m , 1 )
+                            h_mWsubjet_b3_stp1.Fill(W_m ,TheWeight )
                         if ( W_pt > 500.0 ) : 
                             #Wsj_ttp[3].Fill(W_m , 1 )
-                            h_mWsubjet_b4_ttjetsp.Fill(W_m , 1 )
-                    if (ifile == 4 ):
-                        h_mWsubjet_Datap.Fill(W_m , 1 )
-                        h_ptWsubjet_Datap.Fill(W_pt , 1 )
+                            h_mWsubjet_b4_stp1.Fill(W_m , TheWeight )
+                    if (ifile == 2 ): #st antitop
+                        #h_mWsubjet_stp.Fill(W_m ,TheWeight )
+                        #h_ptWsubjet_stp.Fill(W_pt , TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_stp2.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_stp2.Fill(W_m ,TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_stp2.Fill(W_m ,TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_stp2.Fill(W_m , TheWeight )
+                    if (ifile == 3 ): #wjets1 - 100to200  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp1.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp1.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp1.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp1.Fill(W_m , TheWeight )
+                    if (ifile == 4 ): #wjets2 - 200to400  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp2.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp2.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp2.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp2.Fill(W_m , TheWeight )
+                    if (ifile == 5 ): #wjets3 - 400to600  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp3.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp3.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp3.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp3.Fill(W_m , TheWeight )
+                    if (ifile == 6 ): #wjets4 - 600to800  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp4.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp4.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp4.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp4.Fill(W_m , TheWeight )
+                    if (ifile == 7 ): #wjets5 - 800to1200  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp5.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp5.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp5.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp5.Fill(W_m , TheWeight )
+                    if (ifile == 8 ): #wjets6 - 1200to2500  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp6.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp6.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp6.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp6.Fill(W_m , TheWeight )
+                    if (ifile == 9 ): #wjets7 - 2500toInf  
+                        #h_mWsubjet_wjetsp.Fill(W_m ,TheWeight)
+                        #h_ptWsubjet_wjetsp.Fill(W_pt ,TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_wjetsp7.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_wjetsp7.Fill(W_m , TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_wjetsp7.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_wjetsp7.Fill(W_m , TheWeight )
+
+                    if (ifile == 10 ): #ttjets
+                        h_mWsubjet_wjetsp.Fill(W_m , TheWeight )
+                        h_ptWsubjet_wjetsp.Fill(W_pt , TheWeight )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                            #Wsj_ttp[0].Fill(W_m , 1 )
+                            h_mWsubjet_b1_ttjetsp.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                            #Wsj_ttp[1].Fill(W_m , 1 )                           
+                            h_mWsubjet_b2_ttjetsp.Fill(W_m ,TheWeight )
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            #Wsj_ttp[2].Fill(W_m , 1 )
+                            h_mWsubjet_b3_ttjetsp.Fill(W_m , TheWeight )
+                        if ( W_pt > 500.0 ) : 
+                            #Wsj_ttp[3].Fill(W_m , 1 )
+                            h_mWsubjet_b4_ttjetsp.Fill(W_m , TheWeight )
+                    if (ifile == 11) and LeptonType[0] == 1 and W_m > 0.1 : 
+                        h_mWsubjet_ElDatap.Fill(W_m , TheWeight )
+                        h_ptWsubjet_ElDatap.Fill(W_pt , TheWeight  )
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) : 
+                            h_mWsubjet_b1_ElDatap.Fill(W_m ,TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) : 
+                            h_mWsubjet_b2_ElDatap.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            h_mWsubjet_b3_ElDatap.Fill(W_m , TheWeight)
+
+                        if ( W_pt > 500.0 ) : 
+                            h_mWsubjet_b4_ElDatap.Fill(W_m , TheWeight )
+                        
+                    if (ifile == 11 ) and LeptonType[0] == 2 and W_m > 0.1 :
+                        h_mWsubjet_MuDatap.Fill(W_m , TheWeight )
+                        h_ptWsubjet_MuDatap.Fill(W_pt , TheWeight)
+
+                        if ( W_pt > 200.0 and W_pt < 300.0 ) : 
+                            h_mWsubjet_b1_MuDatap.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 300.0 and W_pt < 400.0 ) : 
+                            h_mWsubjet_b2_MuDatap.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                            h_mWsubjet_b3_MuDatap.Fill(W_m , TheWeight )
+
+                        if ( W_pt > 500.0 ) : 
+                            h_mWsubjet_b4_MuDatap.Fill(W_m , TheWeight ) 
+                    if (ifile == 11 ):
+                        h_mWsubjet_Datap.Fill(W_m , TheWeight )
+                        h_ptWsubjet_Datap.Fill(W_pt , TheWeight )
 
                         if ( W_pt > 200.0 and W_pt < 300.0 ) :
                             #Wsj_datap[0].Fill(W_m , 1 )
-                            h_mWsubjet_b1_Datap.Fill(W_m , 1 )
+                            h_mWsubjet_b1_Datap.Fill(W_m ,TheWeight )
 
                         if ( W_pt > 300.0 and W_pt < 400.0 ) : 
                             #Wsj_datap[1].Fill(W_m , 1 )
-                            h_mWsubjet_b2_Datap.Fill(W_m , 1 )
+                            h_mWsubjet_b2_Datap.Fill(W_m , TheWeight )
 
                         if ( W_pt > 400.0 and W_pt < 500.0 ) : 
                             #Wsj_datap[2].Fill(W_m , 1 )
-                            h_mWsubjet_b3_Datap.Fill(W_m , 1 )
+                            h_mWsubjet_b3_Datap.Fill(W_m , TheWeight )
 
                         if ( W_pt > 500.0 ) : 
                             #Wsj_datap[3].Fill(W_m , 1 )
-                            h_mWsubjet_b4_Datap.Fill(W_m , 1 )
+                            h_mWsubjet_b4_Datap.Fill(W_m , TheWeight )
                     if passWPosttag :
                         passOp += 1 
-                        if (ifile == 3 ): #ttjets.root
+                        if (ifile == 1 ): #st top
+                            #h_mWsubjet_st.Fill(W_m , TheWeight )
+                            #h_ptWsubjet_st.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_st1.Fill(W_m , TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_st1.Fill(W_m , TheWeight )
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_st1.Fill(W_m ,TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_st1.Fill(W_m , TheWeight )
+                        if (ifile == 2 ): #st antitop
+                            #h_mWsubjet_st.Fill(W_m , TheWeight )
+                            #h_ptWsubjet_st.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_st2.Fill(W_m , TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_st2.Fill(W_m , TheWeight )
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_st2.Fill(W_m ,TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_st2.Fill(W_m , TheWeight )
+                        if (ifile == 3): #wjets1 - 100to200  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets1.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets1.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets1.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets1.Fill(W_m , TheWeight )
+                        if (ifile == 4): #wjets2 - 200to400  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets2.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets2.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets2.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets2.Fill(W_m , TheWeight )
+                        if (ifile == 5): #wjets3 - 400to600  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets3.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets3.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets3.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets3.Fill(W_m , TheWeight )
+                        if (ifile == 6): #wjets4 - 600to800  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets4.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets4.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets4.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets4.Fill(W_m , TheWeight )
+                        if (ifile == 7): #wjets5 - 800to1200  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets5.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets5.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets5.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets5.Fill(W_m , TheWeight )
+                        if (ifile == 8): #wjets6 - 1200to2500  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets6.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets6.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets6.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets6.Fill(W_m , TheWeight )
+                        if (ifile == 9): #wjets7 - 2500toInf  
+                            # h_mWsubjet_wjets.Fill(W_m , TheWeight)
+                            #h_ptWsubjet_wjets.Fill(W_pt , TheWeight )
+
+                            if ( W_pt > 200.0 and W_pt < 300.0 ) :
+                                #Wsj_ttp[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_wjets7.Fill(W_m ,TheWeight )
+
+                            if ( W_pt > 300.0 and W_pt < 400.0 ) :
+                                #Wsj_ttp[1].Fill(W_m , 1 )                           
+                                h_mWsubjet_b2_wjets7.Fill(W_m , TheWeight)
+                            if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                                #Wsj_ttp[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_wjets7.Fill(W_m , TheWeight )
+                            if ( W_pt > 500.0 ) : 
+                                #Wsj_ttp[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_wjets7.Fill(W_m , TheWeight )
+
+                        if (ifile == 10 ): #ttjets
                             if passWPostM  : 
-                                h_ptWsubjet_MC_Type1.Fill(W_pt, 1)
-                            h_mWsubjet_ttjets.Fill(W_m , 1 )
-                            h_ptWsubjet_ttjets.Fill(W_pt , 1 )
+                                h_ptWsubjet_MC_Type1.Fill(W_pt,TheWeight )
+                            h_mWsubjet_ttjets.Fill(W_m , TheWeight )
+                            h_ptWsubjet_ttjets.Fill(W_pt , TheWeight )
 
                             if ( W_pt > 200.0 and W_pt < 300.0 ) :
                                 #Wsj_tt[0].Fill(W_m , 1 )
-                                h_mWsubjet_b1_ttjets.Fill(W_m , 1 )
+                                h_mWsubjet_b1_ttjets.Fill(W_m , TheWeight )
                             if ( W_pt > 300.0 and W_pt < 400.0 ) :
                                 #Wsj_tt[1].Fill(W_m , 1 )                           
-                                h_mWsubjet_b2_ttjets.Fill(W_m , 1 )
+                                h_mWsubjet_b2_ttjets.Fill(W_m , TheWeight )
                             if ( W_pt > 400.0 and W_pt < 500.0 ) : 
                                 #Wsj_tt[2].Fill(W_m , 1 )
-                                h_mWsubjet_b3_ttjets.Fill(W_m , 1 )
+                                h_mWsubjet_b3_ttjets.Fill(W_m , TheWeight )
                             if ( W_pt > 500.0 ) : 
                                 #Wsj_tt[3].Fill(W_m , 1 )
-                                h_mWsubjet_b4_ttjets.Fill(W_m , 1 )
-                            '''
-                        if (ifile == 1  ):
-                            h_mWsubjet_EleData.Fill(W_m , 1 )
-                            h_ptWsubjet_EleData.Fill(W_pt , 1 )
+                                h_mWsubjet_b4_ttjets.Fill(W_m , TheWeight )
+                        if (ifile == 11) and LeptonType[0] == 1 and W_m > 0.1 : 
+                            h_mWsubjet_ElData.Fill(W_m , TheWeight )
+                            h_ptWsubjet_ElData.Fill(W_pt , TheWeight )
 
                             if ( W_pt > 200.0 and W_pt < 300.0 ) : 
-                                #Wsj_el[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_ElData.Fill(W_m , TheWeight )
 
                             if ( W_pt > 300.0 and W_pt < 400.0 ) : 
-                                #Wsj_el[1].Fill(W_m , 1 )
+                                h_mWsubjet_b2_ElData.Fill(W_m , TheWeight )
 
                             if ( W_pt > 400.0 and W_pt < 500.0 ) : 
-                                #Wsj_el[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_ElData.Fill(W_m , TheWeight )
 
                             if ( W_pt > 500.0 ) : 
-                                #Wsj_el[3].Fill(W_m , 1 )
+                                h_mWsubjet_b4_ElData.Fill(W_m , TheWeight )
                             
-                        if (ifile == 2 ):
-                            h_mWsubjet_MuData.Fill(W_m , 1 )
-                            h_ptWsubjet_MuData.Fill(W_pt , 1 )
+                        if (ifile == 11) and LeptonType[0] == 2 and W_m > 0.1 :
+                            h_mWsubjet_MuData.Fill(W_m , TheWeight )
+                            h_ptWsubjet_MuData.Fill(W_pt , TheWeight )
 
                             if ( W_pt > 200.0 and W_pt < 300.0 ) : 
-                                #Wsj_mu[0].Fill(W_m , 1 )
+                                h_mWsubjet_b1_MuData.Fill(W_m , TheWeight )
 
                             if ( W_pt > 300.0 and W_pt < 400.0 ) : 
-                                #Wsj_mu[1].Fill(W_m , 1 )
+                                h_mWsubjet_b2_MuData.Fill(W_m , TheWeight )
 
                             if ( W_pt > 400.0 and W_pt < 500.0 ) : 
-                                #Wsj_mu[2].Fill(W_m , 1 )
+                                h_mWsubjet_b3_MuData.Fill(W_m , TheWeight )
 
                             if ( W_pt > 500.0 ) : 
-                                #Wsj_mu[3].Fill(W_m , 1 )
-                            '''
-                        if (ifile == 4 ):
+                                h_mWsubjet_b4_MuData.Fill(W_m , TheWeight ) 
+                            
+                        if (ifile == 11 ):
                             if passWPostM : 
-                                h_ptWsubjet_Data_Type1.Fill(W_pt, 1)
-                            h_mWsubjet_Data.Fill(W_m , 1 )
-                            h_ptWsubjet_Data.Fill(W_pt , 1 )
+                                h_ptWsubjet_Data_Type1.Fill(W_pt,TheWeight)
+                            h_mWsubjet_Data.Fill(W_m , TheWeight )
+                            h_ptWsubjet_Data.Fill(W_pt , TheWeight )
 
                             if ( W_pt > 200.0 and W_pt < 300.0 ) : 
                                  #Wsj_data[0].Fill(W_m , 1 )
-                                h_mWsubjet_b1_Data.Fill(W_m , 1 ) 
+                                h_mWsubjet_b1_Data.Fill(W_m , TheWeight) 
 
                             if ( W_pt > 300.0 and W_pt < 400.0 ) : 
                                 #Wsj_data[1].Fill(W_m , 1 )
-                                h_mWsubjet_b2_Data.Fill(W_m , 1 )
+                                h_mWsubjet_b2_Data.Fill(W_m , TheWeight )
 
                             if ( W_pt > 400.0 and W_pt < 500.0 ) : 
                                 #Wsj_data[2].Fill(W_m , 1 )
-                                h_mWsubjet_b3_Data.Fill(W_m , 1 )
+                                h_mWsubjet_b3_Data.Fill(W_m , TheWeight )
 
                             if ( W_pt > 500.0 ) : 
                                 #Wsj_data[3].Fill(W_m , 1 )
-                                h_mWsubjet_b4_Data.Fill(W_m , 1 )
+                                h_mWsubjet_b4_Data.Fill(W_m , TheWeight )
+    lumi = 12300.
+    # W + jets cross sections from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#W_jets
+    if h_mWsubjet_b1_wjets1.Integral() > 0 : 
+        h_mWsubjet_b1_wjets1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets 100to200 b1 empty"
+        h_mWsubjet_b1_wjets1.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp1.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets p 100to200 b1 empty"
+        h_mWsubjet_b1_wjetsp1.Scale( 0.)
+
+    if h_mWsubjet_b1_wjets2.Integral() > 0 : 
+        h_mWsubjet_b1_wjets2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets 200to400 b1 empty"
+        h_mWsubjet_b1_wjets2.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp2.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets p 200to400 b1 empty"
+        h_mWsubjet_b1_wjetsp2.Scale( 0.)
+
+    if h_mWsubjet_b1_wjets3.Integral() > 0 : 
+        h_mWsubjet_b1_wjets3.Scale(lumi * 48.91/ 1963464. ) 
+    else :
+        print "w+jets 400to600 b1 empty"
+        h_mWsubjet_b1_wjets3.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp3.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp3.Scale(lumi * 48.91/ 1963464.) 
+    else :
+        print "w+jets p 400to600 b1 empty"
+        h_mWsubjet_b1_wjetsp3.Scale( 0.)    
+
+    if h_mWsubjet_b1_wjets4.Integral() > 0 : 
+        h_mWsubjet_b1_wjets4.Scale(lumi *  12.05/  3722395.) 
+    else :
+        print "w+jets 600to800 b1 empty"
+        h_mWsubjet_b1_wjets4.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp4.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp4.Scale(lumi * 12.05 / 3722395. ) 
+    else :
+        print "w+jets p 600to800 b1 empty"
+        h_mWsubjet_b1_wjetsp4.Scale( 0.)
+
+    if h_mWsubjet_b1_wjets5.Integral() > 0 : 
+        h_mWsubjet_b1_wjets5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets 800to1200 b1 empty"
+        h_mWsubjet_b1_wjets5.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp5.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets p 800to1200 b1 empty"
+        h_mWsubjet_b1_wjetsp5.Scale( 0.)
+
+    if h_mWsubjet_b1_wjets6.Integral() > 0 : 
+        h_mWsubjet_b1_wjets6.Scale(lumi  * 1.329 / 6768156.) 
+    else :
+        print "w+jets 1200to2500 b1 empty"
+        h_mWsubjet_b1_wjets6.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp6.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp6.Scale(lumi * 1.329 / 6768156.) 
+    else :
+        print "w+jets p 1200to2500 b1 empty"
+        h_mWsubjet_b1_wjetsp6.Scale( 0.)
+
+    if h_mWsubjet_b1_wjets7.Integral() > 0 : 
+        h_mWsubjet_b1_wjets7.Scale(lumi * 0.03216 / 253561.) 
+    else :
+        print "w+jets 2500toInf b1 empty"
+        h_mWsubjet_b1_wjets7.Scale( 0.)
+    if h_mWsubjet_b1_wjetsp7.Integral() > 0 : 
+        h_mWsubjet_b1_wjetsp7.Scale(lumi * 0.03216 / 253561. ) 
+    else :
+        print "w+jets p 2500toInf empty"
+        h_mWsubjet_b1_wjetsp7.Scale( 0.)
+    # bin2
+    if h_mWsubjet_b2_wjets1.Integral() > 0 : 
+        h_mWsubjet_b2_wjets1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets 100to200 b2 empty"
+        h_mWsubjet_b2_wjets1.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp1.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets p 100to200 b2 empty"
+        h_mWsubjet_b2_wjetsp1.Scale( 0.)
+
+    if h_mWsubjet_b2_wjets2.Integral() > 0 : 
+        h_mWsubjet_b2_wjets2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets 200to400 b2 empty"
+        h_mWsubjet_b2_wjets2.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp2.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets p 200to400 b2 empty"
+        h_mWsubjet_b2_wjetsp2.Scale( 0.)
+
+    if h_mWsubjet_b2_wjets3.Integral() > 0 : 
+        h_mWsubjet_b2_wjets3.Scale(lumi * 48.91/ 1963464. ) 
+    else :
+        print "w+jets 400to600 b2 empty"
+        h_mWsubjet_b2_wjets3.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp3.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp3.Scale(lumi * 48.91/ 1963464.) 
+    else :
+        print "w+jets p 400to600 b2 empty"
+        h_mWsubjet_b2_wjetsp3.Scale( 0.)    
+
+    if h_mWsubjet_b2_wjets4.Integral() > 0 : 
+        h_mWsubjet_b2_wjets4.Scale(lumi *  12.05/  3722395.) 
+    else :
+        print "w+jets 600to800 b2 empty"
+        h_mWsubjet_b2_wjets4.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp4.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp4.Scale(lumi * 12.05 / 3722395. ) 
+    else :
+        print "w+jets p 600to800 b2 empty"
+        h_mWsubjet_b2_wjetsp4.Scale( 0.)
+
+    if h_mWsubjet_b2_wjets5.Integral() > 0 : 
+        h_mWsubjet_b2_wjets5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets 800to1200 b2 empty"
+        h_mWsubjet_b2_wjets5.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp5.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets p 800to1200 b2 empty"
+        h_mWsubjet_b2_wjetsp5.Scale( 0.)
+
+    if h_mWsubjet_b2_wjets6.Integral() > 0 : 
+        h_mWsubjet_b2_wjets6.Scale(lumi  * 1.329 / 6768156.) 
+    else :
+        print "w+jets 1200to2500 b2 empty"
+        h_mWsubjet_b2_wjets6.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp6.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp6.Scale(lumi * 1.329 / 6768156.) 
+    else :
+        print "w+jets p 1200to2500 b2 empty"
+        h_mWsubjet_b2_wjetsp6.Scale( 0.)
+
+    if h_mWsubjet_b2_wjets7.Integral() > 0 : 
+        h_mWsubjet_b2_wjets7.Scale(lumi * 0.03216 / 253561.) 
+    else :
+        print "w+jets 2500toInf b2 empty"
+        h_mWsubjet_b2_wjets7.Scale( 0.)
+    if h_mWsubjet_b2_wjetsp7.Integral() > 0 : 
+        h_mWsubjet_b2_wjetsp7.Scale(lumi * 0.03216 / 253561. ) 
+    else :
+        print "w+jets p 2500toInf b2 empty"
+        h_mWsubjet_b2_wjetsp7.Scale( 0.)
+    #bin3
+    if h_mWsubjet_b3_wjets1.Integral() > 0 : 
+        h_mWsubjet_b3_wjets1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets 100to200 b3 empty"
+        h_mWsubjet_b3_wjets1.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp1.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets p 100to200 b3 empty"
+        h_mWsubjet_b3_wjetsp1.Scale( 0.)
+
+    if h_mWsubjet_b3_wjets2.Integral() > 0 : 
+        h_mWsubjet_b3_wjets2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets 200to400 b3 empty"
+        h_mWsubjet_b3_wjets2.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp2.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets p 200to400 b3 empty"
+        h_mWsubjet_b3_wjetsp2.Scale( 0.)
+
+    if h_mWsubjet_b3_wjets3.Integral() > 0 : 
+        h_mWsubjet_b3_wjets3.Scale(lumi * 48.91/ 1963464. ) 
+    else :
+        print "w+jets 400to600 b3 empty"
+        h_mWsubjet_b3_wjets3.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp3.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp3.Scale(lumi * 48.91/ 1963464.) 
+    else :
+        print "w+jets p 400to600 b3 empty"
+        h_mWsubjet_b3_wjetsp3.Scale( 0.)    
+
+    if h_mWsubjet_b3_wjets4.Integral() > 0 : 
+        h_mWsubjet_b3_wjets4.Scale(lumi *  12.05/  3722395.) 
+    else :
+        print "w+jets 600to800 b3 empty"
+        h_mWsubjet_b3_wjets4.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp4.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp4.Scale(lumi * 12.05 / 3722395. ) 
+    else :
+        print "w+jets p 600to800 b3 empty"
+        h_mWsubjet_b3_wjetsp4.Scale( 0.)
+
+    if h_mWsubjet_b3_wjets5.Integral() > 0 : 
+        h_mWsubjet_b3_wjets5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets 800to1200 b3 empty"
+        h_mWsubjet_b3_wjets5.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp5.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets p 800to1200 b3 empty"
+        h_mWsubjet_b3_wjetsp5.Scale( 0.)
+
+    if h_mWsubjet_b3_wjets6.Integral() > 0 : 
+        h_mWsubjet_b3_wjets6.Scale(lumi  * 1.329 / 6768156.) 
+    else :
+        print "w+jets 1200to2500 b3 empty"
+        h_mWsubjet_b3_wjets6.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp6.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp6.Scale(lumi * 1.329 / 6768156.) 
+    else :
+        print "w+jets p 1200to2500 b3 empty"
+        h_mWsubjet_b3_wjetsp6.Scale( 0.)
+
+    if h_mWsubjet_b3_wjets7.Integral() > 0 : 
+        h_mWsubjet_b3_wjets7.Scale(lumi * 0.03216 / 253561.) 
+    else :
+        print "w+jets 2500toInf b3 empty"
+        h_mWsubjet_b3_wjets7.Scale( 0.)
+    if h_mWsubjet_b3_wjetsp7.Integral() > 0 : 
+        h_mWsubjet_b3_wjetsp7.Scale(lumi * 0.03216 / 253561. ) 
+    else :
+        print "w+jets p 2500toInf b3  empty"
+        h_mWsubjet_b3_wjetsp7.Scale( 0.)
+    #bin4
+    if h_mWsubjet_b4_wjets1.Integral() > 0 : 
+        h_mWsubjet_b4_wjets1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets 100to200 b4 empty"
+        h_mWsubjet_b4_wjets1.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp1.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp1.Scale(lumi * 1345. / 27529599. ) 
+    else :
+        print "w+jets p 100to200 b4 empty"
+        h_mWsubjet_b4_wjetsp1.Scale( 0.)
+
+    if h_mWsubjet_b4_wjets2.Integral() > 0 : 
+        h_mWsubjet_b4_wjets2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets 200to400 b4 empty"
+        h_mWsubjet_b4_wjets2.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp2.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp2.Scale(lumi * 359.7 / 4963240.) 
+    else :
+        print "w+jets p 200to400 b4 empty"
+        h_mWsubjet_b4_wjetsp2.Scale( 0.)
+
+    if h_mWsubjet_b4_wjets3.Integral() > 0 : 
+        h_mWsubjet_b4_wjets3.Scale(lumi * 48.91/ 1963464. ) 
+    else :
+        print "w+jets 400to600 b4 empty"
+        h_mWsubjet_b4_wjets3.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp3.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp3.Scale(lumi * 48.91/ 1963464.) 
+    else :
+        print "w+jets p 400to600 b4 empty"
+        h_mWsubjet_b4_wjetsp3.Scale( 0.)    
+
+    if h_mWsubjet_b4_wjets4.Integral() > 0 : 
+        h_mWsubjet_b4_wjets4.Scale(lumi *  12.05/  3722395.) 
+    else :
+        print "w+jets 600to800 b4 empty"
+        h_mWsubjet_b4_wjets4.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp4.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp4.Scale(lumi * 12.05 / 3722395. ) 
+    else :
+        print "w+jets p 600to800 b4 empty"
+        h_mWsubjet_b4_wjetsp4.Scale( 0.)
+
+    if h_mWsubjet_b4_wjets5.Integral() > 0 : 
+        h_mWsubjet_b4_wjets5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets 800to1200 b4 empty"
+        h_mWsubjet_b4_wjets5.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp5.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp5.Scale(lumi * 5.501 / 6314257.) 
+    else :
+        print "w+jets p 800to1200 b4 empty"
+        h_mWsubjet_b4_wjetsp5.Scale( 0.)
+
+    if h_mWsubjet_b4_wjets6.Integral() > 0 : 
+        h_mWsubjet_b4_wjets6.Scale(lumi  * 1.329 / 6768156.) 
+    else :
+        print "w+jets 1200to2500 b4 empty"
+        h_mWsubjet_b4_wjets6.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp6.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp6.Scale(lumi * 1.329 / 6768156.) 
+    else :
+        print "w+jets p 1200to2500 b4 empty"
+        h_mWsubjet_b4_wjetsp6.Scale( 0.)
+
+    if h_mWsubjet_b4_wjets7.Integral() > 0 : 
+        h_mWsubjet_b4_wjets7.Scale(lumi * 0.03216 / 253561.) 
+    else :
+        print "w+jets 2500toInf b4 empty"
+        h_mWsubjet_b4_wjets7.Scale( 0.)
+    if h_mWsubjet_b4_wjetsp7.Integral() > 0 : 
+        h_mWsubjet_b4_wjetsp7.Scale(lumi * 0.03216 / 253561. ) 
+    else :
+        print "w+jets p 2500toInf b4 empty"
+        h_mWsubjet_b4_wjetsp7.Scale( 0.)
+
+
+
+    if h_mWsubjet_b1_st1.Integral() > 0 : 
+        h_mWsubjet_b1_st1.Scale(lumi * 136.02 / 3279200. ) 
+    else :
+        print "st top b1 empty"
+        h_mWsubjet_b1_st1.Scale( 0.)
+    if h_mWsubjet_b1_stp1.Integral() > 0 : 
+        h_mWsubjet_b1_stp1.Scale(lumi *  136.02 / 3279200.) 
+    else :
+        print "st p top b1 empty"
+        h_mWsubjet_b1_stp1.Scale( 0.)
+
+    if h_mWsubjet_b1_st2.Integral() > 0 : 
+        h_mWsubjet_b1_st2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st antitop b1 empty"
+        h_mWsubjet_b1_st2.Scale( 0.)
+    if h_mWsubjet_b1_stp2.Integral() > 0 : 
+        h_mWsubjet_b1_stp2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st p antitop b1 empty"
+        h_mWsubjet_b1_stp2.Scale( 0.)
+
+    if h_mWsubjet_b2_st1.Integral() > 0 : 
+        h_mWsubjet_b2_st1.Scale(lumi * 136.02 / 3279200. ) 
+    else :
+        print "st top b2 empty"
+        h_mWsubjet_b2_st1.Scale( 0.)
+    if h_mWsubjet_b2_stp1.Integral() > 0 : 
+        h_mWsubjet_b2_stp1.Scale(lumi *  136.02 / 3279200.) 
+    else :
+        print "st p top b2 empty"
+        h_mWsubjet_b2_stp1.Scale( 0.)
+
+    if h_mWsubjet_b2_st2.Integral() > 0 : 
+        h_mWsubjet_b2_st2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st antitop b2 empty"
+        h_mWsubjet_b2_st2.Scale( 0.)
+    if h_mWsubjet_b2_stp2.Integral() > 0 : 
+        h_mWsubjet_b2_stp2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st p antitop b2 empty"
+        h_mWsubjet_b2_stp2.Scale( 0.)
+
+    if h_mWsubjet_b3_st1.Integral() > 0 : 
+        h_mWsubjet_b3_st1.Scale(lumi * 136.02 / 3279200. ) 
+    else :
+        print "st top b3 empty"
+        h_mWsubjet_b3_st1.Scale( 0.)
+    if h_mWsubjet_b3_stp1.Integral() > 0 : 
+        h_mWsubjet_b3_stp1.Scale(lumi *  136.02 / 3279200.) 
+    else :
+        print "st p top b3 empty"
+        h_mWsubjet_b3_stp1.Scale( 0.)
+
+    if h_mWsubjet_b3_st2.Integral() > 0 : 
+        h_mWsubjet_b3_st2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st antitop b3 empty"
+        h_mWsubjet_b3_st2.Scale( 0.)
+    if h_mWsubjet_b3_stp2.Integral() > 0 : 
+        h_mWsubjet_b3_stp2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st p antitop b3 empty"
+        h_mWsubjet_b3_stp2.Scale( 0.)
+
+    if h_mWsubjet_b4_st1.Integral() > 0 : 
+        h_mWsubjet_b4_st1.Scale(lumi * 136.02 / 3279200. ) 
+    else :
+        print "st top b4 empty"
+        h_mWsubjet_b4_st1.Scale( 0.)
+    if h_mWsubjet_b4_stp1.Integral() > 0 : 
+        h_mWsubjet_b4_stp1.Scale(lumi *  136.02 / 3279200.) 
+    else :
+        print "st p top b4 empty"
+        h_mWsubjet_b4_stp1.Scale( 0.)
+
+    if h_mWsubjet_b4_st2.Integral() > 0 : 
+        h_mWsubjet_b4_st2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st antitop b4 empty"
+        h_mWsubjet_b4_st2.Scale( 0.)
+    if h_mWsubjet_b4_stp2.Integral() > 0 : 
+        h_mWsubjet_b4_stp2.Scale(lumi * 80.95 / 1682400. ) 
+    else :
+        print "st p antitop b4 empty"
+        h_mWsubjet_b4_stp2.Scale( 0.)
+
+    h_mWsubjet_b1_wjets1.Sumw2()
+    h_mWsubjet_b1_wjets2.Sumw2()
+    h_mWsubjet_b1_wjets3.Sumw2()
+    h_mWsubjet_b1_wjets4.Sumw2()
+    h_mWsubjet_b1_wjets5.Sumw2()
+    h_mWsubjet_b1_wjets6.Sumw2()
+    h_mWsubjet_b1_wjets7.Sumw2()
+
+    h_mWsubjet_b2_wjets1.Sumw2()
+    h_mWsubjet_b2_wjets2.Sumw2()
+    h_mWsubjet_b2_wjets3.Sumw2()
+    h_mWsubjet_b2_wjets4.Sumw2()
+    h_mWsubjet_b2_wjets5.Sumw2()
+    h_mWsubjet_b2_wjets6.Sumw2()
+    h_mWsubjet_b2_wjets7.Sumw2()
+
+    h_mWsubjet_b3_wjets1.Sumw2()
+    h_mWsubjet_b3_wjets2.Sumw2()
+    h_mWsubjet_b3_wjets3.Sumw2()
+    h_mWsubjet_b3_wjets4.Sumw2()
+    h_mWsubjet_b3_wjets5.Sumw2()
+    h_mWsubjet_b3_wjets6.Sumw2()
+    h_mWsubjet_b3_wjets7.Sumw2()
+
+    h_mWsubjet_b4_wjets1.Sumw2()
+    h_mWsubjet_b4_wjets2.Sumw2()
+    h_mWsubjet_b4_wjets3.Sumw2()
+    h_mWsubjet_b4_wjets4.Sumw2()
+    h_mWsubjet_b4_wjets5.Sumw2()
+    h_mWsubjet_b4_wjets6.Sumw2()
+    h_mWsubjet_b4_wjets7.Sumw2()
+
+
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets1)
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets2)
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets3)
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets4)
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets5)
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets6)
+    h_mWsubjet_b1_wjets.Add(h_mWsubjet_b1_wjets7)
+
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets1)
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets2)
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets3)
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets4)
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets5)
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets6)
+    h_mWsubjet_b2_wjets.Add(h_mWsubjet_b2_wjets7)
+
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets1)
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets2)
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets3)
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets4)
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets5)
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets6)
+    h_mWsubjet_b3_wjets.Add(h_mWsubjet_b3_wjets7)
+
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets1)
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets2)
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets3)
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets4)
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets5)
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets6)
+    h_mWsubjet_b4_wjets.Add(h_mWsubjet_b4_wjets7)
+
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp1)
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp2)
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp3)
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp4)
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp5)
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp6)
+    h_mWsubjet_b1_wjetsp.Add(h_mWsubjet_b1_wjetsp7)
+
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp1)
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp2)
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp3)
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp4)
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp5)
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp6)
+    h_mWsubjet_b2_wjetsp.Add(h_mWsubjet_b2_wjetsp7)
+
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp1)
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp2)
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp3)
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp4)
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp5)
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp6)
+    h_mWsubjet_b3_wjetsp.Add(h_mWsubjet_b3_wjetsp7)
+
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp1)
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp2)
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp3)
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp4)
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp5)
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp6)
+    h_mWsubjet_b4_wjetsp.Add(h_mWsubjet_b4_wjetsp7)
+
+    h_mWsubjet_b1_st1.Sumw2()
+    h_mWsubjet_b1_st2.Sumw2()
+
+    h_mWsubjet_b2_st1.Sumw2()
+    h_mWsubjet_b2_st2.Sumw2()
+
+    h_mWsubjet_b3_st1.Sumw2()
+    h_mWsubjet_b3_st2.Sumw2()
+
+    h_mWsubjet_b4_st1.Sumw2()
+    h_mWsubjet_b4_st2.Sumw2()
+
+    h_mWsubjet_b1_st.Add(h_mWsubjet_b1_st1)
+    h_mWsubjet_b1_st.Add(h_mWsubjet_b1_st2)
+
+    h_mWsubjet_b2_st.Add(h_mWsubjet_b2_st1)
+    h_mWsubjet_b2_st.Add(h_mWsubjet_b2_st2)
+
+    h_mWsubjet_b3_st.Add(h_mWsubjet_b3_st1)
+    h_mWsubjet_b3_st.Add(h_mWsubjet_b3_st2)
+
+    h_mWsubjet_b4_st.Add(h_mWsubjet_b4_st1)
+    h_mWsubjet_b4_st.Add(h_mWsubjet_b4_st2)
+
+    h_mWsubjet_b1_stp.Add(h_mWsubjet_b1_stp1)
+    h_mWsubjet_b1_stp.Add(h_mWsubjet_b1_stp2)
+
+    h_mWsubjet_b2_stp.Add(h_mWsubjet_b2_stp1)
+    h_mWsubjet_b2_stp.Add(h_mWsubjet_b2_stp2)
+
+    h_mWsubjet_b3_stp.Add(h_mWsubjet_b3_stp1)
+    h_mWsubjet_b3_stp.Add(h_mWsubjet_b3_stp2)
+
+    h_mWsubjet_b4_stp.Add(h_mWsubjet_b4_stp1)
+    h_mWsubjet_b4_stp.Add(h_mWsubjet_b4_stp2)
 
     print "Number of events passing basic cuts:"
     print "total passing pre-selection : " + str(passkin)
