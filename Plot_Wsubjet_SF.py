@@ -58,6 +58,16 @@ parser.add_option('--pre',  action='store_true',
                   default = False,
                   help='Plot selection before tog tag cut.')
 
+parser.add_option('--Eldata',  action='store_true',
+                  dest='Eldata',
+                  default = False,
+                  help='Plot only electron data')
+
+parser.add_option('--Mudata',  action='store_true',
+                  dest='Mudata',
+                  default = False,
+                  help='Plot only muon data')
+
 parser.add_option('--fixFit',  action='store_true',
                   dest='fixFit',
                   default = False,
@@ -147,8 +157,13 @@ if options.combineTrees : fout= ROOT.TFile('Wmass_meanrat_combinedTrees_' + opti
 if options.pre :
     fout= ROOT.TFile('Wmass_meanrat_preWTag_' + options.infile + '.root', "RECREATE")
 if options.pre and options.combineTrees :
-    fout= ROOT.TFile('Wmass_meanrat_preWTag_combinedTrees_80x_' + str(options.infile) + '.root', "RECREATE")
-
+    datatype = 'Alldata'
+    if options.Mudata :
+        datatype = 'Mudata'
+    if options.Eldata :
+        datatype = 'Eldata'
+    fout= ROOT.TFile('Wmass_meanrat_preWTag_combinedTrees_80x_'+str(datatype)+ '_'+ str(options.infile) + '.root', "RECREATE")
+        
 ptBs =  array.array('d', [200., 300., 400., 500., 800.])
 nptBs = len(ptBs) - 1
 
@@ -156,20 +171,34 @@ nptBs = len(ptBs) - 1
 hpeak = ROOT.TH1F("hpeak", " ;p_{T} of SD subjet 0 (GeV); JMS ",  nptBs, ptBs)  ##frac{Mean Mass_{data}}{Mean Mass_{MC}}
 hwidth = ROOT.TH1F("hwidth", " ;p_{T} of SD subjet 0 (GeV); JMR ", nptBs, ptBs) ##frac{#sigma_{data}}{#sigma_{MC}}
 
+hpeakmu = ROOT.TH1F("hpeakmu", " ;p_{T} of SD subjet 0 (GeV); JMS ",  nptBs, ptBs)  ##frac{Mean Mass_{data}}{Mean Mass_{MC}}
+hwidthmu = ROOT.TH1F("hwidthmu", " ;p_{T} of SD subjet 0 (GeV); JMR ", nptBs, ptBs) ##frac{#sigma_{data}}{#sigma_{MC}}
 
+hpeakel = ROOT.TH1F("hpeakel", " ;p_{T} of SD subjet 0 (GeV); JMS ",  nptBs, ptBs)  ##frac{Mean Mass_{data}}{Mean Mass_{MC}}
+hwidthel = ROOT.TH1F("hwidthel", " ;p_{T} of SD subjet 0 (GeV); JMR ", nptBs, ptBs) ##frac{#sigma_{data}}{#sigma_{MC}}
 
 if options.pre :
     hNpassDataPre = ROOT.TH1F("hNpassDataPre", " ;;  ", nptBs, ptBs) 
+    hNpassMuDataPre = ROOT.TH1F("hNpassMuDataPre", " ;;  ", nptBs, ptBs) 
+    hNpassElDataPre = ROOT.TH1F("hNpassElDataPre", " ;;  ", nptBs, ptBs) 
     hNpassMCPre = ROOT.TH1F("hNpassMCPre", " ;;  ", nptBs, ptBs) 
     hmeanDataPre = ROOT.TH1F("hmeanDataPre", " ;;  ", nptBs, ptBs) 
+    hmeanMuDataPre = ROOT.TH1F("hmeanMuDataPre", " ;;  ", nptBs, ptBs) 
+    hmeanElDataPre = ROOT.TH1F("hmeanElDataPre", " ;;  ", nptBs, ptBs) 
     hmeanMCPre = ROOT.TH1F("hmeanMCPre", " ;;  ", nptBs, ptBs) 
     hsigmaDataPre = ROOT.TH1F("hsigmaDataPre", " ;;  ", nptBs, ptBs) 
+    hsigmaMuDataPre = ROOT.TH1F("hsigmaMuDataPre", " ;;  ", nptBs, ptBs) 
+    hsigmaElDataPre = ROOT.TH1F("hsigmaElDataPre", " ;;  ", nptBs, ptBs) 
     hsigmaMCPre = ROOT.TH1F("hsigmaMCPre", " ;;  ", nptBs, ptBs) 
 else:
     hNpassDataPost = ROOT.TH1F("hNpassDataPost", " ;;  ", nptBs, ptBs) 
+    hNpassMuDataPost = ROOT.TH1F("hNpassMuDataPost", " ;;  ", nptBs, ptBs) 
+    hNpassElDataPost = ROOT.TH1F("hNpassElDataPost", " ;;  ", nptBs, ptBs) 
     hNpassMCPost = ROOT.TH1F("hNpassMCPost", " ;;  ", nptBs, ptBs) 
     hscale = ROOT.TH1F("hscale", " ; ;  ", nptBs, ptBs)
     hDataEff = ROOT.TH1F("hDataEff", " ; ; ", nptBs, ptBs)
+    hMuDataEff = ROOT.TH1F("hMuDataEff", " ; ; ", nptBs, ptBs)
+    hElDataEff = ROOT.TH1F("hElDataEff", " ; ; ", nptBs, ptBs)
     hMCEff = ROOT.TH1F("hMCEff", " ; ; ", nptBs, ptBs)
 
 
@@ -178,10 +207,17 @@ if options.combineTrees :
     filein = ROOT.TFile.Open('./output80x/Wmass_pt_binned_CombinedTrees_80x_' + str(options.infile) + '.root') 
 else : 
     filein = ROOT.TFile.Open('Wmass_pt_binned_' + options.infile + '.root')
-lumi = 12.3 #2136.0
+lumi = 12300. #2136.0
 
 httbar = filein.Get("h_mWsubjet_ttjets")
 ttbar_pt = filein.Get("h_ptWsubjet_ttjets")
+
+hwjets = filein.Get("h_mWsubjet_wjets")
+wjets_pt = filein.Get("h_ptWsubjet_wjets")
+
+hst = filein.Get("h_mWsubjet_st")
+st_pt = filein.Get("h_ptWsubjet_st")
+
 
 httbar2 = filein.Get("h_mWjet_ttjets")
 ttbar_pt2 = filein.Get("h_ptWjet_ttjets")
@@ -197,37 +233,27 @@ httbar_b2p = filein.Get("h_mWsubjet_b2_ttjetsp")
 httbar_b3p = filein.Get("h_mWsubjet_b3_ttjetsp")
 httbar_b4p = filein.Get("h_mWsubjet_b4_ttjetsp")
 
-singlemu_m = filein.Get("h_mWsubjet_MuData")
-singlemu_pt = filein.Get("h_ptWsubjet_MuData")
+hwjets_b1 = filein.Get("h_mWsubjet_b1_wjets")
+hwjets_b2 = filein.Get("h_mWsubjet_b2_wjets")
+hwjets_b3 = filein.Get("h_mWsubjet_b3_wjets")
+hwjets_b4 = filein.Get("h_mWsubjet_b4_wjets")
 
-singlemu_m_b1 = filein.Get("h_mWsubjet_b1_MuData")
-singlemu_m_b2 = filein.Get("h_mWsubjet_b2_MuData")
-singlemu_m_b3 = filein.Get("h_mWsubjet_b3_MuData")
-singlemu_m_b4 = filein.Get("h_mWsubjet_b4_MuData")
+hwjets_b1p = filein.Get("h_mWsubjet_b1_wjetsp")
+hwjets_b2p = filein.Get("h_mWsubjet_b2_wjetsp")
+hwjets_b3p = filein.Get("h_mWsubjet_b3_wjetsp")
+hwjets_b4p = filein.Get("h_mWsubjet_b4_wjetsp")
 
-singlemu_mp = filein.Get("h_mWsubjet_MuDatap")
-singlemu_ptp = filein.Get("h_ptWsubjet_MuDatap")
 
-singlemu_m_b1p = filein.Get("h_mWsubjet_b1_MuDatap")
-singlemu_m_b2p = filein.Get("h_mWsubjet_b2_MuDatap")
-singlemu_m_b3p = filein.Get("h_mWsubjet_b3_MuDatap")
-singlemu_m_b4p = filein.Get("h_mWsubjet_b4_MuDatap")
+hst_b1 = filein.Get("h_mWsubjet_b1_st")
+hst_b2 = filein.Get("h_mWsubjet_b2_st")
+hst_b3 = filein.Get("h_mWsubjet_b3_st")
+hst_b4 = filein.Get("h_mWsubjet_b4_st")
 
-singleel_m = filein.Get("h_mWsubjet_EleData")
-singleel_pt = filein.Get("h_ptWsubjet_EleData")
+hst_b1p = filein.Get("h_mWsubjet_b1_stp")
+hst_b2p = filein.Get("h_mWsubjet_b2_stp")
+hst_b3p = filein.Get("h_mWsubjet_b3_stp")
+hst_b4p = filein.Get("h_mWsubjet_b4_stp")
 
-singleel_m_b1 = filein.Get("h_mWsubjet_b1_EleData")
-singleel_m_b2 = filein.Get("h_mWsubjet_b2_EleData")
-singleel_m_b3 = filein.Get("h_mWsubjet_b3_EleData")
-singleel_m_b4 = filein.Get("h_mWsubjet_b4_EleData")
-
-singleel_mp = filein.Get("h_mWsubjet_EleDatap")
-singleel_ptp = filein.Get("h_ptWsubjet_EleDatap")
-
-singleel_m_b1p = filein.Get("h_mWsubjet_b1_EleDatap")
-singleel_m_b2p = filein.Get("h_mWsubjet_b2_EleDatap")
-singleel_m_b3p = filein.Get("h_mWsubjet_b3_EleDatap")
-singleel_m_b4p = filein.Get("h_mWsubjet_b4_EleDatap")
 
 hdata = filein.Get("h_mWsubjet_Data")
 muel_pt = filein.Get("h_ptWsubjet_Data")
@@ -237,6 +263,17 @@ hdata_b2 = filein.Get("h_mWsubjet_b2_Data")
 hdata_b3 = filein.Get("h_mWsubjet_b3_Data")
 hdata_b4 = filein.Get("h_mWsubjet_b4_Data")
 
+hmudata_b1 = filein.Get("h_mWsubjet_b1_MuData")
+hmudata_b2 = filein.Get("h_mWsubjet_b2_MuData")
+hmudata_b3 = filein.Get("h_mWsubjet_b3_MuData")
+hmudata_b4 = filein.Get("h_mWsubjet_b4_MuData")
+
+heldata_b1 = filein.Get("h_mWsubjet_b1_ElData")
+heldata_b2 = filein.Get("h_mWsubjet_b2_ElData")
+heldata_b3 = filein.Get("h_mWsubjet_b3_ElData")
+heldata_b4 = filein.Get("h_mWsubjet_b4_ElData")
+
+
 hdatap = filein.Get("h_mWsubjet_Datap")
 muel_ptp = filein.Get("h_ptWsubjet_Datap")
 
@@ -244,6 +281,17 @@ hdata_b1p = filein.Get("h_mWsubjet_b1_Datap")
 hdata_b2p = filein.Get("h_mWsubjet_b2_Datap")
 hdata_b3p = filein.Get("h_mWsubjet_b3_Datap")
 hdata_b4p = filein.Get("h_mWsubjet_b4_Datap")
+
+hmudata_b1p = filein.Get("h_mWsubjet_b1_MuDatap")
+hmudata_b2p = filein.Get("h_mWsubjet_b2_MuDatap")
+hmudata_b3p = filein.Get("h_mWsubjet_b3_MuDatap")
+hmudata_b4p = filein.Get("h_mWsubjet_b4_MuDatap")
+
+heldata_b1p = filein.Get("h_mWsubjet_b1_ElDatap")
+heldata_b2p = filein.Get("h_mWsubjet_b2_ElDatap")
+heldata_b3p = filein.Get("h_mWsubjet_b3_ElDatap")
+heldata_b4p = filein.Get("h_mWsubjet_b4_ElDatap")
+
 
 hpts = filein.Get("h_ptWsubjet_Data_Type1")
 hpts2 = filein.Get("h_ptWsubjet_Data_Type2")
@@ -253,36 +301,56 @@ hpts2MC = filein.Get("h_ptWsubjet_MC_Type2")
 
 nMCpre = array.array('d', [0., 0., 0., 0.])
 nDatapre = array.array('d', [0., 0., 0., 0.])
+nMuDatapre = array.array('d', [0., 0., 0., 0.])
+nElDatapre = array.array('d', [0., 0., 0., 0.])
 nMCupre = array.array('d', [0., 0., 0., 0.])
 nDataupre = array.array('d', [0., 0., 0., 0.])
-
+nMuDataupre = array.array('d', [0., 0., 0., 0.])
+nElDataupre = array.array('d', [0., 0., 0., 0.])
 
 MCmeans = array.array('d', [0., 0., 0., 0.])
 MCsigmas = array.array('d', [0., 0., 0., 0.])
 Datameans = array.array('d', [0., 0., 0., 0.])
 Datasigmas = array.array('d', [0., 0., 0., 0.])
+ElDatameans = array.array('d', [0., 0., 0., 0.])
+ElDatasigmas = array.array('d', [0., 0., 0., 0.])
+MuDatameans = array.array('d', [0., 0., 0., 0.])
+MuDatasigmas = array.array('d', [0., 0., 0., 0.])
+
 
 nMCpost = array.array('d', [0., 0., 0., 0.])
 nDatapost = array.array('d', [0., 0., 0., 0.])
+nMuDatapost = array.array('d', [0., 0., 0., 0.])
+nElDatapost = array.array('d', [0., 0., 0., 0.])
 nMCupost = array.array('d', [0., 0., 0., 0.])
 nDataupost = array.array('d', [0., 0., 0., 0.])
+nMuDataupost = array.array('d', [0., 0., 0., 0.])
+nElDataupost = array.array('d', [0., 0., 0., 0.])
 
 if not options.pre :
     if options.combineTrees : filein2 = ROOT.TFile.Open('./Wmass_meanrat_preWTag_combinedTrees_80x_' + options.infile + '.root') 
     else : filein2 = ROOT.TFile.Open('Wmass_meanrat_preWTag_' + options.infile + '.root') 
     h_NpassDataPre = filein2.Get("hNpassDataPre")
+    h_NpassMuDataPre = filein2.Get("hNpassMuDataPre")
+    h_NpassElDataPre = filein2.Get("hNpassElDataPre")
     h_NpassMCPre = filein2.Get("hNpassMCPre")
  
     h_meanDataPre = filein2.Get("hmeanDataPre")
+    h_meanMuDataPre = filein2.Get("hmeanMuDataPre")
+    h_meanElDataPre = filein2.Get("hmeanElDataPre")
     h_meanMCPre = filein2.Get("hmeanMCPre")
     h_sigmaDataPre = filein2.Get("hsigmaDataPre")
+    h_sigmaMuDataPre = filein2.Get("hsigmaMuDataPre")
+    h_sigmaElDataPre = filein2.Get("hsigmaElDataPre")
     h_sigmaMCPre = filein2.Get("hsigmaMCPre")
 
 
     for ibin in xrange(0,h_NpassMCPre.GetNbinsX()) :
         nMCpre[ibin] = h_NpassMCPre.GetBinContent(ibin+1)
         nDatapre[ibin] = h_NpassDataPre.GetBinContent(ibin+1)
-        print "For bin " + str(ibin)+" : preselection in data and mc are" + str(nDatapre[ibin]) + '  and ' + str(nMCpre[ibin])
+        nMuDatapre[ibin] = h_NpassMuDataPre.GetBinContent(ibin+1)
+        nElDatapre[ibin] = h_NpassElDataPre.GetBinContent(ibin+1)
+        print "For bin " + str(ibin)+" : preselection in mudata {0:6.3}, eldata{0:6.3} and mc {0:6.3} ".format(nMuDatapre[ibin],nElDatapre[ibin], nMCpre[ibin])
     
     print "Reading means and widths of --pre Gaussian Fits for use in constraining the post W tag fits!"
     for ibin in xrange(0,h_sigmaMCPre.GetNbinsX() ) :
@@ -290,7 +358,10 @@ if not options.pre :
         MCsigmas[ibin] = h_sigmaMCPre.GetBinContent(ibin+1)
         Datameans[ibin] = h_meanDataPre.GetBinContent(ibin+1)
         Datasigmas[ibin] = h_sigmaDataPre.GetBinContent(ibin+1)        
-
+        MuDatameans[ibin] = h_meanMuDataPre.GetBinContent(ibin+1)
+        MuDatasigmas[ibin] = h_sigmaMuDataPre.GetBinContent(ibin+1)
+        ElDatameans[ibin] = h_meanElDataPre.GetBinContent(ibin+1)
+        ElDatasigmas[ibin] = h_sigmaElDataPre.GetBinContent(ibin+1)
 
 '''
 titles = {
@@ -315,108 +386,243 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     #print "pt variable is : " + str(pt)
     #print "ipt variable is : " + str(ipt)
     pt = ptBs[ipt]
+    rebinnum1 = 5 # was 5 previously
+    rebinnum2 = 10 # was 10 previously
+
     if (ipt == 0) :
         binlabel = "200 < P_{T} < 300"
         httbarT = httbar_b1.Clone()
+        hwjetsT = hwjets_b1.Clone()
+        hstT = hst_b1.Clone()
         hdataT = hdata_b1.Clone()
+        hmudataT = hmudata_b1.Clone()
+        heldataT = heldata_b1.Clone()
         httbarTp = httbar_b1p.Clone()
+        hwjetsTp = hwjets_b1p.Clone()
+        hstTp = hst_b1p.Clone()
         hdataTp = hdata_b1p.Clone()
-        hdataT.Rebin(5)
-        httbarT.Rebin(5)
-        hdataTp.Rebin(5)
-        httbarTp.Rebin(5)
+        hmudataTp = hmudata_b1p.Clone()
+        heldataTp = heldata_b1p.Clone()
+        hdataT.Rebin(rebinnum1)
+        hmudataT.Rebin(rebinnum1)
+        heldataT.Rebin(rebinnum1)
+        httbarT.Rebin(rebinnum1)
+        hwjetsT.Rebin(rebinnum1)
+        hstT.Rebin(rebinnum1)
+        hdataTp.Rebin(rebinnum1)
+        hmudataTp.Rebin(rebinnum1)
+        heldataTp.Rebin(rebinnum1)
+        httbarTp.Rebin(rebinnum1)
+        hwjetsTp.Rebin(rebinnum1)
+        hstTp.Rebin(rebinnum1)
     if (ipt == 1) :
         binlabel = "300 < P_{T} < 400"
         httbarT = httbar_b2.Clone()
+        hwjetsT = hwjets_b2.Clone()
+        hstT = hst_b2.Clone()
         hdataT = hdata_b2.Clone()
+        hmudataT = hmudata_b2.Clone()
+        heldataT = heldata_b2.Clone()
         httbarTp = httbar_b2p.Clone()
+        hwjetsTp = hwjets_b2p.Clone()
+        hstTp = hst_b2p.Clone()
         hdataTp = hdata_b2p.Clone()
-        hdataT.Rebin(5)
-        httbarT.Rebin(5)
-        hdataTp.Rebin(5)
-        httbarTp.Rebin(5)
+        hmudataTp = hmudata_b2p.Clone()
+        heldataTp = heldata_b2p.Clone()
+        hdataT.Rebin(rebinnum1)
+        hmudataT.Rebin(rebinnum1)
+        heldataT.Rebin(rebinnum1)
+        httbarT.Rebin(rebinnum1)
+        hwjetsT.Rebin(rebinnum1)
+        hstT.Rebin(rebinnum1)
+        hdataTp.Rebin(rebinnum1)
+        hmudataTp.Rebin(rebinnum1)
+        heldataTp.Rebin(rebinnum1)
+        httbarTp.Rebin(rebinnum1)
+        hwjetsTp.Rebin(rebinnum1)
+        hstTp.Rebin(rebinnum1)
     if (ipt == 2) :
         binlabel = "400 < P_{T} < 500"
         httbarT = httbar_b3.Clone()
+        hwjetsT = hwjets_b3.Clone()
+        hstT = hst_b3.Clone()
         hdataT = hdata_b3.Clone()
+        hmudataT = hmudata_b3.Clone()
+        heldataT = heldata_b3.Clone()
         httbarTp = httbar_b3p.Clone()
+        hwjetsTp = hwjets_b3p.Clone()
+        hstTp = hst_b3p.Clone()
         hdataTp = hdata_b3p.Clone()
-        hdataT.Rebin(10)
-        httbarT.Rebin(10)
-        hdataTp.Rebin(10)
-        httbarTp.Rebin(10)
+        hmudataTp = hmudata_b3p.Clone()
+        heldataTp = heldata_b3p.Clone()
+        hdataT.Rebin(rebinnum2)
+        hmudataT.Rebin(rebinnum2)
+        heldataT.Rebin(rebinnum2)
+        httbarT.Rebin(rebinnum2)
+        hwjetsT.Rebin(rebinnum2)
+        hstT.Rebin(rebinnum2)
+        hdataTp.Rebin(rebinnum2)
+        hmudataTp.Rebin(rebinnum2)
+        heldataTp.Rebin(rebinnum2)
+        httbarTp.Rebin(rebinnum2)
+        hwjetsTp.Rebin(rebinnum2)
+        hstTp.Rebin(rebinnum2)
     if (ipt == 3) :
         binlabel = "P_{T} > 500 "
         httbarT = httbar_b4.Clone()
+        hwjetsT = hwjets_b4.Clone()
+        hstT = hst_b4.Clone()
         hdataT = hdata_b4.Clone()
+        hmudataT = hmudata_b4.Clone()
+        heldataT = heldata_b4.Clone()
         httbarTp = httbar_b4p.Clone()
+        hwjetsTp = hwjets_b4p.Clone()
+        hstTp = hst_b4p.Clone()
         hdataTp = hdata_b4p.Clone()
-        hdataT.Rebin(10)
-        httbarT.Rebin(10)
-        hdataTp.Rebin(10)
-        httbarTp.Rebin(10)
+        hmudataTp = hmudata_b4p.Clone()
+        heldataTp = heldata_b4p.Clone()
+        hdataT.Rebin(rebinnum2)
+        hmudataT.Rebin(rebinnum2)
+        heldataT.Rebin(rebinnum2)
+        httbarT.Rebin(rebinnum2)
+        hwjetsT.Rebin(rebinnum2)
+        hstT.Rebin(rebinnum2)
+        hdataTp.Rebin(rebinnum2)
+        hmudataTp.Rebin(rebinnum2)
+        heldataTp.Rebin(rebinnum2)
+        httbarTp.Rebin(rebinnum2)
+        hwjetsTp.Rebin(rebinnum2)
+        hstTp.Rebin(rebinnum2)
 
+        
+        httbarT.Sumw2()
+        httbarTp.Sumw2()
+        hdataT.Sumw2()
+        hdataTp.Sumw2()
+        hmudataT.Sumw2()
+        hmudataTp.Sumw2()
+        heldataT.Sumw2()
+        heldataTp.Sumw2()
+        
+    if not ( options.Eldata or options.Mudata):
+        if httbarT.Integral() > 0 : 
+            httbarT.Scale(lumi * 831.76 / 182123200. ) #hdataT.GetEntries()/ httbarT.Integral()) #
+            # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+        else :
+            print "tt empty"
+            httbarT.Scale( 0.)
+        httbarT.SetFillColor(ROOT.kGreen + 2)
+        hwjetsT.SetFillColor(ROOT.kRed)
+        hstT.SetFillColor(ROOT.kCyan )
 
+        if httbarTp.Integral() > 0 : 
+            httbarTp.Scale(lumi * 831.76 / 182123200. )  # hdataTp.GetEntries()/ httbarTp.Integral()) #
+            # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+        else :
+            print "tt empty"
+            httbarTp.Scale( 0.)
 
-    if httbarT.Integral() > 0 : 
-        httbarT.Scale( hdataT.GetEntries()/ httbarT.Integral())
-        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
-    else :
-        print "tt empty"
-        httbarT.Scale( 0.)
-    httbarT.SetFillColor(ROOT.kGreen + 2)
+    if  ( options.Mudata):
+        if httbarT.Integral() > 0 : 
+            httbarT.Scale( lumi * 831.76 / 182123200. )#hmudataT.GetEntries()/ (  httbarT.Integral() ))
+            # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+        else :
+            print "tt empty"
+            httbarT.Scale( 0.)
+        httbarT.SetFillColor(ROOT.kGreen + 2)
+        hwjetsT.SetFillColor(ROOT.kRed)
+        hstT.SetFillColor(ROOT.kCyan )
+        if httbarTp.Integral() > 0 : 
+            httbarTp.Scale( lumi * 831.76 / 182123200. ) #hmudataTp.GetEntries()/(  httbarTp.Integral()  )) #
+            # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+        else :
+            print "tt empty"
+            httbarTp.Scale( 0.)
 
-    if httbarTp.Integral() > 0 : 
-        httbarTp.Scale( hdataTp.GetEntries()/ httbarTp.Integral())
-        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
-    else :
-        print "tt empty"
-        httbarTp.Scale( 0.)
-
-
+ 
+    if options.Eldata :
+        if httbarT.Integral() > 0 : 
+            httbarT.Scale(lumi * 831.76 / 182123200. ) #heldataT.GetEntries()/ httbarT.Integral()) #
+            # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+        else :
+            print "tt empty"
+            httbarT.Scale( 0.)
+        httbarT.SetFillColor(ROOT.kGreen + 2)
+        hwjetsT.SetFillColor(ROOT.kRed)
+        hstT.SetFillColor(ROOT.kCyan )
+        if httbarTp.Integral() > 0 : 
+            httbarTp.Scale( lumi * 831.76 / 182123200. ) #heldataTp.GetEntries()/ httbarTp.Integral()) #
+            # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+        else :
+            print "tt empty"
+            httbarTp.Scale( 0.)
 
 
 
     httbarTp.SetFillColor(ROOT.kGreen + 2)
+    hwjetsTp.SetFillColor(ROOT.kRed )
+    hstTp.SetFillColor(ROOT.kCyan )
 
     hdataT.SetMarkerStyle(20)
     hdataTp.SetMarkerStyle(20)
-    #hdataT_b1p.SetTitle( title )
+    hmudataT.SetMarkerStyle(20)
+    hmudataTp.SetMarkerStyle(20)
+    heldataT.SetMarkerStyle(20)
+    heldataTp.SetMarkerStyle(20)
 
     if options.pre :
         httbarT = httbarTp.Clone()
+        hwjetsT = hwjetsTp.Clone()
+        hstT = hstTp.Clone()
         hdataT = hdataTp.Clone()
+        hmudataT = hmudataTp.Clone()
+        heldataT = heldataTp.Clone()
 
     mc = ROOT.THStack('WmaSS','; Subjet Soft Drop Mass ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
     #mc.Add( hzjets )
     #mc.Add( hwjets )
     #mc.Add( hsingletop )
+
+    mc.Add( hwjetsT)
+    #mc.Add( hstT)
     mc.Add( httbarT)
 
-    # IMPORTANT: must match data_mean and data_sigma as well as corresponding MC values in other plotting script Plot_Wsubjet.py
+
 
     #fitting
-    #fitter_data = ROOT.TF1("fitter_data", "gaus",  50. , 150. ) #65.0, 105.0, )   
+
+
     if (ipt >= 2) :
-        fitter_data = ROOT.TF1("fitter_data", "gaus",options.min2 , options.max2 )
-        data_meanval = Datameans[2]
-        data_sigmaval = Datasigmas[2] 
-        if ipt > 2 :
-            fitter_data = ROOT.TF1("fitter_data", "gaus",options.min3 , options.max3 )
-            data_meanval = Datameans[3]
-            data_sigmaval = Datasigmas[3] 
+        minn = options.min2
+        maxx = options.max2
+        if ipt > 2 :   
+            minn = options.min3
+            maxx = options.max3
     else:
-        fitter_data = ROOT.TF1("fitter_data", "gaus", options.min0 , options.max0 )
-        data_meanval = Datameans[0]
-        data_sigmaval = Datasigmas[0] 
+        minn = options.min0
+        maxx = options.max0
         if ipt > 0 :
-            fitter_data = ROOT.TF1("fitter_data", "gaus", options.min1 , options.max1 )
-            data_meanval = Datameans[1]
-            data_sigmaval = Datasigmas[1] 
+            minn = options.min1
+            maxx = options.max1 
+
+    fitter_data = ROOT.TF1("fitter_data", "gaus", minn , maxx )
+    data_meanval = Datameans[ipt]
+    data_sigmaval = Datasigmas[ipt] 
+    fitter_mudata = ROOT.TF1("fitter_mudata", "gaus",  minn , maxx  )
+    mudata_meanval = MuDatameans[ipt]
+    mudata_sigmaval = MuDatasigmas[ipt] 
+    fitter_eldata = ROOT.TF1("fitter_eldata", "gaus",  minn , maxx  )
+    eldata_meanval = ElDatameans[ipt]
+    eldata_sigmaval = ElDatasigmas[ipt] 
+
 
     if options.fixFit :
         fitter_data.FixParameter(1, data_meanval)
         fitter_data.FixParameter(2, data_sigmaval)
+        fitter_mudata.FixParameter(1, mudata_meanval)
+        fitter_mudata.FixParameter(2, mudata_sigmaval)
+        fitter_eldata.FixParameter(1, eldata_meanval)
+        fitter_eldata.FixParameter(2, eldata_sigmaval)
     #fitter_data.SetParLimits(1, data_mean_min , data_mean_max)
     #fitter_data.SetParLimits(2, data_sigma_min , data_sigma_max)
     
@@ -425,10 +631,20 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     fitter_data.SetLineColor(1)
     fitter_data.SetLineWidth(2)
     fitter_data.SetLineStyle(2)
+    fitter_mudata.SetLineColor(1)
+    fitter_mudata.SetLineWidth(2)
+    fitter_mudata.SetLineStyle(2)
+    fitter_eldata.SetLineColor(1)
+    fitter_eldata.SetLineWidth(2)
+    fitter_eldata.SetLineStyle(2)
     if options.fixFit :
         hdataT.Fit(fitter_data,'B' )
+        hmudataT.Fit(fitter_mudata,'B' )
+        heldataT.Fit(fitter_eldata,'B' )
     else :
         hdataT.Fit(fitter_data,'R' )
+        hmudataT.Fit(fitter_mudata,'R' )
+        heldataT.Fit(fitter_eldata,'R' )
 
     amp_data    = fitter_data.GetParameter(0);
     eamp_data   = fitter_data.GetParError(0); 
@@ -437,39 +653,46 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     width_data  = fitter_data.GetParameter(2);
     ewidth_data = fitter_data.GetParError(2); 
 
-    print 'amp_data    '+str(amp_data    ) 
-    print 'eamp_data   '+str(eamp_data   ) 
-    print 'mean_data   '+str(mean_data   ) 
-    print 'emean_data  '+str(emean_data  ) 
-    print 'width_data  '+str(width_data  ) 
-    print 'ewidth_data '+str(ewidth_data ) 
+    print 'Combined: amp_data {0:6.3}, eamp_data {1:6.3}, mean_data {2:6.3},emean_data {3:6.3}, width_data {4:6.3}, ewidth_data {5:6.3}  '.format(amp_data , eamp_data , mean_data, emean_data,  width_data, ewidth_data   ) 
+
+    mamp_data    = fitter_mudata.GetParameter(0);
+    meamp_data   = fitter_mudata.GetParError(0); 
+    mmean_data   = fitter_mudata.GetParameter(1);
+    memean_data  = fitter_mudata.GetParError(1); 
+    mwidth_data  = fitter_mudata.GetParameter(2);
+    mewidth_data = fitter_mudata.GetParError(2); 
+
+    print 'Muon data: amp_data {0:6.3}, eamp_data {1:6.3}, mean_data {2:6.3},emean_data {3:6.3}, width_data {4:6.3}, ewidth_data {5:6.3}  '.format(mamp_data , meamp_data , mmean_data, memean_data,  mwidth_data, mewidth_data   ) 
+
+    Eamp_data    = fitter_eldata.GetParameter(0);
+    Eeamp_data   = fitter_eldata.GetParError(0); 
+    Emean_data   = fitter_eldata.GetParameter(1);
+    Eemean_data  = fitter_eldata.GetParError(1); 
+    Ewidth_data  = fitter_eldata.GetParameter(2);
+    Eewidth_data = fitter_eldata.GetParError(2); 
+
+    print 'Electron data: amp_data {0:6.3}, eamp_data {1:6.3}, mean_data {2:6.3},emean_data {3:6.3}, width_data {4:6.3}, ewidth_data {5:6.3}  '.format(Eamp_data , Eeamp_data , Emean_data, Eemean_data,  Ewidth_data, Eewidth_data   ) 
+
+
 
     if options.pre :
         Datameans[ipt] = mean_data
         Datasigmas[ipt] = width_data
+        MuDatameans[ipt] = mmean_data
+        MuDatasigmas[ipt] = mwidth_data
+        ElDatameans[ipt] = Emean_data
+        ElDatasigmas[ipt] = Ewidth_data
 
     mchist = httbarT.Clone()
      
-    #mchist.Add( hsingletop )
-    #mchist.Add( httbarT )
+    mchist.Add( hwjetsT )
+    #mchist.Add( hstT )
 
 
-    if (ipt >= 2) :
-        fitter_mc = ROOT.TF1("fitter_mc", "gaus", options.min2 , options.max2 )
-        mc_meanval = MCmeans[2]
-        mc_sigmaval = MCsigmas[2]
-        if ipt > 2 :   
-            fitter_mc = ROOT.TF1("fitter_mc", "gaus", options.min3 , options.max3 )
-            mc_meanval = MCmeans[3]
-            mc_sigmaval = MCsigmas[3]
-    else:
-        fitter_mc = ROOT.TF1("fitter_mc", "gaus", options.min0 , options.max0 )
-        mc_meanval = MCmeans[0]
-        mc_sigmaval = MCsigmas[0]
-        if ipt > 0 :
-            fitter_mc = ROOT.TF1("fitter_mc", "gaus", options.min1 , options.max1 )
-            mc_meanval = MCmeans[1]
-            mc_sigmaval = MCsigmas[1]
+    fitter_mc = ROOT.TF1("fitter_mc", "gaus", minn , maxx )
+    mc_meanval = MCmeans[ipt]
+    mc_sigmaval = MCsigmas[ipt]
+
 
     if options.fixFit :
         fitter_mc.FixParameter(1, mc_meanval)
@@ -492,13 +715,7 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     width_mc  = fitter_mc.GetParameter(2);
     ewidth_mc = fitter_mc.GetParError(2); 
           
-    print 'amp_mc    '+str(amp_mc    ) 
-    print 'eamp_mc   '+str(eamp_mc   ) 
-    print 'mean_mc   '+str(mean_mc   ) 
-    print 'emean_mc  '+str(emean_mc  ) 
-    print 'width_mc  '+str(width_mc  ) 
-    print 'ewidth_mc '+str(ewidth_mc ) 
-
+    print 'MC : amp_mc {0:6.3}, eamp_mc {1:6.3}, mean_mc {2:6.3},emean_mc {3:6.3}, width_mc {4:6.3}, ewidth_mc {5:6.3}  '.format(amp_mc , eamp_mc , emean_mc, emean_mc,  width_mc, ewidth_mc   ) 
     if options.pre :
         MCmeans[ipt] = mean_mc
         MCsigmas[ipt] = width_mc
@@ -526,8 +743,16 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     datalow = Datameans[ipt] - Datasigmas[ipt] 
     datahigh = Datameans[ipt] + Datasigmas[ipt]
 
+    mudatalow = MuDatameans[ipt] - MuDatasigmas[ipt] 
+    mudatahigh = MuDatameans[ipt] + MuDatasigmas[ipt]
+
+    eldatalow = ElDatameans[ipt] - ElDatasigmas[ipt] 
+    eldatahigh = ElDatameans[ipt] + ElDatasigmas[ipt]
+
     mcAxis = mchist.GetXaxis()
     dataAxis = hdataT.GetXaxis()
+    mudataAxis = hmudataT.GetXaxis()
+    eldataAxis = heldataT.GetXaxis()
 
     bminmc = mcAxis.FindBin(mclow)
     bmaxmc = mcAxis.FindBin(mchigh)
@@ -535,25 +760,48 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     bmindata = hdataT.FindBin(datalow)
     bmaxdata = hdataT.FindBin(datahigh)
 
+    bminmudata = hmudataT.FindBin(mudatalow)
+    bmaxmudata = hmudataT.FindBin(mudatahigh)
+
+    bmineldata = heldataT.FindBin(eldatalow)
+    bmaxeldata = heldataT.FindBin(eldatahigh)
+
     if options.pre :
         nMCpre[ipt] = mchist.Integral(bminmc , bmaxmc  ) #/ binSizeMC
         nDatapre[ipt] = hdataT.Integral(bmindata, bmaxdata  ) #/ binSizeData
+        nMuDatapre[ipt] = hmudataT.Integral(bminmudata, bmaxmudata  ) #/ binSizeData
+        nElDatapre[ipt] = heldataT.Integral(bmineldata, bmaxeldata  ) #/ binSizeData
         nMCupre[ipt] =  math.sqrt( nMCpre[ipt] )   #mchist.IntegralError(bminmc , bmaxmc  ) / binSizeMC
         nDataupre[ipt] = math.sqrt(nDatapre[ipt] ) #hdataT.IntegralError(bmindata, bmaxdata  ) / binSizeData
+        nMuDataupre[ipt] = math.sqrt(nMuDatapre[ipt] ) 
+        nElDataupre[ipt] = math.sqrt(nElDatapre[ipt] ) 
     else :
         nMCpost[ipt] = mchist.Integral(bminmc , bmaxmc  ) #/ binSizeMC
         nDatapost[ipt] = hdataT.Integral(bmindata, bmaxdata  ) #/ binSizeData
+        nMuDatapost[ipt] = hmudataT.Integral(bminmudata, bmaxmudata  ) 
+        nElDatapost[ipt] = heldataT.Integral(bmineldata, bmaxeldata  ) 
         nMCupost[ipt] =  math.sqrt( nMCpost[ipt] )  #mchist.IntegralError(bminmc , bmaxmc  ) / binSizeMC
         nDataupost[ipt] = math.sqrt(nDatapost[ipt] )#hdataT.IntegralError(bmindata, bmaxdata  ) / binSizeData
+        nMuDataupost[ipt] = math.sqrt(nMuDatapost[ipt] )
+        nElDataupost[ipt] = math.sqrt(nElDatapost[ipt] )
 
-    if mean_mc > 0. :
+    if mean_mc > 0. : # ??? working here 
         meanrat = mean_data / mean_mc
         meanrat_uncert = meanrat * math.sqrt( (emean_data/mean_data)**2 + (emean_mc/mean_mc)**2 )
+        meanratmu = mmean_data / mean_mc
+        meanratmu_uncert = meanratmu * math.sqrt( (memean_data/mmean_data)**2 + (emean_mc/mean_mc)**2 )
+        meanratel = Emean_data / mean_mc
+        meanratel_uncert = meanratel * math.sqrt( (Eemean_data/Emean_data)**2 + (emean_mc/mean_mc)**2 )
+
     if width_mc > 0. :
         jms = width_data / width_mc
         jms_uncert = jms * math.sqrt( (ewidth_data/width_data)**2 + (ewidth_mc/width_mc)**2 )
+        jms_mu = mwidth_data / width_mc
+        jms_mu_uncert = jms_mu * math.sqrt( (mewidth_data/mwidth_data)**2 + (ewidth_mc/width_mc)**2 )
+        jms_el = Ewidth_data / width_mc
+        jms_el_uncert = jms_el * math.sqrt( (Eewidth_data/Ewidth_data)**2 + (ewidth_mc/width_mc)**2 )
 
-    print 'data_over_mc peak :  '+str(meanrat)
+    print 'data_over_mc peak combined {0:6.3}, muon {1:6.3}, electron {2:6.3} '.format(meanrat, meanratmu, meanratel)
     print '...........................................................'
 
     ibin = hpeak.GetXaxis().FindBin(pt)
@@ -561,21 +809,45 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     hwidth.SetBinContent(ibin, jms )
     hpeak.SetBinError(ibin, meanrat_uncert)   
     hwidth.SetBinError(ibin, jms_uncert)
+
+    hpeakmu.SetBinContent(ibin, meanratmu ) 
+    hwidthmu.SetBinContent(ibin, jms_mu )
+    hpeakmu.SetBinError(ibin, meanratmu_uncert)   
+    hwidthmu.SetBinError(ibin, jms_mu_uncert)
+
+    hpeakel.SetBinContent(ibin, meanratel ) 
+    hwidthel.SetBinContent(ibin, jms_el )
+    hpeakel.SetBinError(ibin, meanratel_uncert)   
+    hwidthel.SetBinError(ibin, jms_el_uncert)
+
+
     if options.pre :
         ibin = hNpassDataPre.GetXaxis().FindBin(pt)
         hNpassDataPre.SetBinContent(ibin, nDatapre[ipt])
+        hNpassMuDataPre.SetBinContent(ibin, nMuDatapre[ipt])
+        hNpassElDataPre.SetBinContent(ibin, nElDatapre[ipt])
         hNpassMCPre.SetBinContent(ibin, nMCpre[ipt])
         hNpassDataPre.SetBinError(ibin, nDataupre[ipt])
+        hNpassMuDataPre.SetBinError(ibin, nMuDataupre[ipt])
+        hNpassElDataPre.SetBinError(ibin, nElDataupre[ipt])
         hNpassMCPre.SetBinError(ibin, nMCupre[ipt])
         hmeanDataPre.SetBinContent(ibin, Datameans[ipt]) 
+        hmeanMuDataPre.SetBinContent(ibin, MuDatameans[ipt]) 
+        hmeanElDataPre.SetBinContent(ibin, ElDatameans[ipt]) 
         hmeanMCPre.SetBinContent(ibin, MCmeans[ipt] )
         hsigmaDataPre.SetBinContent(ibin, Datasigmas[ipt])
+        hsigmaMuDataPre.SetBinContent(ibin, MuDatasigmas[ipt])
+        hsigmaElDataPre.SetBinContent(ibin, ElDatasigmas[ipt])
         hsigmaMCPre.SetBinContent(ibin,  MCsigmas[ipt] )
     else :
         ibin = hNpassDataPost.GetXaxis().FindBin(pt)
         hNpassDataPost.SetBinContent(ibin, nDatapost[ipt])
+        hNpassMuDataPost.SetBinContent(ibin, nMuDatapost[ipt])
+        hNpassElDataPost.SetBinContent(ibin, nElDatapost[ipt])
         hNpassMCPost.SetBinContent(ibin, nMCpost[ipt])
         hNpassDataPost.SetBinError(ibin, nDataupost[ipt])
+        hNpassMuDataPost.SetBinError(ibin, nMuDataupost[ipt])
+        hNpassElDataPost.SetBinError(ibin, nElDataupost[ipt])
         hNpassMCPost.SetBinError(ibin, nMCupost[ipt])
 
 
@@ -586,93 +858,265 @@ for ipt in xrange(0, len(ptBs)-1 ) :
     ROOT.gStyle.SetOptStat(0000000000)
     cmsTextFont   = 61  
 
-    #c = ROOT.TCanvas('WmaSS','WmaSS')
-    c = ROOT.TCanvas('WmaSS','WmaSS',50,50,W,H)
-    c.SetFillColor(0)
-    c.SetBorderMode(0)
-    c.SetFrameFillStyle(0)
-    c.SetFrameBorderMode(0)
-    c.SetLeftMargin( L/W )
-    c.SetRightMargin( R/W )
-    c.SetTopMargin( T/H )
-    c.SetBottomMargin( B/H )
-    c.SetTickx(0)
-    c.SetTicky(0)
+    if not (options.Mudata or options.Eldata) :
+        c = ROOT.TCanvas('WmaSS','WmaSS',50,50,W,H)
+        c.SetFillColor(0)
+        c.SetBorderMode(0)
+        c.SetFrameFillStyle(0)
+        c.SetFrameBorderMode(0)
+        c.SetLeftMargin( L/W )
+        c.SetRightMargin( R/W )
+        c.SetTopMargin( T/H )
+        c.SetBottomMargin( B/H )
+        c.SetTickx(0)
+        c.SetTicky(0)
 
-    hdataT.Draw('e')
-    mc.Draw("histsame")
-    hdataT.Draw('esamex0')
+        hdataT.Draw('e')
+        mc.Draw("histsame")
+        hdataT.Draw('esamex0')
 
-    hdataT.Draw('e same')
-    hdataT.Draw("axis same")
-    fitter_mc.Draw("same")
-    fitter_data.Draw("same")
+        hdataT.Draw('e same')
+        hdataT.Draw("axis same")
+        fitter_mc.Draw("same")
+        fitter_data.Draw("same")
 
-    CMS_lumi.CMS_lumi(c, iPeriod, iPos)
+        CMS_lumi.CMS_lumi(c, iPeriod, iPos)
 
-    if not options.legleft : 
-        leg = ROOT.TLegend( 0.698, 0.316, 0.816, 0.5106)  #leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
-    else :
-        leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
-    leg.SetFillColor(0)
-    leg.SetBorderSize(0)
+        if not options.legleft : 
+            leg = ROOT.TLegend( 0.698, 0.316, 0.816, 0.5106)  #leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
+        else :
+            leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
+        leg.SetFillColor(0)
+        leg.SetBorderSize(0)
 
-    leg.AddEntry( hdataT, 'Data', 'p')
-    leg.AddEntry( httbarT, 't#bar{t}', 'f')
-    '''
-    leg.AddEntry( hwjets, 'W+Jets', 'f')
-    leg.AddEntry( hzjets, 'Z+Jets', 'f')
-    leg.AddEntry( hsingletop, 'Single Top Quark', 'f')
+        leg.AddEntry( hdataT, 'Muon and Electron Data', 'p')
+        leg.AddEntry( httbarT, 't#bar{t}', 'f')
+        leg.AddEntry( hwjetsT, 'W + jets', 'f')
+        leg.AddEntry( hstT, 'Single Top', 'f')
+        '''
+        leg.AddEntry( hzjets, 'Z+Jets', 'f')
 
-    '''
-    max1 = hdataT.GetMaximum()
-    max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
+        '''
+        max1 = hdataT.GetMaximum()
+        max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
 
-    hdataT.SetMaximum( max (max1,max2) * 1.2 )
+        hdataT.SetMaximum( max (max1,max2) * 1.2 )
 
-    hdataT.SetXTitle("Subjet Soft Drop Mass (GeV)")
-    hdataT.SetYTitle("Events")
-    hdata.BufferEmpty(1)
-    hdataT.GetXaxis().SetTitleSize(0.047)
-    hdataT.GetYaxis().SetTitleSize(0.047)
-    hdataT.GetXaxis().SetLabelSize(0.04)
-    hdataT.GetYaxis().SetLabelSize(0.04)
+        hdataT.SetXTitle("Subjet Soft Drop Mass (GeV)")
+        hdataT.SetYTitle("Events")
+        hdata.BufferEmpty(1)
+        hdataT.GetXaxis().SetTitleSize(0.047)
+        hdataT.GetYaxis().SetTitleSize(0.047)
+        hdataT.GetXaxis().SetLabelSize(0.04)
+        hdataT.GetYaxis().SetLabelSize(0.04)
 
-    leg.Draw()
+        leg.Draw()
 
-    tlx = ROOT.TLatex()
-    tlx.SetNDC()
-    tlx.SetTextFont(42)
-    tlx.SetTextSize(0.057)
-    #tlx.DrawLatex(0.68, 0.957,  str(lumi) + " fb^{-1} (13TeV)")
-    tlx.DrawLatex(0.67, 0.86, binlabel )
-    #tlx.DrawLatex(0.70, 0.81, "#it{Preliminary}")
-
-
-    tlx.SetTextSize(0.027)
-    xInfo = 0.49
-    yInfoTop = 0.475
-    yInfo2 = yInfoTop-0.042
-    yInfo3 = yInfo2-0.042
-    yInfo4 = yInfo3-0.042
-    yInfo5 = yInfo4-0.042
-    yInfo6 = yInfo5-0.042
-    yInfo7 = yInfo6-0.042
-    yInfo8 = yInfo7-0.042
-    yInfo9 = yInfo8-0.042
-    #if not options.pre :
-    #    tlx.DrawLatex(xInfo, yInfo4+0.13,"#bf{40 < m_{SD subjet 0} (GeV) < 120}")
-
-    c.Update()
-    c.Draw()
-    sele = options.filestr
-    if options.pre :
-        sele = options.filestr + '_preWTag'
-    c.Print('WsubjetSF/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
-    c.Print('WsubjetSF/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-    c.Print('WsubjetSF/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+        tlx = ROOT.TLatex()
+        tlx.SetNDC()
+        tlx.SetTextFont(42)
+        tlx.SetTextSize(0.057)
+        #tlx.DrawLatex(0.68, 0.957,  str(lumi) + " fb^{-1} (13TeV)")
+        tlx.DrawLatex(0.67, 0.86, binlabel )
+        #tlx.DrawLatex(0.70, 0.81, "#it{Preliminary}")
 
 
+        tlx.SetTextSize(0.027)
+        xInfo = 0.49
+        yInfoTop = 0.475
+        yInfo2 = yInfoTop-0.042
+        yInfo3 = yInfo2-0.042
+        yInfo4 = yInfo3-0.042
+        yInfo5 = yInfo4-0.042
+        yInfo6 = yInfo5-0.042
+        yInfo7 = yInfo6-0.042
+        yInfo8 = yInfo7-0.042
+        yInfo9 = yInfo8-0.042
+        #if not options.pre :
+        #    tlx.DrawLatex(xInfo, yInfo4+0.13,"#bf{40 < m_{SD subjet 0} (GeV) < 120}")
+
+        c.Update()
+        c.Draw()
+        sele = options.filestr
+        if options.pre :
+            sele = options.filestr + '_preWTag'
+        c.Print('WsubjetSF/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
+        c.Print('WsubjetSF/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+        c.Print('WsubjetSF/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+
+    if options.Mudata:
+        cc = ROOT.TCanvas('WmaSSMu','WmaSSMu',50,50,W,H)
+        cc.SetFillColor(0)
+        cc.SetBorderMode(0)
+        cc.SetFrameFillStyle(0)
+        cc.SetFrameBorderMode(0)
+        cc.SetLeftMargin( L/W )
+        cc.SetRightMargin( R/W )
+        cc.SetTopMargin( T/H )
+        cc.SetBottomMargin( B/H )
+        cc.SetTickx(0)
+        cc.SetTicky(0)
+
+        hmudataT.Draw('e')
+        mc.Draw("histsame")
+        hmudataT.Draw('esamex0')
+
+        hmudataT.Draw('e same')
+        hmudataT.Draw("axis same")
+        fitter_mc.Draw("same")
+        fitter_mudata.Draw("same")
+
+        CMS_lumi.CMS_lumi(cc, iPeriod, iPos)
+
+        if not options.legleft : 
+            leg = ROOT.TLegend( 0.698, 0.316, 0.816, 0.5106)  #leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
+        else :
+            leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
+        leg.SetFillColor(0)
+        leg.SetBorderSize(0)
+
+        leg.AddEntry( hmudataT, 'Muon Data', 'p')
+        leg.AddEntry( httbarT, 't#bar{t}', 'f')
+        leg.AddEntry( hwjetsT, 'W + jets', 'f')
+        leg.AddEntry( hstT, 'Single Top', 'f')
+        '''
+        leg.AddEntry( hzjets, 'Z+Jets', 'f')
+
+        '''
+        max1 = hmudataT.GetMaximum()
+        max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
+
+        hmudataT.SetMaximum( max (max1,max2) * 1.2 )
+
+        hmudataT.SetXTitle("Subjet Soft Drop Mass (GeV)")
+        hmudataT.SetYTitle("Events")
+        hmudataT.BufferEmpty(1)
+        hmudataT.GetXaxis().SetTitleSize(0.047)
+        hmudataT.GetYaxis().SetTitleSize(0.047)
+        hmudataT.GetXaxis().SetLabelSize(0.04)
+        hmudataT.GetYaxis().SetLabelSize(0.04)
+
+        leg.Draw()
+
+        tlx = ROOT.TLatex()
+        tlx.SetNDC()
+        tlx.SetTextFont(42)
+        tlx.SetTextSize(0.057)
+        #tlx.DrawLatex(0.68, 0.957,  str(lumi) + " fb^{-1} (13TeV)")
+        tlx.DrawLatex(0.67, 0.86, binlabel )
+        #tlx.DrawLatex(0.70, 0.81, "#it{Preliminary}")
+
+
+        tlx.SetTextSize(0.027)
+        xInfo = 0.49
+        yInfoTop = 0.475
+        yInfo2 = yInfoTop-0.042
+        yInfo3 = yInfo2-0.042
+        yInfo4 = yInfo3-0.042
+        yInfo5 = yInfo4-0.042
+        yInfo6 = yInfo5-0.042
+        yInfo7 = yInfo6-0.042
+        yInfo8 = yInfo7-0.042
+        yInfo9 = yInfo8-0.042
+        #if not options.pre :
+        #    tlx.DrawLatex(xInfo, yInfo4+0.13,"#bf{40 < m_{SD subjet 0} (GeV) < 120}")
+
+        cc.Update()
+        cc.Draw()
+        sele = options.filestr
+        if options.pre :
+            sele = options.filestr + '_preWTag'
+        cc.Print('WsubjetSF/wMass_mudata_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
+        cc.Print('WsubjetSF/wMass_mudata_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+        cc.Print('WsubjetSF/wMass_mudata_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+
+    if options.Eldata :
+        ccc = ROOT.TCanvas('WmaSSel','WmaSSel',50,50,W,H)
+        ccc.SetFillColor(0)
+        ccc.SetBorderMode(0)
+        ccc.SetFrameFillStyle(0)
+        ccc.SetFrameBorderMode(0)
+        ccc.SetLeftMargin( L/W )
+        ccc.SetRightMargin( R/W )
+        ccc.SetTopMargin( T/H )
+        ccc.SetBottomMargin( B/H )
+        ccc.SetTickx(0)
+        ccc.SetTicky(0)
+
+        heldataT.Draw('e')
+        mc.Draw("histsame")
+        heldataT.Draw('esamex0')
+
+        heldataT.Draw('e same')
+        heldataT.Draw("axis same")
+        fitter_mc.Draw("same")
+        fitter_eldata.Draw("same")
+
+        CMS_lumi.CMS_lumi(ccc, iPeriod, iPos)
+
+        if not options.legleft : 
+            leg = ROOT.TLegend( 0.698, 0.316, 0.816, 0.5106)  #leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
+        else :
+            leg = ROOT.TLegend( 0.746, 0.691, 0.864, 0.886)
+        leg.SetFillColor(0)
+        leg.SetBorderSize(0)
+
+        leg.AddEntry( heldataT, 'Electron Data', 'p')
+        leg.AddEntry( httbarT, 't#bar{t}', 'f')
+        leg.AddEntry( hwjetsT, 'W + jets', 'f')
+        leg.AddEntry( hstT, 'Single Top', 'f')
+        '''
+        leg.AddEntry( hzjets, 'Z+Jets', 'f')
+
+        '''
+        max1 = heldataT.GetMaximum()
+        max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
+
+        heldataT.SetMaximum( max (max1,max2) * 1.2 )
+
+        heldataT.SetXTitle("Subjet Soft Drop Mass (GeV)")
+        heldataT.SetYTitle("Events")
+        heldataT.BufferEmpty(1)
+        heldataT.GetXaxis().SetTitleSize(0.047)
+        heldataT.GetYaxis().SetTitleSize(0.047)
+        heldataT.GetXaxis().SetLabelSize(0.04)
+        heldataT.GetYaxis().SetLabelSize(0.04)
+
+        leg.Draw()
+
+        tlx = ROOT.TLatex()
+        tlx.SetNDC()
+        tlx.SetTextFont(42)
+        tlx.SetTextSize(0.057)
+        #tlx.DrawLatex(0.68, 0.957,  str(lumi) + " fb^{-1} (13TeV)")
+        tlx.DrawLatex(0.67, 0.86, binlabel )
+        #tlx.DrawLatex(0.70, 0.81, "#it{Preliminary}")
+
+
+        tlx.SetTextSize(0.027)
+        xInfo = 0.49
+        yInfoTop = 0.475
+        yInfo2 = yInfoTop-0.042
+        yInfo3 = yInfo2-0.042
+        yInfo4 = yInfo3-0.042
+        yInfo5 = yInfo4-0.042
+        yInfo6 = yInfo5-0.042
+        yInfo7 = yInfo6-0.042
+        yInfo8 = yInfo7-0.042
+        yInfo9 = yInfo8-0.042
+        #if not options.pre :
+        #    tlx.DrawLatex(xInfo, yInfo4+0.13,"#bf{40 < m_{SD subjet 0} (GeV) < 120}")
+
+        ccc.Update()
+        ccc.Draw()
+        sele = options.filestr
+        if options.pre :
+            sele = options.filestr + '_preWTag'
+        ccc.Print('WsubjetSF/wMass_eldata_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
+        ccc.Print('WsubjetSF/wMass_eldata_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+        ccc.Print('WsubjetSF/wMass_eldata_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+
+##
     ee = ROOT.TCanvas('wid','wid')
     hwidth.Draw('e')
 
