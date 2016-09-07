@@ -90,8 +90,8 @@ def treeCombiner(argv) :
     FatJetSDsubjetWtau3_ = array.array('f', [-1.])
     FatJetSDsubjetWtau21_ = array.array('f', [-1.])
 
-    FatJetSDsubjet_isRealW_ = array.array('f', [-1.])
-    FatJetSDsubjet_isFakeW_ = array.array('f', [-1.])
+    #FatJetSDsubjet_isRealW_ = array.array('f', [-1.])
+    #FatJetSDsubjet_isFakeW_ = array.array('f', [-1.])
 
     FatJetSDsubjetBpt_   = array.array('f', [-1.])
     FatJetSDsubjetBmass_ = array.array('f', [-1.])
@@ -132,8 +132,8 @@ def treeCombiner(argv) :
     TTreeSemiLept.Branch('FatJetSDsubjetWtau21'   , FatJetSDsubjetWtau21_   ,  'FatJetSDsubjetWtau21/F'   )
 
     
-    TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW_   ,  'FatJetSDsubjet_isRealW/F'   )
-    TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW_   ,  'FatJetSDsubjet_isFakeW/F'   )
+    #TTreeSemiLept.Branch('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW_   ,  'FatJetSDsubjet_isRealW/F'   )
+    #TTreeSemiLept.Branch('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW_   ,  'FatJetSDsubjet_isFakeW/F'   )
 
     TTreeSemiLept.Branch('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt_   ,  'FatJetSDsubjetBpt/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetBmass' , FatJetSDsubjetBmass_ ,  'FatJetSDsubjetBmass/F' )
@@ -165,119 +165,102 @@ def treeCombiner(argv) :
        
     if options.is80x: 
         if options.dtype == 'data' :
-            filesin = [ ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_2.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_3.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_4.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_5.root'), 
-                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_6.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_7.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_8.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_9.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_10.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_11.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_12.root'), 
-                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_13.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_14.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_15.root'), 
-                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_16.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_17.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_18.root'), 
-                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_19.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_20.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_21.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_22.root'), 
-                        #ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_23.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_24.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_25.root'), 
-                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_26.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_2.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_3.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_4.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_5.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_6.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_7.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_8.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_9.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_10.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_11.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_12.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_13.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_14.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_15.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_16.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_17.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_18.root'),
-                        #ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_19.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_20.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_21.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_22.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_23.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_24.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_25.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_26.root'),
-                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80x_80Xv2p0Ntuple_8_26_16_27.root')] 
+            filesin = [ ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_1of7.root
+                        ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_2of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_3of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_4of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_5of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_6of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_7of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_1of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_2of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_3of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_4of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_5of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_6of7.root'),
+                        ROOT.TFile('./newdata/Puppi_Mudata_lumi12p358_13TeV_80Xv2p0Ntuple_98p_7of7.root')]
+
+            '''
+            filesin = [ ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80Xv2p0Ntuple_incomplete_2of2.root'), 
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80Xv2p0Ntuple_2of2.root'),
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80Xv2p0Ntuple_1of2.root'),
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80Xv2p0Ntuple_incomplete_1of2.root')]
+
+        if options.dtype == 'mudata' :
+            filesin = [ ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80Xv2p0Ntuple_incomplete_2of2.root'), 
+                        ROOT.TFile('./data/Puppi_MuData_12p35875invfb_13TeV_80Xv2p0Ntuple_incomplete_1of2.root')]
+
+        if options.dtype == 'eldata' :
+            filesin = [ ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80Xv2p0Ntuple_2of2.root'),
+                        ROOT.TFile('./data/Puppi_ElData_12p29565invfb_13TeV_80x_80Xv2p0Ntuple_1of2.root')]
+            '''
+
         if options.dtype == 'ttjets' :
-                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_2.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_3.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_4.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_5.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_6.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_7.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_8.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_9.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_10.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_11.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_12.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_13.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_14.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_15.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_16.root'), 
-                            #ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_17.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_18.root'), 
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_19.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_20.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_21.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_22.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_23.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_24.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_25.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_26.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_27.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_28.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_29.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_30.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_31.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_32.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_33.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_34.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_35.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_36.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_37.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_38.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_39.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_40.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_41.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_42.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_43.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_44.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_45.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_46.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_47.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_48.root'),
-                            ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_49.root')]         
+
+            filesin = [ ROOT.TFile('./newttjets/Puppi_TT_TuneCUETP8M1_13TeV_80Xv2p0Ntuple_96p_1of1.root')]   
+            #filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80Xv2p0Ntuple_incomplete_1of1.root')]   
+
+        '''
         if options.dtype == 'wjets' :
-                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_48.root')]
+                filesin = [ ROOT.TFile('./wjets/Puppi_Wjets100to200_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets200to400_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets400to600_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets600to800_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets800to1200_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets1200to2500_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets2500toInf_13TeV_80Xv2p0Ntuple.root')]
+        '''
+
+        if options.dtype == 'wjets1' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_100to200_13TeV_80Xv2p0Ntuple_1of1.root')]
+        if options.dtype == 'wjets2' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_200to400_13TeV_80Xv2p0Ntuple_1of1.root')]
+        if options.dtype == 'wjets3' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_400to600_13TeV_80Xv2p0Ntuple_1of1.root')]
+        if options.dtype == 'wjets4' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_600to800_13TeV_80Xv2p0Ntuple_1of1.root')]
+        if options.dtype == 'wjets5' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_800to1200_13TeV_80Xv2p0Ntuple_1of1.root')]
+        if options.dtype == 'wjets6' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_1200to2500_13TeV_80Xv2p0Ntuple_1of1.root')]
+        if options.dtype == 'wjets7' :
+                filesin = [ ROOT.TFile('./newwjets/Puppi_WJets_2500toInf_13TeV_80Xv2p0Ntuple_1of1.root')]
+        '''
+        if options.dtype == 'wjets' :
+                filesin = [ ROOT.TFile('./wjets/Puppi_Wjets100to200_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets200to400_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets400to600_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets600to800_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets800to1200_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets1200to2500_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./wjets/Puppi_Wjets2500toInf_13TeV_80Xv2p0Ntuple.root')]
 
 
         if options.dtype == 'st' :
-                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_48.root')]
+
+                filesin = [ ROOT.TFile('./st/Puppi_STtchannelTop_13TeV_80Xv2p0Ntuple.root'),
+                            ROOT.TFile('./st/Puppi_STtchannelAntitop_13TeV_80Xv2p0Ntuple.root')]
+        '''
+
+        if options.dtype == 'st1' :
+                filesin = [ ROOT.TFile('./newst/Puppi_ST_top_13TeV_80Xv2p0Ntuple_1of1.root')]
+
+        if options.dtype == 'st2' :
+                filesin = [ ROOT.TFile('./newst/Puppi_ST_antitop_13TeV_80Xv2p0Ntuple_1of1.root')]
+
+
 
         if options.dtype == 'pseudodata' :
-                filesin = [ ROOT.TFile('./ttjets/Puppi_TT_TuneCUETP8M1_13TeV_80x_80Xv2p0Ntuple_8_26_16_1.root')]
-
+                filesin = [ ROOT.TFile('./newst/Puppi_ST_top_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newst/Puppi_ST_antitop_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_100to200_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_200to400_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_400to600_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_600to800_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_800to1200_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_1200to2500_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newwjets/Puppi_WJets_2500toInf_13TeV_80Xv2p0Ntuple_1of1.root'),
+                            ROOT.TFile('./newttjets/Puppi_TT_TuneCUETP8M1_13TeV_80Xv2p0Ntuple_96p_1of1.root')]
     else :
         if options.dtype == 'data' :
             filesin = [ ROOT.TFile('./b2gttbar_ttrees/singleel_ttree_76x_v1p2_puppi.root'), 
@@ -311,7 +294,9 @@ def treeCombiner(argv) :
 
         FatJetSDbdiscW      = array.array('f', [-1.])
         FatJetSDsubjetWpt   = array.array('f', [-1.])
+        FatJetSDsubjetWptRaw   = array.array('f', [-1.])
         FatJetSDsubjetWmass = array.array('f', [-1.])
+        FatJetSDsubjetWmassRaw = array.array('f', [-1.])
         FatJetSDsubjetWtau1 = array.array('f', [-1.])
         FatJetSDsubjetWtau2 = array.array('f', [-1.])
         FatJetSDsubjetWtau3 = array.array('f', [-1.])
@@ -324,8 +309,8 @@ def treeCombiner(argv) :
         FatJetSDsubjetBtau2 = array.array('f', [-1.])
         FatJetSDsubjetBtau3 = array.array('f', [-1.])
 
-        FatJetSDsubjet_isRealW = array.array('f', [-1.])
-        FatJetSDsubjet_isFakeW = array.array('f', [-1.])
+        #FatJetSDsubjet_isRealW = array.array('f', [-1.])
+        #FatJetSDsubjet_isFakeW = array.array('f', [-1.])
 
         LeptonType          = array.array('i', [-1])
         LeptonPt            = array.array('f', [-1.])
@@ -357,7 +342,9 @@ def treeCombiner(argv) :
 
         ttree.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
         ttree.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
+        ttree.SetBranchAddress('FatJetSDsubjetWptRaw'   , FatJetSDsubjetWptRaw   )
         ttree.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
+        ttree.SetBranchAddress('FatJetSDsubjetWmassRaw' , FatJetSDsubjetWmassRaw )
         ttree.SetBranchAddress('FatJetSDsubjetWtau1' , FatJetSDsubjetWtau1 )
         ttree.SetBranchAddress('FatJetSDsubjetWtau2' , FatJetSDsubjetWtau2 )
         ttree.SetBranchAddress('FatJetSDsubjetWtau3' , FatJetSDsubjetWtau3 )
@@ -370,8 +357,8 @@ def treeCombiner(argv) :
         ttree.SetBranchAddress('FatJetSDsubjetBtau2' , FatJetSDsubjetBtau2 )
         ttree.SetBranchAddress('FatJetSDsubjetBtau3' , FatJetSDsubjetBtau3 )
 
-        ttree.SetBranchAddress('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW ) 
-        ttree.SetBranchAddress('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW )
+        #ttree.SetBranchAddress('FatJetSDsubjet_isRealW'   , FatJetSDsubjet_isRealW ) 
+        #ttree.SetBranchAddress('FatJetSDsubjet_isFakeW'   , FatJetSDsubjet_isFakeW )
 
         ttree.SetBranchAddress('LeptonType'          , LeptonType          )
         ttree.SetBranchAddress('LeptonPt'            , LeptonPt            )
@@ -403,7 +390,9 @@ def treeCombiner(argv) :
 
         ttree.SetBranchStatus('FatJetSDbdiscW',1)
         ttree.SetBranchStatus('FatJetSDsubjetWpt',1)
+        ttree.SetBranchStatus('FatJetSDsubjetWptRaw',1)
         ttree.SetBranchStatus('FatJetSDsubjetWmass',1)
+        ttree.SetBranchStatus('FatJetSDsubjetWmassRaw',1)
         ttree.SetBranchStatus('FatJetSDsubjetWtau1',1)
         ttree.SetBranchStatus('FatJetSDsubjetWtau2',1)
         ttree.SetBranchStatus('FatJetSDsubjetWtau3',1)
@@ -416,8 +405,8 @@ def treeCombiner(argv) :
         ttree.SetBranchStatus('FatJetSDsubjetBtau2',1)
         ttree.SetBranchStatus('FatJetSDsubjetBtau3',1)
 
-        ttree.SetBranchStatus('FatJetSDsubjet_isRealW',1)
-        ttree.SetBranchStatus('FatJetSDsubjet_isFakeW',1)
+        #ttree.SetBranchStatus('FatJetSDsubjet_isRealW',1)
+        #ttree.SetBranchStatus('FatJetSDsubjet_isFakeW',1)
 
         ttree.SetBranchStatus ('LeptonType'          , 1)
         ttree.SetBranchStatus ('LeptonPt'            , 1)
@@ -490,8 +479,10 @@ def treeCombiner(argv) :
                 W_tau21 = FatJetSDsubjetWtau21[0]
 
             if options.dtype == 'ttjets':
-                realw = FatJetSDsubjet_isRealW[0]
-                fakew = FatJetSDsubjet_isFakeW[0]
+                realw = 0
+                fakew = 0
+                #realw = FatJetSDsubjet_isRealW[0]
+                #fakew = FatJetSDsubjet_isFakeW[0]
             else:
                 realw = 0
                 fakew = 0
@@ -551,8 +542,8 @@ def treeCombiner(argv) :
             FatJetSDsubjetWtau3_  [0] = W_tau3
             FatJetSDsubjetWtau21_ [0] = W_tau21
 
-            FatJetSDsubjet_isRealW_ [0] = realw 
-            FatJetSDsubjet_isFakeW_ [0] = fakew 
+            #FatJetSDsubjet_isRealW_ [0] = realw 
+            #FatJetSDsubjet_isFakeW_ [0] = fakew 
 
             FatJetSDsubjetBpt_   [0] = B_pt 
             FatJetSDsubjetBmass_ [0] = B_m
