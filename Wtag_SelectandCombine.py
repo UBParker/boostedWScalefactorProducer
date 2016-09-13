@@ -122,7 +122,7 @@ def Wtag_SelectandCombine(argv) :
 
         from treeCombiner import treeCombiner 
    
-        types = ['data', 'ttjets', 'wjets1', 'wjets2','wjets3','wjets4','wjets5','wjets6','wjets7', 'st1', 'st2', 'pseudodata' ]        
+        types = ['data', 'ttjets', 'wjets1', 'wjets2','wjets3','wjets4','wjets5','wjets6','wjets7', 'st1', 'st2'] # 'pseudodata' ]        
 
         for itype, typee in enumerate(types):
 
@@ -215,7 +215,7 @@ def Wtag_SelectandCombine(argv) :
             LeptonDRMin_           = array.array('f', [-1.])
 
             SemiLepMETpt_          = array.array('f', [-1.])
-
+            AK4bDisc_              = array.array('f', [-1.])
             SemiLeptRunNum_        = array.array('f', [-1.])   
             SemiLeptLumiBlock_     = array.array('f', [-1.])   
             SemiLeptEventNum_      = array.array('f', [-1.])   
@@ -265,7 +265,7 @@ def Wtag_SelectandCombine(argv) :
             treelist[ifileo].Branch('LeptonDRMin'         , LeptonDRMin_         ,  'LeptonDRMin/F'         ) 
 
             treelist[ifileo].Branch('SemiLepMETpt'        , SemiLepMETpt_        ,  'SemiLepMETpt/F'        )
-
+            treelist[ifileo].Branch('AK4bDisc'            , AK4bDisc_            ,  'AK4bDisc/F'        )
             treelist[ifileo].Branch('SemiLeptRunNum'         ,  SemiLeptRunNum_       ,  'SemiLeptRunNum/F'          )
             treelist[ifileo].Branch('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock_    ,  'SemiLeptLumiBlock/F'       )
             treelist[ifileo].Branch('SemiLeptEventNum'       ,  SemiLeptEventNum_     ,  'SemiLeptEventNum/F'        )
@@ -490,6 +490,9 @@ def Wtag_SelectandCombine(argv) :
     h_mWsubjet_b3_MuData  = ROOT.TH1F("h_mWsubjet_b3_MuData", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b4_MuData  = ROOT.TH1F("h_mWsubjet_b4_MuData", "; ;  ", numbins, 0, binlimit)
 
+    h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_MCp = ROOT.TH1F("h_mWsubjet_MCp", "; ;  ", numbins, 0, binlimit)
+
     h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0, binlimit)
     h_ptWsubjet_Data = ROOT.TH1F("h_ptWsubjet_Data", ";P_{T} SD subjet0 (GeV);  ", 1300, 0, 1300)
 
@@ -640,6 +643,7 @@ def Wtag_SelectandCombine(argv) :
     h_mWjet_b4_MuData  = ROOT.TH1F("h_mWjet_b4_MuData", ";m_{SD jet0} (GeV);  ", numbins, 0, binlimit)
 
     passkin = 0 
+    passWkin = 0 
     passkin2 = 0
     pass2D  = 0
     passB   = 0
@@ -647,10 +651,17 @@ def Wtag_SelectandCombine(argv) :
     passLep = 0
     passOp  = 0
     passEle   = 0
+    passEle2   = 0
+    passEle3   = 0
+    passEle4   = 0
     passMu   = 0
+    passMu2   = 0
     pass3   = 0
-
-
+    pass4   = 0
+    pass5   = 0
+    pass6   = 0
+    pass7   = 0
+    pass8   = 0
     for ifile, filee in enumerate(filesin) :
         fin = ROOT.TFile.Open( filee )
         if options.verbose : 
@@ -688,17 +699,23 @@ def Wtag_SelectandCombine(argv) :
             FatJetSDsubjetBpt     = array.array('f', [-1.])
             FatJetSDsubjetBmass   = array.array('f', [-1.])
 
-            SemiLepMETpt          = array.array('f', [-1.])
-
             LeptonType            = array.array('i', [-1])
-            LeptonPt              = array.array('f', [-1.])
+            LeptonPt            = array.array('f', [-1.])
+            LeptonEta           = array.array('f', [-1.])
+            LeptonPhi           = array.array('f', [-1.])
+            LeptonPx            = array.array('f', [-1.])
+            LeptonPy            = array.array('f', [-1.])
+            LeptonPz            = array.array('f', [-1.])
+            LeptonEnergy        = array.array('f', [-1.])
+            LeptonIso           = array.array('f', [-1.])
+            LeptonPtRel         = array.array('f', [-1.])
+            LeptonDRMin         = array.array('f', [-1.])
 
-            LeptonPtRel           = array.array('f', [-1.])
-            LeptonDRMin           = array.array('f', [-1.])
             DeltaPhiLepFat        = array.array('f', [-1.])
+            NearestAK4JetPt        = array.array('f', [-1.])
 
             SemiLepMETpt          = array.array('f', [-1.])
-
+            AK4bDisc              = array.array('f', [-1.])
             SemiLeptRunNum        = array.array('f', [-1.])   
             SemiLeptLumiBlock     = array.array('f', [-1.])   
             SemiLeptEventNum      = array.array('f', [-1.])   
@@ -733,13 +750,19 @@ def Wtag_SelectandCombine(argv) :
 
             t.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
 
+            t.SetBranchAddress('AK4bDisc'            , AK4bDisc            )
+
             t.SetBranchAddress('LeptonType'          , LeptonType          )
             t.SetBranchAddress('LeptonPt'            , LeptonPt            )
-
+            t.SetBranchAddress('LeptonEta'           , LeptonEta           )
+            t.SetBranchAddress('LeptonPhi'           , LeptonPhi           )
+            t.SetBranchAddress('LeptonEnergy'        , LeptonEnergy        )
+            t.SetBranchAddress('LeptonIso'           , LeptonIso           )
             t.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
             t.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
 
             t.SetBranchAddress('DeltaPhiLepFat'         , DeltaPhiLepFat   )
+            t.SetBranchAddress('NearestAK4JetPt'        , NearestAK4JetPt   )
 
             t.SetBranchAddress('SemiLeptEventNum'    , SemiLeptEventNum    )
 
@@ -773,14 +796,19 @@ def Wtag_SelectandCombine(argv) :
             t.SetBranchStatus('FatJetSDsubjetBpt',1)
 
             t.SetBranchStatus ('SemiLepMETpt' , 1 )
+            t.SetBranchStatus ('AK4bDisc' , 1 )
 
             t.SetBranchStatus ('LeptonType'          , 1)
             t.SetBranchStatus ('LeptonPt'            , 1)
-
+            t.SetBranchStatus ('LeptonEta'           , 1)
+            t.SetBranchStatus ('LeptonPhi'           , 1)
+            t.SetBranchStatus ('LeptonEnergy'        , 1)
+            t.SetBranchStatus ('LeptonIso'           , 1)
             t.SetBranchStatus ('LeptonPtRel'         , 1)
             t.SetBranchStatus ('LeptonDRMin'         , 1)
 
-            t.SetBranchStatus ('DeltaPhiLepFat'         , 1)
+            t.SetBranchStatus ('DeltaPhiLepFat'      , 1)
+            t.SetBranchStatus ('NearestAK4JetPt'     , 1)
 
             t.SetBranchStatus ('SemiLeptEventNum'    , 1)
         else:     
@@ -907,6 +935,7 @@ def Wtag_SelectandCombine(argv) :
             SemiLepEventWeight  = array.array('f', [-1.])
             SemilLepTTmass      = array.array('f', [-1.])  
             DeltaPhiLepFat      = array.array('f', [-1.]) 
+            NearestAK4JetPt     = array.array('f', [-1.])
             AK4bDisc            = array.array('f', [-1.])
             NearestAK4JetPt     = array.array('f', [-1.])
             NearestAK4JetEta    = array.array('f', [-1.])
@@ -975,6 +1004,7 @@ def Wtag_SelectandCombine(argv) :
             t.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
             t.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
             t.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
+            t.SetBranchAddress('AK4bDisc'            , AK4bDisc            )
             t.SetBranchAddress('SemiLepMETphi'       , SemiLepMETphi       )
             t.SetBranchAddress('SemiLepNvtx'         , SemiLepNvtx         )
             t.SetBranchAddress('DeltaPhiLepFat'      , DeltaPhiLepFat      )
@@ -1031,9 +1061,10 @@ def Wtag_SelectandCombine(argv) :
             t.SetBranchStatus ('NearestAK4JetEta'  ,1 )
             t.SetBranchStatus ('NearestAK4JetPhi'  ,1 )
             t.SetBranchStatus ('NearestAK4JetMass' ,1 )
-            t.SetBranchStatus ('SemiLepMETpt' , 1 )
-            t.SetBranchStatus ('SemiLepMETphi' , 1 )
-            t.SetBranchStatus ('LeptonType'          , 1 )
+            t.SetBranchStatus ('SemiLepMETpt'  , 1  )
+            t.SetBranchStatus ('AK4bDisc'      , 1  )
+            t.SetBranchStatus ('SemiLepMETphi' , 1  )
+            t.SetBranchStatus ('LeptonType'          , 1)
             t.SetBranchStatus ('LeptonPt'            , 1)
             t.SetBranchStatus ('LeptonEta'           , 1)
             t.SetBranchStatus ('LeptonPhi'           , 1)
@@ -1115,12 +1146,13 @@ def Wtag_SelectandCombine(argv) :
             W_tau2 = FatJetSDsubjetWtau2[0]
             W_tau3 = FatJetSDsubjetWtau3[0]
             W_bdisc = FatJetSDbdiscW[0]
+            W_eta = FatJetSDsubjetWEta[0]
 
             #applying Thea's corrections
             if options.applyTheaCorr and  FatJetSD_pt > options.Ak8PtCut and W_pt > 170. :
                 W_mRaw = FatJetSDsubjetWmassRaw[0]
                 W_ptRaw = FatJetSDsubjetWptRaw[0]
-                W_eta = FatJetSDsubjetWEta[0]
+                
                 W_phi = FatJetSDsubjetWPhi[0]
                 puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
                 W_m = FatJetSDsubjetWmassRaw[0] * puppiCorr
@@ -1145,8 +1177,10 @@ def Wtag_SelectandCombine(argv) :
             fakew = FatJetSDsubjet_isRealW[0]
 
             B_pt = FatJetSDsubjetBpt[0]
+            #if B_pt < 0. : continue
             B_m = FatJetSDsubjetBmass[0]
             B_bdisc = FatJetSDbdiscB[0]
+            ak4_bdisc = AK4bDisc[0]
 
             MET_pt = SemiLepMETpt[0]
             W_pt2 = FatJetPt[0]
@@ -1170,54 +1204,89 @@ def Wtag_SelectandCombine(argv) :
             # Now we do our kinematic calculation based on the semi-leptonic Z' selection detailed in  B2G-15-002 
 
 
-            passKin = FatJetSD_pt > options.Ak8PtCut  and W_pt > 200. and B_pt > 30.
+            passKin = FatJetSD_pt > options.Ak8PtCut  
+            passWKin = W_pt > 200.  and abs(W_eta) < 2.4 
+
+            #print "B pt is {0:6.2} and W eta is {1:5.2}".format(B_pt, W_eta)
             #if (options.verbose and FatJetSD_pt > 300.): print "The Fat jet SD_pt is" + str(FatJetSD_pt)
 
             passKin2 =  FatJetSD_pt > 200. #and W_m < 1.
             
             passWPre =   W_m > 50. 
             passWPre2 = FatJetSD_m > 50. 
-            passTopTag = tau32 < options.tau32Cut and FatJetSD_m > 110. and FatJetSD_m < 250.
-            pass2DCut = LeptonPtRel[0] > 20. or LeptonDRMin[0] > 0.4 # B2G-15-002 uses  LeptonPtRel[0] > 20.or LeptonDRMin[0] > 0.4 (was 55.0 here)
-            passBtag = B_bdisc > 0.7
-
+            passTopTagtau = tau32 < options.tau32Cut 
+            passTopTagmass = FatJetSD_m > 110. and FatJetSD_m < 250
+            pass2DCut = LeptonPtRel[0] > 20. or LeptonDRMin[0] > 0.4
+            passBtagBdisc = ak4_bdisc > 0.8 
+            passBtagPt = NearestAK4JetPt[0] > 30.
             passWPostM = (55. < W_m < 115.) #(50. < W_m < 150.) #(55. < W_m < 105.)#50 to 130 before
             #print "tau21 cut on w is :" + str(options.tau21Cut)
             #print "tau21 w is :" + str(W_tau21)
             passWPosttag = W_tau21 < options.tau21Cut  and W_tau21 > 0.1   #W_tau21 < 0.6 
-            passWPost2M = (50.0 < W_m < 150.)  #(55. < FatJetSD_m < 105.)
+            passWPost2M = (50.0 < W_m < 150.)  #(55. < FatJetSD_m < 105.)t
             passWPost2tau = tau21 < options.tau21Cut
-            passEleMETcut =  LeptonType[0] == 1 and MET_pt > 80. and LepPt > 120.  #leppt was 55. MET_pt was > 120.
+            #print "Lepton Iso is " +str(abs(LeptonIso[0]))
+            passEleMETcut = lepton_Type == 1 and MET_pt > 80. 
+            passEleEtacut = 0. < abs(LeptonEta[0]) < 1.442 or 1.56 < abs(LeptonEta[0]) < 2.5 #leppt was 55. MET_pt was > 120.
+            passElePtcut = LepPt > 120. 
+            #if passTopTag : print "Lepton of type {0:1}, MET_pt {1:3.2}, Lepton pt {2:3.2}, eta {3:3.2}".format(lepton_Type, MET_pt,LepPt, abs(LeptonEta[0])  )
             # B2G-15-002  uses ( theLepton.Perp() + MET_pt ) > 150. (was previously 250 here) 
-            passMuHtLepcut = LeptonType[0] == 2 and MET_pt > 40. and LepPt > 53. # was 55. was ( LepPt + MET_pt ) > 150.
-            passLepcut = passEleMETcut or passMuHtLepcut 
+            passMuMETPtcut = lepton_Type == 2 and MET_pt > 40. and LepPt > 53. and abs(LeptonEta[0]) < 2.1 
+            passMuIsocut = lepton_Type == 2 and LeptonIso[0] < 0.1 # was 55. was ( LepPt + MET_pt ) > 150.
+            #print "leptn dr min is : " + str(LeptonDRMin[0])
+            passLepcut = ( (passEleMETcut and passElePtcut and passEleEtacut) or (passMuMETPtcut and passMuIsocut )) and LeptonDRMin[0] > 0.3
 
-            passHemidPhi = DeltaPhiLepFat[0] > 1.
+            passHemidPhi = DeltaPhiLepFat[0] > 1. # switch to DeltaRLepFat[0] > 1.
 
+            if passKin :
+                passkin += 1
+
+            if passWKin :
+                passWkin += 1
 
             if pass2DCut : 
                 pass2D += 1
 
-            if passBtag :
+            if passBtagBdisc :
                 passB += 1
-           
-            if passTopTag :
+
+            if passBtagPt :
+                pass5 += 1   
+        
+            if passTopTagtau :
                 passT += 1
+
+            if passTopTagmass :
+                pass4 += 1
+
+            if passWPosttag:
+                pass6 +=1
+
+            if passWPostM:
+                pass7 +=1
 
             if passLepcut :
                 passLep += 1
+
             if passEleMETcut :
                 passEle +=1
-            if passMuHtLepcut :
+
+            if passEleEtacut :
+                passEle2 +=1
+
+            if passElePtcut :
+                passEle3 +=1
+
+            if passMuMETPtcut :
                 passMu +=1
 
-            #if (ifile > 0 and passKin) :
-                #h_ptWsubjet_Data_Type1.Fill(W_pt, 1)
-                #print "Pt of W tagged subjet of the AK8 jet for events 5 and 500 : " + str( W_pt)
-            #if (ifile > 0 and passKin2 ) :
-                #h_ptWsubjet_Data_Type2.Fill( FatJetSD_pt , 1)   
-                #print "Pt of W tagged AK8 jet for events 5 and 500 : " + str( W_pt)      
-            if  (passTopTag and pass2DCut and passLepcut and passHemidPhi and passBtag) : # and passBtag :  
+            if passMuIsocut :
+                passMu2 +=1  
+
+            if passHemidPhi:
+                pass8 +=1
+
+            if  (passTopTagtau and passTopTagmass and pass2DCut and passLepcut and passBtagBdisc and passBtagPt and passHemidPhi ): #
                 if options.verbose and (15. < W_m < 40.): print "Fat Jet: SD Mass {0:6.3}, Pt {1:6.3}, tau32 {2:0.4} - W Subjet: SD Mass {3:6.3}, Pt {4:6.3}, tau21 {5:0.4} - dphiLepFat {6:6.3} ".format(FatJetSD_m, FatJetSD_pt, tau32, W_m, W_pt, W_tau21, DeltaPhiLepFat[0] )
                 #print "SD pt of W subjet {0:6.3} and Pt is {1:6.3}".format()
                 if passKin2 :
@@ -1227,11 +1296,7 @@ def Wtag_SelectandCombine(argv) :
                                 h_ptWsubjet_Data_Type2.Fill(W_pt,TheWeight)
                             if (ifile == 10 ) : #ttjets.root
                                 h_ptWsubjet_MC_Type2.Fill(W_pt,TheWeight )
-                if passKin :
-                    #if ( ifile == 1 or ifile == 2 ):
-                    #    h_ptWsubjet_Data_Type1.Fill(W_pt, 1)
-                    passkin += 1
-
+                if passKin and passWKin :
                     # Fill the Combined Trees after selection
                     if options.combineTrees :
                         SemiLeptWeight_      [0] = weightS
@@ -1270,7 +1335,7 @@ def Wtag_SelectandCombine(argv) :
                         LeptonDRMin_         [0] = lepton_DRmin
 
                         SemiLepMETpt_        [0] = MET_pt
-
+                        AK4bDisc_            [0] = ak4_bdisc
                         SemiLeptRunNum_      [0] = runNum
                         SemiLeptLumiBlock_   [0] = lumiBlock 
                         SemiLeptEventNum_    [0] = eventNum
@@ -1281,7 +1346,14 @@ def Wtag_SelectandCombine(argv) :
 
                     fout.cd() 
 
-                    TheWeight = 1. # weightS
+                    TheWeight = 1.
+
+                    if (ifile != 11 and ifile != 0):
+                        h_mWsubjet_MC.Fill(W_m , TheWeight )
+                    if (ifile == 11 ):
+                        h_mWsubjet_Data.Fill(W_m , TheWeight )
+                    if (ifile == 10 ): #ttjets
+                        h_mWsubjet_ttjets.Fill(W_m , TheWeight )
 
                     if (ifile == 1 ): #st top
                         #h_mWsubjet_stp.Fill(W_m ,TheWeight )
@@ -1663,7 +1735,7 @@ def Wtag_SelectandCombine(argv) :
                         if (ifile == 10 ): #ttjets
                             if passWPostM  : 
                                 h_ptWsubjet_MC_Type1.Fill(W_pt,TheWeight )
-                            h_mWsubjet_ttjets.Fill(W_m , TheWeight )
+                            #h_mWsubjet_ttjets.Fill(W_m , TheWeight )
                             h_ptWsubjet_ttjets.Fill(W_pt , TheWeight )
 
                             if ( W_pt > 200.0 and W_pt < 300.0 ) :
@@ -1713,7 +1785,7 @@ def Wtag_SelectandCombine(argv) :
                         if (ifile == 11 ):
                             if passWPostM : 
                                 h_ptWsubjet_Data_Type1.Fill(W_pt,TheWeight)
-                            h_mWsubjet_Data.Fill(W_m , TheWeight )
+                            #h_mWsubjet_Data.Fill(W_m , TheWeight )
                             h_ptWsubjet_Data.Fill(W_pt , TheWeight )
 
                             if ( W_pt > 200.0 and W_pt < 300.0 ) : 
@@ -1731,313 +1803,386 @@ def Wtag_SelectandCombine(argv) :
                             if ( W_pt > 500.0 ) : 
                                 #Wsj_data[3].Fill(W_m , 1 )
                                 h_mWsubjet_b4_Data.Fill(W_m , TheWeight )
+
+    sf = 0.
+    if (h_mWsubjet_Data.Integral() > 0) and (h_mWsubjet_MC.Integral() > 0): 
+        diff = h_mWsubjet_Data.Integral()-h_mWsubjet_MC.Integral()
+        sf = diff/ (h_mWsubjet_ttjets.Integral())+1
     lumi = 12300.
     kfactorw = 1.21
+    scalefactor = 1.
+    scalefactortt = 1.
+    if sf > 0. :
+        scalefactortt = sf
+        print "TT SCALE FACTOR APPLIED WAS : " + str(sf)
     # W + jets cross sections from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#W_jets
+
+
+    if h_mWsubjet_b1_ttjets.Integral() > 0 : 
+        h_mWsubjet_b1_ttjets.Scale(lumi* scalefactortt * 831.76 / 91061600. )#97994456. )#182123200.) #hdataT.GetEntries()/ httbarT.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b1 empty"
+        h_mWsubjet_b1_ttjets.Scale( 0.)
+
+
+    if h_mWsubjet_b1_ttjetsp.Integral() > 0 : 
+        h_mWsubjet_b1_ttjetsp.Scale(lumi* scalefactortt * 831.76 / 97994456. )#182123200. )  # hdataTp.GetEntries()/ httbarTp.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b1 p empty"
+        h_mWsubjet_b1_ttjetsp.Scale( 0.)
+
+    if h_mWsubjet_b2_ttjets.Integral() > 0 : 
+        h_mWsubjet_b2_ttjets.Scale(lumi* scalefactortt * 831.76 / 91061600. )#97994456. )#182123200.) #hdataT.GetEntries()/ httbarT.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b2 empty"
+        h_mWsubjet_b2_ttjets.Scale( 0.)
+
+
+    if h_mWsubjet_b2_ttjetsp.Integral() > 0 : 
+        h_mWsubjet_b2_ttjetsp.Scale(lumi* scalefactortt * 831.76 / 97994456. )#182123200. )  # hdataTp.GetEntries()/ httbarTp.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b2 p empty"
+        h_mWsubjet_b2_ttjetsp.Scale( 0.)
+
+    if h_mWsubjet_b3_ttjets.Integral() > 0 : 
+        h_mWsubjet_b3_ttjets.Scale(lumi* scalefactortt * 831.76 / 91061600. )#97994456. )#182123200.) #hdataT.GetEntries()/ httbarT.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b3 empty"
+        h_mWsubjet_b3_ttjets.Scale( 0.)
+
+
+    if h_mWsubjet_b3_ttjetsp.Integral() > 0 : 
+        h_mWsubjet_b3_ttjetsp.Scale(lumi* scalefactortt * 831.76 / 97994456. )#182123200. )  # hdataTp.GetEntries()/ httbarTp.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b3 p empty"
+        h_mWsubjet_b3_ttjetsp.Scale( 0.)
+
+    if h_mWsubjet_b4_ttjets.Integral() > 0 : 
+        h_mWsubjet_b4_ttjets.Scale(lumi* scalefactortt * 831.76 / 91061600. )#97994456. )#182123200.) #hdataT.GetEntries()/ httbarT.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b4 empty"
+        h_mWsubjet_b4_ttjets.Scale( 0.)
+
+
+    if h_mWsubjet_b4_ttjetsp.Integral() > 0 : 
+        h_mWsubjet_b4_ttjetsp.Scale(lumi* scalefactortt * 831.76 / 97994456. )#182123200. )  # hdataTp.GetEntries()/ httbarTp.Integral()) #
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt b4 p empty"
+        h_mWsubjet_b4_ttjetsp.Scale( 0.)
+
     if h_mWsubjet_b1_wjets1.Integral() > 0 : 
-        h_mWsubjet_b1_wjets1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b1_wjets1.Scale(lumi * kfactorw * scalefactor *1345. / 10152718.)#27529599. ) 
     else :
         print "w+jets 100to200 b1 empty"
         h_mWsubjet_b1_wjets1.Scale( 0.)
     if h_mWsubjet_b1_wjetsp1.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b1_wjetsp1.Scale(lumi * kfactorw * scalefactor *1345. /10152718. )# 27529599. ) 
     else :
         print "w+jets p 100to200 b1 empty"
         h_mWsubjet_b1_wjetsp1.Scale( 0.)
 
     if h_mWsubjet_b1_wjets2.Integral() > 0 : 
-        h_mWsubjet_b1_wjets2.Scale(lumi * kfactorw *359.7 / 4963240.) 
+        h_mWsubjet_b1_wjets2.Scale(lumi * kfactorw * scalefactor *359.7 / 4963240.) 
     else :
         print "w+jets 200to400 b1 empty"
         h_mWsubjet_b1_wjets2.Scale( 0.)
+
     if h_mWsubjet_b1_wjetsp2.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp2.Scale(lumi * kfactorw *359.7 / 4963240.) 
+        h_mWsubjet_b1_wjetsp2.Scale(lumi * kfactorw * scalefactor *359.7 / 4963240.) 
     else :
         print "w+jets p 200to400 b1 empty"
         h_mWsubjet_b1_wjetsp2.Scale( 0.)
 
     if h_mWsubjet_b1_wjets3.Integral() > 0 : 
-        h_mWsubjet_b1_wjets3.Scale(lumi *kfactorw * 48.91/ 1963464. ) 
+        h_mWsubjet_b1_wjets3.Scale(lumi *kfactorw * scalefactor * 48.91/ 1963464. ) 
     else :
         print "w+jets 400to600 b1 empty"
         h_mWsubjet_b1_wjets3.Scale( 0.)
     if h_mWsubjet_b1_wjetsp3.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp3.Scale(lumi *kfactorw * 48.91/ 1963464.) 
+        h_mWsubjet_b1_wjetsp3.Scale(lumi *kfactorw * scalefactor * 48.91/ 1963464.) 
     else :
         print "w+jets p 400to600 b1 empty"
         h_mWsubjet_b1_wjetsp3.Scale( 0.)    
 
     if h_mWsubjet_b1_wjets4.Integral() > 0 : 
-        h_mWsubjet_b1_wjets4.Scale(lumi * kfactorw * 12.05/  3722395.) 
+        h_mWsubjet_b1_wjets4.Scale(lumi * kfactorw * scalefactor * 12.05/  3722395.) 
     else :
         print "w+jets 600to800 b1 empty"
         h_mWsubjet_b1_wjets4.Scale( 0.)
     if h_mWsubjet_b1_wjetsp4.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp4.Scale(lumi * kfactorw *12.05 / 3722395. ) 
+        h_mWsubjet_b1_wjetsp4.Scale(lumi * kfactorw * scalefactor *12.05 / 3722395. ) 
     else :
         print "w+jets p 600to800 b1 empty"
         h_mWsubjet_b1_wjetsp4.Scale( 0.)
 
     if h_mWsubjet_b1_wjets5.Integral() > 0 : 
-        h_mWsubjet_b1_wjets5.Scale(lumi *kfactorw * 5.501 / 6314257.) 
+        h_mWsubjet_b1_wjets5.Scale(lumi *kfactorw * scalefactor * 5.501 / 6314257.) 
     else :
         print "w+jets 800to1200 b1 empty"
         h_mWsubjet_b1_wjets5.Scale( 0.)
     if h_mWsubjet_b1_wjetsp5.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp5.Scale(lumi * kfactorw *5.501 / 6314257.) 
+        h_mWsubjet_b1_wjetsp5.Scale(lumi * kfactorw * scalefactor *5.501 / 6314257.) 
     else :
         print "w+jets p 800to1200 b1 empty"
         h_mWsubjet_b1_wjetsp5.Scale( 0.)
 
     if h_mWsubjet_b1_wjets6.Integral() > 0 : 
-        h_mWsubjet_b1_wjets6.Scale(lumi  * kfactorw *1.329 / 6768156.) 
+        h_mWsubjet_b1_wjets6.Scale(lumi  * kfactorw * scalefactor *1.329 / 6768156.) 
     else :
         print "w+jets 1200to2500 b1 empty"
         h_mWsubjet_b1_wjets6.Scale( 0.)
     if h_mWsubjet_b1_wjetsp6.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp6.Scale(lumi * kfactorw *1.329 / 6768156.) 
+        h_mWsubjet_b1_wjetsp6.Scale(lumi * kfactorw * scalefactor *1.329 / 6768156.) 
     else :
         print "w+jets p 1200to2500 b1 empty"
         h_mWsubjet_b1_wjetsp6.Scale( 0.)
 
     if h_mWsubjet_b1_wjets7.Integral() > 0 : 
-        h_mWsubjet_b1_wjets7.Scale(lumi *kfactorw * 0.03216 / 253561.) 
+        h_mWsubjet_b1_wjets7.Scale(lumi *kfactorw * scalefactor * 0.03216 / 253561.) 
     else :
         print "w+jets 2500toInf b1 empty"
         h_mWsubjet_b1_wjets7.Scale( 0.)
     if h_mWsubjet_b1_wjetsp7.Integral() > 0 : 
-        h_mWsubjet_b1_wjetsp7.Scale(lumi * kfactorw *0.03216 / 253561. ) 
+        h_mWsubjet_b1_wjetsp7.Scale(lumi * kfactorw * scalefactor *0.03216 / 253561. ) 
     else :
         print "w+jets p 2500toInf empty"
         h_mWsubjet_b1_wjetsp7.Scale( 0.)
     # bin2
     if h_mWsubjet_b2_wjets1.Integral() > 0 : 
-        h_mWsubjet_b2_wjets1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b2_wjets1.Scale(lumi * kfactorw * scalefactor *1345. / 27529599. ) 
     else :
         print "w+jets 100to200 b2 empty"
         h_mWsubjet_b2_wjets1.Scale( 0.)
     if h_mWsubjet_b2_wjetsp1.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp1.Scale(lumi *kfactorw * 1345. / 27529599. ) 
+        h_mWsubjet_b2_wjetsp1.Scale(lumi *kfactorw * scalefactor * 1345. / 27529599. ) 
     else :
         print "w+jets p 100to200 b2 empty"
         h_mWsubjet_b2_wjetsp1.Scale( 0.)
 
     if h_mWsubjet_b2_wjets2.Integral() > 0 : 
-        h_mWsubjet_b2_wjets2.Scale(lumi * kfactorw *359.7 / 4963240.) 
+        h_mWsubjet_b2_wjets2.Scale(lumi * kfactorw * scalefactor *359.7 / 4963240.) 
     else :
         print "w+jets 200to400 b2 empty"
         h_mWsubjet_b2_wjets2.Scale( 0.)
     if h_mWsubjet_b2_wjetsp2.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp2.Scale(lumi *kfactorw * 359.7 / 4963240.) 
+        h_mWsubjet_b2_wjetsp2.Scale(lumi *kfactorw * scalefactor * 359.7 / 4963240.) 
     else :
         print "w+jets p 200to400 b2 empty"
         h_mWsubjet_b2_wjetsp2.Scale( 0.)
 
     if h_mWsubjet_b2_wjets3.Integral() > 0 : 
-        h_mWsubjet_b2_wjets3.Scale(lumi * kfactorw *48.91/ 1963464. ) 
+        h_mWsubjet_b2_wjets3.Scale(lumi * kfactorw * scalefactor *48.91/ 1963464. ) 
     else :
         print "w+jets 400to600 b2 empty"
         h_mWsubjet_b2_wjets3.Scale( 0.)
     if h_mWsubjet_b2_wjetsp3.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp3.Scale(lumi * kfactorw *48.91/ 1963464.) 
+        h_mWsubjet_b2_wjetsp3.Scale(lumi * kfactorw * scalefactor *48.91/ 1963464.) 
     else :
         print "w+jets p 400to600 b2 empty"
         h_mWsubjet_b2_wjetsp3.Scale( 0.)    
 
     if h_mWsubjet_b2_wjets4.Integral() > 0 : 
-        h_mWsubjet_b2_wjets4.Scale(lumi *  kfactorw *12.05/  3722395.) 
+        h_mWsubjet_b2_wjets4.Scale(lumi *  kfactorw * scalefactor *12.05/  3722395.) 
     else :
         print "w+jets 600to800 b2 empty"
         h_mWsubjet_b2_wjets4.Scale( 0.)
     if h_mWsubjet_b2_wjetsp4.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp4.Scale(lumi * kfactorw *12.05 / 3722395. ) 
+        h_mWsubjet_b2_wjetsp4.Scale(lumi * kfactorw * scalefactor *12.05 / 3722395. ) 
     else :
         print "w+jets p 600to800 b2 empty"
         h_mWsubjet_b2_wjetsp4.Scale( 0.)
 
     if h_mWsubjet_b2_wjets5.Integral() > 0 : 
-        h_mWsubjet_b2_wjets5.Scale(lumi *kfactorw * 5.501 / 6314257.) 
+        h_mWsubjet_b2_wjets5.Scale(lumi *kfactorw * scalefactor * 5.501 / 6314257.) 
     else :
         print "w+jets 800to1200 b2 empty"
         h_mWsubjet_b2_wjets5.Scale( 0.)
     if h_mWsubjet_b2_wjetsp5.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp5.Scale(lumi * kfactorw *5.501 / 6314257.) 
+        h_mWsubjet_b2_wjetsp5.Scale(lumi * kfactorw * scalefactor *5.501 / 6314257.) 
     else :
         print "w+jets p 800to1200 b2 empty"
         h_mWsubjet_b2_wjetsp5.Scale( 0.)
 
     if h_mWsubjet_b2_wjets6.Integral() > 0 : 
-        h_mWsubjet_b2_wjets6.Scale(lumi  *kfactorw * 1.329 / 6768156.) 
+        h_mWsubjet_b2_wjets6.Scale(lumi  *kfactorw * scalefactor * 1.329 / 6768156.) 
     else :
         print "w+jets 1200to2500 b2 empty"
         h_mWsubjet_b2_wjets6.Scale( 0.)
     if h_mWsubjet_b2_wjetsp6.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp6.Scale(lumi * kfactorw *1.329 / 6768156.) 
+        h_mWsubjet_b2_wjetsp6.Scale(lumi * kfactorw * scalefactor *1.329 / 6768156.) 
     else :
         print "w+jets p 1200to2500 b2 empty"
         h_mWsubjet_b2_wjetsp6.Scale( 0.)
 
     if h_mWsubjet_b2_wjets7.Integral() > 0 : 
-        h_mWsubjet_b2_wjets7.Scale(lumi * kfactorw *0.03216 / 253561.) 
+        h_mWsubjet_b2_wjets7.Scale(lumi * kfactorw * scalefactor *0.03216 / 253561.) 
     else :
         print "w+jets 2500toInf b2 empty"
         h_mWsubjet_b2_wjets7.Scale( 0.)
     if h_mWsubjet_b2_wjetsp7.Integral() > 0 : 
-        h_mWsubjet_b2_wjetsp7.Scale(lumi *kfactorw * 0.03216 / 253561. ) 
+        h_mWsubjet_b2_wjetsp7.Scale(lumi *kfactorw * scalefactor * 0.03216 / 253561. ) 
     else :
         print "w+jets p 2500toInf b2 empty"
         h_mWsubjet_b2_wjetsp7.Scale( 0.)
     #bin3
     if h_mWsubjet_b3_wjets1.Integral() > 0 : 
-        h_mWsubjet_b3_wjets1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b3_wjets1.Scale(lumi * kfactorw * scalefactor *1345. / 27529599. ) 
     else :
         print "w+jets 100to200 b3 empty"
         h_mWsubjet_b3_wjets1.Scale( 0.)
     if h_mWsubjet_b3_wjetsp1.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b3_wjetsp1.Scale(lumi * kfactorw * scalefactor *1345. / 27529599. ) 
     else :
         print "w+jets p 100to200 b3 empty"
         h_mWsubjet_b3_wjetsp1.Scale( 0.)
 
     if h_mWsubjet_b3_wjets2.Integral() > 0 : 
-        h_mWsubjet_b3_wjets2.Scale(lumi *kfactorw * 359.7 / 4963240.) 
+        h_mWsubjet_b3_wjets2.Scale(lumi *kfactorw * scalefactor * 359.7 / 4963240.) 
     else :
         print "w+jets 200to400 b3 empty"
         h_mWsubjet_b3_wjets2.Scale( 0.)
     if h_mWsubjet_b3_wjetsp2.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp2.Scale(lumi *kfactorw * 359.7 / 4963240.) 
+        h_mWsubjet_b3_wjetsp2.Scale(lumi *kfactorw * scalefactor * 359.7 / 4963240.) 
     else :
         print "w+jets p 200to400 b3 empty"
         h_mWsubjet_b3_wjetsp2.Scale( 0.)
 
     if h_mWsubjet_b3_wjets3.Integral() > 0 : 
-        h_mWsubjet_b3_wjets3.Scale(lumi * kfactorw *48.91/ 1963464. ) 
+        h_mWsubjet_b3_wjets3.Scale(lumi * kfactorw * scalefactor *48.91/ 1963464. ) 
     else :
         print "w+jets 400to600 b3 empty"
         h_mWsubjet_b3_wjets3.Scale( 0.)
     if h_mWsubjet_b3_wjetsp3.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp3.Scale(lumi *kfactorw * 48.91/ 1963464.) 
+        h_mWsubjet_b3_wjetsp3.Scale(lumi *kfactorw * scalefactor * 48.91/ 1963464.) 
     else :
         print "w+jets p 400to600 b3 empty"
         h_mWsubjet_b3_wjetsp3.Scale( 0.)    
 
     if h_mWsubjet_b3_wjets4.Integral() > 0 : 
-        h_mWsubjet_b3_wjets4.Scale(lumi * kfactorw * 12.05/  3722395.) 
+        h_mWsubjet_b3_wjets4.Scale(lumi * kfactorw * scalefactor * 12.05/  3722395.) 
     else :
         print "w+jets 600to800 b3 empty"
         h_mWsubjet_b3_wjets4.Scale( 0.)
     if h_mWsubjet_b3_wjetsp4.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp4.Scale(lumi *kfactorw * 12.05 / 3722395. ) 
+        h_mWsubjet_b3_wjetsp4.Scale(lumi *kfactorw * scalefactor * 12.05 / 3722395. ) 
     else :
         print "w+jets p 600to800 b3 empty"
         h_mWsubjet_b3_wjetsp4.Scale( 0.)
 
     if h_mWsubjet_b3_wjets5.Integral() > 0 : 
-        h_mWsubjet_b3_wjets5.Scale(lumi * kfactorw *5.501 / 6314257.) 
+        h_mWsubjet_b3_wjets5.Scale(lumi * kfactorw * scalefactor *5.501 / 6314257.) 
     else :
         print "w+jets 800to1200 b3 empty"
         h_mWsubjet_b3_wjets5.Scale( 0.)
     if h_mWsubjet_b3_wjetsp5.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp5.Scale(lumi *kfactorw * 5.501 / 6314257.) 
+        h_mWsubjet_b3_wjetsp5.Scale(lumi *kfactorw * scalefactor * 5.501 / 6314257.) 
     else :
         print "w+jets p 800to1200 b3 empty"
         h_mWsubjet_b3_wjetsp5.Scale( 0.)
 
     if h_mWsubjet_b3_wjets6.Integral() > 0 : 
-        h_mWsubjet_b3_wjets6.Scale(lumi  *kfactorw * 1.329 / 6768156.) 
+        h_mWsubjet_b3_wjets6.Scale(lumi  *kfactorw * scalefactor * 1.329 / 6768156.) 
     else :
         print "w+jets 1200to2500 b3 empty"
         h_mWsubjet_b3_wjets6.Scale( 0.)
     if h_mWsubjet_b3_wjetsp6.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp6.Scale(lumi * kfactorw *1.329 / 6768156.) 
+        h_mWsubjet_b3_wjetsp6.Scale(lumi * kfactorw * scalefactor *1.329 / 6768156.) 
     else :
         print "w+jets p 1200to2500 b3 empty"
         h_mWsubjet_b3_wjetsp6.Scale( 0.)
 
     if h_mWsubjet_b3_wjets7.Integral() > 0 : 
-        h_mWsubjet_b3_wjets7.Scale(lumi * kfactorw *0.03216 / 253561.) 
+        h_mWsubjet_b3_wjets7.Scale(lumi * kfactorw * scalefactor *0.03216 / 253561.) 
     else :
         print "w+jets 2500toInf b3 empty"
         h_mWsubjet_b3_wjets7.Scale( 0.)
     if h_mWsubjet_b3_wjetsp7.Integral() > 0 : 
-        h_mWsubjet_b3_wjetsp7.Scale(lumi * kfactorw *0.03216 / 253561. ) 
+        h_mWsubjet_b3_wjetsp7.Scale(lumi * kfactorw * scalefactor *0.03216 / 253561. ) 
     else :
         print "w+jets p 2500toInf b3  empty"
         h_mWsubjet_b3_wjetsp7.Scale( 0.)
     #bin4
     if h_mWsubjet_b4_wjets1.Integral() > 0 : 
-        h_mWsubjet_b4_wjets1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b4_wjets1.Scale(lumi * kfactorw * scalefactor *1345. / 27529599. ) 
     else :
         print "w+jets 100to200 b4 empty"
         h_mWsubjet_b4_wjets1.Scale( 0.)
     if h_mWsubjet_b4_wjetsp1.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp1.Scale(lumi * kfactorw *1345. / 27529599. ) 
+        h_mWsubjet_b4_wjetsp1.Scale(lumi * kfactorw * scalefactor *1345. / 27529599. ) 
     else :
         print "w+jets p 100to200 b4 empty"
         h_mWsubjet_b4_wjetsp1.Scale( 0.)
 
     if h_mWsubjet_b4_wjets2.Integral() > 0 : 
-        h_mWsubjet_b4_wjets2.Scale(lumi *kfactorw * 359.7 / 4963240.) 
+        h_mWsubjet_b4_wjets2.Scale(lumi *kfactorw * scalefactor * 359.7 / 4963240.) 
     else :
         print "w+jets 200to400 b4 empty"
         h_mWsubjet_b4_wjets2.Scale( 0.)
     if h_mWsubjet_b4_wjetsp2.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp2.Scale(lumi *kfactorw * 359.7 / 4963240.) 
+        h_mWsubjet_b4_wjetsp2.Scale(lumi *kfactorw * scalefactor * 359.7 / 4963240.) 
     else :
         print "w+jets p 200to400 b4 empty"
         h_mWsubjet_b4_wjetsp2.Scale( 0.)
 
     if h_mWsubjet_b4_wjets3.Integral() > 0 : 
-        h_mWsubjet_b4_wjets3.Scale(lumi * kfactorw *48.91/ 1963464. ) 
+        h_mWsubjet_b4_wjets3.Scale(lumi * kfactorw * scalefactor *48.91/ 1963464. ) 
     else :
         print "w+jets 400to600 b4 empty"
         h_mWsubjet_b4_wjets3.Scale( 0.)
     if h_mWsubjet_b4_wjetsp3.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp3.Scale(lumi * kfactorw *48.91/ 1963464.) 
+        h_mWsubjet_b4_wjetsp3.Scale(lumi * kfactorw * scalefactor *48.91/ 1963464.) 
     else :
         print "w+jets p 400to600 b4 empty"
         h_mWsubjet_b4_wjetsp3.Scale( 0.)    
 
     if h_mWsubjet_b4_wjets4.Integral() > 0 : 
-        h_mWsubjet_b4_wjets4.Scale(lumi * kfactorw * 12.05/  3722395.) 
+        h_mWsubjet_b4_wjets4.Scale(lumi * kfactorw * scalefactor * 12.05/  3722395.) 
     else :
         print "w+jets 600to800 b4 empty"
         h_mWsubjet_b4_wjets4.Scale( 0.)
     if h_mWsubjet_b4_wjetsp4.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp4.Scale(lumi * kfactorw *12.05 / 3722395. ) 
+        h_mWsubjet_b4_wjetsp4.Scale(lumi * kfactorw * scalefactor *12.05 / 3722395. ) 
     else :
         print "w+jets p 600to800 b4 empty"
         h_mWsubjet_b4_wjetsp4.Scale( 0.)
 
     if h_mWsubjet_b4_wjets5.Integral() > 0 : 
-        h_mWsubjet_b4_wjets5.Scale(lumi *kfactorw * 5.501 / 6314257.) 
+        h_mWsubjet_b4_wjets5.Scale(lumi *kfactorw * scalefactor * 5.501 / 6314257.) 
     else :
         print "w+jets 800to1200 b4 empty"
         h_mWsubjet_b4_wjets5.Scale( 0.)
     if h_mWsubjet_b4_wjetsp5.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp5.Scale(lumi * 5.501*kfactorw  / 6314257.) 
+        h_mWsubjet_b4_wjetsp5.Scale(lumi * 5.501*kfactorw * scalefactor  / 6314257.) 
     else :
         print "w+jets p 800to1200 b4 empty"
         h_mWsubjet_b4_wjetsp5.Scale( 0.)
 
     if h_mWsubjet_b4_wjets6.Integral() > 0 : 
-        h_mWsubjet_b4_wjets6.Scale(lumi  * kfactorw *1.329 / 6768156.) 
+        h_mWsubjet_b4_wjets6.Scale(lumi  * kfactorw * scalefactor *1.329 / 6768156.) 
     else :
         print "w+jets 1200to2500 b4 empty"
         h_mWsubjet_b4_wjets6.Scale( 0.)
     if h_mWsubjet_b4_wjetsp6.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp6.Scale(lumi * kfactorw *1.329 / 6768156.) 
+        h_mWsubjet_b4_wjetsp6.Scale(lumi * kfactorw * scalefactor *1.329 / 6768156.) 
     else :
         print "w+jets p 1200to2500 b4 empty"
         h_mWsubjet_b4_wjetsp6.Scale( 0.)
 
     if h_mWsubjet_b4_wjets7.Integral() > 0 : 
-        h_mWsubjet_b4_wjets7.Scale(lumi * kfactorw * 0.03216 / 253561.) 
+        h_mWsubjet_b4_wjets7.Scale(lumi * kfactorw * scalefactor * 0.03216 / 253561.) 
     else :
         print "w+jets 2500toInf b4 empty"
         h_mWsubjet_b4_wjets7.Scale( 0.)
     if h_mWsubjet_b4_wjetsp7.Integral() > 0 : 
-        h_mWsubjet_b4_wjetsp7.Scale(lumi * kfactorw *0.03216 / 253561. ) 
+        h_mWsubjet_b4_wjetsp7.Scale(lumi * kfactorw * scalefactor *0.03216 / 253561. ) 
     else :
         print "w+jets p 2500toInf b4 empty"
         h_mWsubjet_b4_wjetsp7.Scale( 0.)
@@ -2266,9 +2411,32 @@ def Wtag_SelectandCombine(argv) :
     h_mWsubjet_b4_stp.Add(h_mWsubjet_b4_stp2)
 
     print "Number of events passing basic cuts:"
+
+    print "total passing top pt cut: " + str(passkin)
+    print "total passing top tau32 cut: " + str(passT)
+    print "total passing top mass: " + str(pass4)
+
+    print "total passing 2D cut: " + str(pass2D)
+    print "total passing B tag bdisc: " + str(passB)
+    print "total passing B tag pt: " + str(pass5)
+
+    print "total passing W subjet pt and eta cut:   " + str(passWkin)
+    print "total passing W subjet tau21 cut:        " + str(pass6)
+    print "total passing W subjet mass cut:         " + str(pass7)
+
+    print "total passing Electron MET cuts :        " + str(passEle)
+    print "total passing Electron eta cuts:         " + str(passEle2)
+    print "total passing Electron  pt cuts:         " + str(passEle3)
+    print "total passing Muon MET, eta and pt cuts: " + str(passMu)
+    print "total passing Muon Isolation cut:        " + str(passMu2)
+    print "total passing Lepton cuts and DR cut:    " + str(passLep)
+
+    print "total passing Lepton AK8 DPhi cut:    " + str(pass8)
+
     print "total passing pre-selection : " + str(passkin)
 
     print "total passing final selection : " + str(passOp)
+
 
     fout.cd() 
     fout.Write()
