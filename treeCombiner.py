@@ -84,6 +84,10 @@ def treeCombiner(argv) :
 
     FatJetSDbdiscW_      = array.array('f', [-1.])
     FatJetSDsubjetWpt_   = array.array('f', [-1.])
+    FatJetSDsubjetWptRaw_   = array.array('f', [-1.])
+    FatJetSDsubjetWmassRaw_   = array.array('f', [-1.])
+    FatJetSDsubjetWEta_   = array.array('f', [-1.])
+    FatJetSDsubjetWPhi_   = array.array('f', [-1.])
     FatJetSDsubjetWmass_ = array.array('f', [-1.])
     FatJetSDsubjetWtau1_ = array.array('f', [-1.])
     FatJetSDsubjetWtau2_ = array.array('f', [-1.])
@@ -99,13 +103,23 @@ def treeCombiner(argv) :
 
     LeptonType_          = array.array('i', [-1])
     LeptonPt_            = array.array('f', [-1.])
-
+    LeptonEta_           = array.array('f', [-1.])
+    LeptonPhi_           = array.array('f', [-1.])
+    LeptonPx_            = array.array('f', [-1.])
+    LeptonPy_            = array.array('f', [-1.])
+    LeptonPz_            = array.array('f', [-1.])
+    LeptonEnergy_        = array.array('f', [-1.])
+    LeptonIso_           = array.array('f', [-1.])
     LeptonPtRel_         = array.array('f', [-1.])
     LeptonDRMin_         = array.array('f', [-1.])
-    DeltaPhiLepFat_       = array.array('f', [-1.])
 
-    SemiLepMETpt_        = array.array('f', [-1.])
+    LeptonPtRel_           = array.array('f', [-1.])
+    LeptonDRMin_           = array.array('f', [-1.])
+    DeltaPhiLepFat_        = array.array('f', [-1.])
+    NearestAK4JetPt_       = array.array('f', [-1.])
 
+    SemiLepMETpt_          = array.array('f', [-1.])
+    AK4bDisc_              = array.array('f', [-1.])    
     SemiLeptRunNum_        = array.array('f', [-1.])   
     SemiLeptLumiBlock_     = array.array('f', [-1.])   
     SemiLeptEventNum_      = array.array('f', [-1.])   
@@ -125,7 +139,11 @@ def treeCombiner(argv) :
 
     TTreeSemiLept.Branch('FatJetSDbdiscW'   , FatJetSDbdiscW_   ,  'FatJetSDbdiscW/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt_   ,  'FatJetSDsubjetWpt/F'   )
+    TTreeSemiLept.Branch('FatJetSDsubjetWptRaw'   , FatJetSDsubjetWptRaw_   ,  'FatJetSDsubjetWptRaw/F'   )
+    TTreeSemiLept.Branch('FatJetSDsubjetWEta'   , FatJetSDsubjetWEta_   ,  'FatJetSDsubjetWEta/F'   )
+    TTreeSemiLept.Branch('FatJetSDsubjetWPhi'   , FatJetSDsubjetWPhi_   ,  'FatJetSDsubjetWPhi/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWmass' , FatJetSDsubjetWmass_ ,  'FatJetSDsubjetWmass/F' )
+    TTreeSemiLept.Branch('FatJetSDsubjetWmassRaw' , FatJetSDsubjetWmassRaw_ ,  'FatJetSDsubjetWmassRaw/F' )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau1'   , FatJetSDsubjetWtau1_   ,  'FatJetSDsubjetWtau1/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau2'   , FatJetSDsubjetWtau2_   ,  'FatJetSDsubjetWtau2/F'   )
     TTreeSemiLept.Branch('FatJetSDsubjetWtau3'   , FatJetSDsubjetWtau3_   ,  'FatJetSDsubjetWtau3/F'   )
@@ -141,13 +159,25 @@ def treeCombiner(argv) :
 
     TTreeSemiLept.Branch('LeptonType'          , LeptonType_          ,  'LeptonType/I'          )
     TTreeSemiLept.Branch('LeptonPt'            , LeptonPt_            ,  'LeptonPt/F'            )
+    TTreeSemiLept.Branch('LeptonEta'           , LeptonEta_           ,  'LeptonEta/F'           )
+    TTreeSemiLept.Branch('LeptonPhi'           , LeptonPhi_           ,  'LeptonPhi/F'           )
+    TTreeSemiLept.Branch('LeptonPx'            , LeptonPx_            ,  'LeptonPx/F'            )
+    TTreeSemiLept.Branch('LeptonPy'            , LeptonPy_            ,  'LeptonPy/F'            )
+    TTreeSemiLept.Branch('LeptonPz'            , LeptonPz_            ,  'LeptonPz/F'            )
+    TTreeSemiLept.Branch('LeptonEnergy'        , LeptonEnergy_        ,  'LeptonEnergy/F'        )
+    TTreeSemiLept.Branch('LeptonIso'           , LeptonIso_           ,  'LeptonIso/F'           )
+    TTreeSemiLept.Branch('LeptonPtRel'         , LeptonPtRel_         ,  'LeptonPtRel/F'         )
+    TTreeSemiLept.Branch('LeptonDRMin'         , LeptonDRMin_         ,  'LeptonDRMin/F'         )  
 
     TTreeSemiLept.Branch('LeptonPtRel'         , LeptonPtRel_         ,  'LeptonPtRel/F'         )
     TTreeSemiLept.Branch('LeptonDRMin'         , LeptonDRMin_         ,  'LeptonDRMin/F'         ) 
 
     TTreeSemiLept.Branch('DeltaPhiLepFat'      , DeltaPhiLepFat_      ,  'DeltaPhiLepFat/F'      ) 
+    TTreeSemiLept.Branch('NearestAK4JetPt'     , NearestAK4JetPt_     ,  'NearestAK4JetPt/F'     )
 
     TTreeSemiLept.Branch('SemiLepMETpt'        , SemiLepMETpt_        ,  'SemiLepMETpt/F'        )
+
+    TTreeSemiLept.Branch('AK4bDisc'            , AK4bDisc_            ,  'AK4bDisc/F'            )
 
     TTreeSemiLept.Branch('SemiLeptRunNum'         ,  SemiLeptRunNum_       ,  'SemiLeptRunNum/F'          )
     TTreeSemiLept.Branch('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock_    ,  'SemiLeptLumiBlock/F'       )
@@ -165,7 +195,7 @@ def treeCombiner(argv) :
        
     if options.is80x: 
         if options.dtype == 'data' :
-            filesin = [ ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_1of7.root
+            filesin = [ ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_1of7.root'),
                         ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_2of7.root'),
                         ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_3of7.root'),
                         ROOT.TFile('./newdata/Puppi_Eldata_lumi12p295_13TeV_80Xv2p0Ntuple_98p_4of7.root'),
@@ -294,6 +324,8 @@ def treeCombiner(argv) :
 
         FatJetSDbdiscW      = array.array('f', [-1.])
         FatJetSDsubjetWpt   = array.array('f', [-1.])
+        FatJetSDsubjetWEta   = array.array('f', [-1.])
+        FatJetSDsubjetWPhi   = array.array('f', [-1.])
         FatJetSDsubjetWptRaw   = array.array('f', [-1.])
         FatJetSDsubjetWmass = array.array('f', [-1.])
         FatJetSDsubjetWmassRaw = array.array('f', [-1.])
@@ -314,15 +346,25 @@ def treeCombiner(argv) :
 
         LeptonType          = array.array('i', [-1])
         LeptonPt            = array.array('f', [-1.])
+        LeptonEta           = array.array('f', [-1.])
+        LeptonPhi           = array.array('f', [-1.])
+        LeptonPx            = array.array('f', [-1.])
+        LeptonPy            = array.array('f', [-1.])
+        LeptonPz            = array.array('f', [-1.])
+        LeptonEnergy        = array.array('f', [-1.])
+        LeptonIso           = array.array('f', [-1.])
+        LeptonPtRel         = array.array('f', [-1.])
+        LeptonDRMin         = array.array('f', [-1.])
 
         LeptonPtRel         = array.array('f', [-1.])
         LeptonDRMin         = array.array('f', [-1.])
 
         DeltaPhiLepFat        = array.array('f', [-1.])
-
+        NearestAK4JetPt       = array.array('f', [-1.])
+      
         SemiLepMETpt        = array.array('f', [-1.])
 
-        #AK4bDisc            = array.array('f', [-1.])
+        AK4bDisc            = array.array('f', [-1.])
 
         SemiLeptRunNum        = array.array('f', [-1.])   
         SemiLeptLumiBlock     = array.array('f', [-1.])   
@@ -342,6 +384,8 @@ def treeCombiner(argv) :
 
         ttree.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
         ttree.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
+        ttree.SetBranchAddress('FatJetSDsubjetWEta'   , FatJetSDsubjetWEta  )
+        ttree.SetBranchAddress('FatJetSDsubjetWPhi'   , FatJetSDsubjetWPhi   )
         ttree.SetBranchAddress('FatJetSDsubjetWptRaw'   , FatJetSDsubjetWptRaw   )
         ttree.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
         ttree.SetBranchAddress('FatJetSDsubjetWmassRaw' , FatJetSDsubjetWmassRaw )
@@ -362,12 +406,25 @@ def treeCombiner(argv) :
 
         ttree.SetBranchAddress('LeptonType'          , LeptonType          )
         ttree.SetBranchAddress('LeptonPt'            , LeptonPt            )
+        ttree.SetBranchAddress('LeptonEta'           , LeptonEta           )
+        ttree.SetBranchAddress('LeptonPhi'           , LeptonPhi           )
+        ttree.SetBranchAddress('LeptonPx'            , LeptonPx            )
+        ttree.SetBranchAddress('LeptonPy'            , LeptonPy            )
+        ttree.SetBranchAddress('LeptonPz'            , LeptonPz            )
+        ttree.SetBranchAddress('LeptonEnergy'        , LeptonEnergy        )
+        ttree.SetBranchAddress('LeptonIso'           , LeptonIso           )
+        ttree.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
+        ttree.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )  
+
 
         ttree.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
         ttree.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
         ttree.SetBranchAddress('DeltaPhiLepFat'         , DeltaPhiLepFat   )
 
+        ttree.SetBranchAddress('NearestAK4JetPt'         , NearestAK4JetPt   )
+
         ttree.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
+        ttree.SetBranchAddress('AK4bDisc'            , AK4bDisc        )
 
         ttree.SetBranchAddress('SemiLeptRunNum'         ,  SemiLeptRunNum       )
         ttree.SetBranchAddress('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock    )
@@ -390,6 +447,8 @@ def treeCombiner(argv) :
 
         ttree.SetBranchStatus('FatJetSDbdiscW',1)
         ttree.SetBranchStatus('FatJetSDsubjetWpt',1)
+        ttree.SetBranchStatus('FatJetSDsubjetWEta',1)
+        ttree.SetBranchStatus('FatJetSDsubjetWPhi',1)
         ttree.SetBranchStatus('FatJetSDsubjetWptRaw',1)
         ttree.SetBranchStatus('FatJetSDsubjetWmass',1)
         ttree.SetBranchStatus('FatJetSDsubjetWmassRaw',1)
@@ -408,13 +467,24 @@ def treeCombiner(argv) :
         #ttree.SetBranchStatus('FatJetSDsubjet_isRealW',1)
         #ttree.SetBranchStatus('FatJetSDsubjet_isFakeW',1)
 
-        ttree.SetBranchStatus ('LeptonType'          , 1)
-        ttree.SetBranchStatus ('LeptonPt'            , 1)
+        ttree.SetBranchStatus('LeptonType'          , 1    )
+        ttree.SetBranchStatus('LeptonPt'            , 1    )
+        ttree.SetBranchStatus('LeptonEta'           , 1    )
+        ttree.SetBranchStatus('LeptonPhi'           , 1    )
+        ttree.SetBranchStatus('LeptonPx'            , 1    )
+        ttree.SetBranchStatus('LeptonPy'            , 1    )
+        ttree.SetBranchStatus('LeptonPz'            , 1    )
+        ttree.SetBranchStatus('LeptonEnergy'        , 1    )
+        ttree.SetBranchStatus('LeptonIso'           , 1    )
+        ttree.SetBranchStatus('LeptonPtRel'         , 1    )
+        ttree.SetBranchStatus('LeptonDRMin'         , 1    )  
 
         ttree.SetBranchStatus ('LeptonPtRel'         , 1)
         ttree.SetBranchStatus ('LeptonDRMin'         , 1)
         ttree.SetBranchStatus ('DeltaPhiLepFat'      , 1)
+        ttree.SetBranchStatus ('NearestAK4JetPt'     , 1)
         ttree.SetBranchStatus ('SemiLepMETpt'        , 1)
+        ttree.SetBranchStatus ('AK4bDisc'            , 1)
 
         ttree.SetBranchStatus ('SemiLeptRunNum'      , 1)
         ttree.SetBranchStatus ('SemiLeptLumiBlock'   , 1)
@@ -465,6 +535,10 @@ def treeCombiner(argv) :
 
             W_m = FatJetSDsubjetWmass[0]
             W_pt = FatJetSDsubjetWpt[0]
+            W_eta = FatJetSDsubjetWEta[0]
+            W_phi = FatJetSDsubjetWPhi[0]
+            W_mRaw = FatJetSDsubjetWmassRaw[0]
+            W_ptRaw = FatJetSDsubjetWptRaw[0]
             W_tau1 = FatJetSDsubjetWtau1[0]
             W_tau2 = FatJetSDsubjetWtau2[0]
             W_tau3 = FatJetSDsubjetWtau3[0]
@@ -489,7 +563,7 @@ def treeCombiner(argv) :
             B_pt = FatJetSDsubjetBpt[0]
             B_m = FatJetSDsubjetBmass[0]
             B_bdisc = FatJetSDbdiscB[0]
-
+            ak4_bdisc = AK4bDisc[0]
 
             MET_pt = SemiLepMETpt[0]
 
@@ -499,11 +573,15 @@ def treeCombiner(argv) :
 
 
             lepton_Type = LeptonType[0]
+            lepton_Eta = LeptonEta[0]
+            lepton_Phi = LeptonPhi[0]
+            lepton_Iso = LeptonIso[0]
             lepton_pt = LeptonPt[0]
             lepton_ptRel = LeptonPtRel[0]
             lepton_DRmin = LeptonDRMin[0] 
 
             dphi =  DeltaPhiLepFat[0]
+            ak4pt = NearestAK4JetPt[0]
 
             runNum = SemiLeptRunNum[0]
             lumiBlock = SemiLeptLumiBlock[0]
@@ -536,7 +614,11 @@ def treeCombiner(argv) :
 
             FatJetSDbdiscW_       [0] = W_bdisc
             FatJetSDsubjetWpt_    [0] = W_pt
+            FatJetSDsubjetWptRaw_    [0] = W_ptRaw
+            FatJetSDsubjetWEta_    [0] = W_eta
+            FatJetSDsubjetWPhi_    [0] = W_phi
             FatJetSDsubjetWmass_  [0] = W_m
+            FatJetSDsubjetWmassRaw_  [0] = W_mRaw
             FatJetSDsubjetWtau1_  [0] = W_tau1
             FatJetSDsubjetWtau2_  [0] = W_tau2
             FatJetSDsubjetWtau3_  [0] = W_tau3
@@ -550,13 +632,17 @@ def treeCombiner(argv) :
             FatJetSDbdiscB_      [0] = B_bdisc
 
             LeptonType_          [0] = lepton_Type
+            LeptonEta_          [0] = lepton_Eta
+            LeptonIso_          [0] = lepton_Iso
+            LeptonPhi_          [0] = lepton_Phi
             LeptonPt_            [0] = lepton_pt
             LeptonPtRel_         [0] = lepton_ptRel
             LeptonDRMin_         [0] = lepton_DRmin
             DeltaPhiLepFat_      [0] = dphi
+            NearestAK4JetPt_     [0] = ak4pt
 
             SemiLepMETpt_        [0] = MET_pt
-
+            AK4bDisc_            [0] = ak4_bdisc
             SemiLeptRunNum_      [0] = runNum
             SemiLeptLumiBlock_   [0] = lumiBlock 
             SemiLeptEventNum_    [0] = eventNum
