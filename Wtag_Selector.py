@@ -82,6 +82,11 @@ def Wtag_Selector(argv) :
                       dest='applyHIPCorr',
                       help='Do you want apply the HIP corrections to the muons ???')
 
+    parser.add_option('--isMC', action='store_true',
+                      default=False,
+                      dest='isMC',
+                      help='is it MC?')
+
     (options, args) = parser.parse_args(argv)
     argv = []
 
@@ -92,9 +97,14 @@ def Wtag_Selector(argv) :
     import ROOT
     ROOT.gStyle.SetOptStat(0000000000)
 
+    if options.isMC :
+        c=ROOT.KalmanMuonCalibrator("MC_80X_13TeV")
+    else :
+        c=ROOT.KalmanMuonCalibrator("DATA_80X_13TeV")
+
     def getPUPPIweight(puppipt, puppieta) : #{
 
-        finCor1 = ROOT.TFile.Open( "/home/amp/WJets/80xTrees/PuppiCorr/PuppiSoftdropMassCorr/weights/puppiCorr.root","READ")
+        finCor1 = ROOT.TFile.Open( "/home/amp/WJets/80xTrees/SimpleSelect/PuppiCorr/PuppiSoftdropMassCorr/weights/puppiCorr.root","READ")
         puppisd_corrGEN      = finCor1.Get("puppiJECcorr_gen")
         puppisd_corrRECO_cen = finCor1.Get("puppiJECcorr_reco_0eta1v3")
         puppisd_corrRECO_for = finCor1.Get("puppiJECcorr_reco_1v3eta2v5")
@@ -109,6 +119,41 @@ def Wtag_Selector(argv) :
         if (abs(puppieta) > 1.3 ): recoCorr = puppisd_corrRECO_for.Eval(puppipt)
         totalWeight = genCorr * recoCorr
         return totalWeight
+        #} 
+
+    def getgsfTrackEffScaleFactor(eleta) : #{
+        finSF = ROOT.TFile.Open( "/home/amp/WJets/80xTrees/SimpleSelect/egammaEffitxt_SF2D.root","READ")
+        th2_EGamma_SF2D     = finSF.Get("EGamma_SF2D")
+        gsfSF = EGamma_SF2D.Eval( eleta)
+        return gsfSF
+        #}  
+
+    def getHIPMuonCorr(pt, eta phi, charge) : #{
+        # apply HIP muon corrections as described here https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonScaleResolKalman
+        if muCharge[i] < 0. :
+            chargeSign = -1 
+        if muCharge[i] > 0. :
+            chargeSign = 1    
+        corrMuPt = c.getCorrectedPt(pt, eta phi, charge)
+        dpt = abs( pt- CorrMuPt )
+        dptopt = dpt/ pt
+        c.getCorrectedError(pt, eta, dptopt)#'Recall! This correction is only valid after smearing'
+        c.smear(pt, eta)
+        #print 'propagate the statistical error of the calibration
+        #print 'first get number of parameters'
+        N=c.getN()
+        print N,'parameters'
+        for i in range(0,N):
+            c.vary(i,+1)
+            print 'variation',i,'ptUp', c.getCorrectedPt(pt, eta phi, charge)
+            c.vary(i,-1)
+            print 'variation',i,'ptDwn', c.getCorrectedPt(pt, eta phi, charge)
+        c.reset()
+        #print 'propagate the closure error 
+        c.varyClosure(chargeSign)
+        newpt = c.getCorrectedPt(pt, eta phi, charge)
+        print 'After closure shift pt={0:4.3f}'.format{newpt}
+        return newpt
         #} 
 
 
@@ -153,7 +198,7 @@ def Wtag_Selector(argv) :
             FatJetRap           = array('f', [-1.])
             FatJetEnergy        = array('f', [-1.])
             FatJetBDisc         = array('f', [-1.])
-            FatJetRhoRatio      = array('f', [-1.])
+            FatJetttio      = array('f', [-1.])
             FatJetMass          = array('f', [-1.])
             FatJetMassSoftDrop  = array('f', [-1.])
             FatJetMassSDsumSubjetCorr        = array('f', [-1.] )
@@ -222,6 +267,8 @@ def Wtag_Selector(argv) :
             BJet2Mass            = array('f', [-1.])
             Type2PairMass       = array('f', [-1.])
             Type2PairPt         = array('f', [-1.])
+            DeltaRLepFat        = array('f', [-1.])
+            DeltaRAK4AK8        = array('f', [-1.])
 
             LeptonType          = array('i', [-1])
             LeptonPt            = array('f', [-1.])
@@ -739,6 +786,8 @@ def Wtag_Selector(argv) :
     SemiLepEventWeight  = array.array('f', [-1.])
     SemilLepTTmass      = array.array('f', [-1.])  
     DeltaPhiLepFat      = array.array('f', [-1.]) 
+    DeltaRLepFat        = array.array('f', [-1.])
+    DeltaRAK4AK8        = array.array('f', [-1.])
     NearestAK4JetPt     = array.array('f', [-1.])
     AK4bDisc            = array.array('f', [-1.])
     NearestAK4JetPt     = array.array('f', [-1.])
@@ -811,6 +860,8 @@ def Wtag_Selector(argv) :
     t.SetBranchAddress('SemiLepMETphi'       , SemiLepMETphi       )
     t.SetBranchAddress('SemiLepNvtx'         , SemiLepNvtx         )
     t.SetBranchAddress('DeltaPhiLepFat'      , DeltaPhiLepFat      )
+    t.SetBranchAddress('DeltaRLepFat'        , DeltaRLepFat        )
+    t.SetBranchAddress('DeltaRAK4AK8'        , DeltaRAK4AK8        )
     t.SetBranchAddress('NearestAK4JetPt'     , NearestAK4JetPt     )
     t.SetBranchAddress('NearestAK4JetEta'    , NearestAK4JetEta    )
     t.SetBranchAddress('NearestAK4JetPhi'    , NearestAK4JetPhi    )
@@ -969,8 +1020,8 @@ def Wtag_Selector(argv) :
 
         #applying Thea's corrections for Type 2   FIX THIS SHOULD BE SD MASS AND PT RAW
         if options.applyTheaCorr and  options.Type2  and FatJetSD_pt >  170. and type1or2 == 2 :
-            W_mRaw = FatJetMassRaw[0]
-            W_ptRaw = FatJetPtRaw[0]
+            W_mRaw = FatJetSD_m # SD mass is raw
+            W_ptRaw = FatJetSD_pt
             puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
             FatJetSD_m = W_mRaw * puppiCorr
 
@@ -1037,12 +1088,12 @@ def Wtag_Selector(argv) :
 
         #Lepton Selection
         passLepDrmin    = LeptonDRMin[0] > 0.3
-        passHemidPhi = DeltaPhiLepFat[0] > 1. #  FIX THIS switch to DeltaRLepFat[0] > 1.
-        passLepcut = passHemidPhi and passLepDrmin and (  passEl or passMu ) 
+        passHemidR = DeltaRLepFat[0] > 1. 
+        passLepcut = passHemidR and passLepDrmin and (  passEl or passMu  ) 
 
         if passLepDrmin :
             passcuts[22] += 1
-        if passHemidPhi:
+        if passHemidR:
             passcuts[7] +=1
         if passLepcut :
             passcuts[5] += 1
@@ -1051,6 +1102,9 @@ def Wtag_Selector(argv) :
             print "Electron:  pt {0:3.2f}, eta {1:3.2f}, MET_pt {2:3.2f}".format(LepPt, abs(LepEta),  MET_pt) 
         if options.verbose and passLepcut and passMu: 
             print "Muon:  pt {0:3.2f}, eta {1:3.2f}, MET_pt {2:3.2f}".format(LepPt, abs(LepEta),  MET_pt) 
+
+        # Lepton cuts applied
+        if not passLepcut : continue
 
         #AK4 Selection
         passBtagBdisc = ak4_bdisc > 0.8 
@@ -1066,6 +1120,10 @@ def Wtag_Selector(argv) :
         if passAK4 :
             passcuts[24] += 1
 
+        # AK4 cuts applied
+        if not passAK4 : continue
+        if not passAK4 : print "THIS DOESNT DO WHAT YOU THINK IT DOES"
+
         #AK8 Selection
 
         if options.Type2 :                                                                    # Type 2 AK8 selection
@@ -1079,109 +1137,80 @@ def Wtag_Selector(argv) :
                 passcuts[14] += 1
             if passWTagmass :
                 passcuts[10] += 1
-            if passWPosttag2:
+            if passWPosttau2:
                 passcuts[15] +=1
             if passWPostM2:
                 passcuts[16] +=1
+
+            # AK8 cuts applied
+            if not (passKin2 and ):
 
         else :                                                                                # Type 1 AK8 selection
             passWPre =   W_m > 50.  # WORKING HERE ????
 
             passWPostM = 55. < W_m < 115.
-            passWPosttag = W_tau21 < options.tau21Cut  and W_tau21 > 0.1
+            passWPosttag = 0.1 < W_tau21 < options.tau21Cut 
 
             passKin = FatJetSD_pt > options.Ak8PtCut  
             passWKin = W_pt > 200.  and abs(W_eta) < 2.4 
 
             passTopTagtau = tau32 < options.tau32Cut 
-            passTopTagmass = FatJetSD_m > 110. and FatJetSD_m < 250
+            passTopTagmass =  110. < FatJetSD_m < 250.
 
             pass2DCut = LeptonPtRel[0] > 20. or LeptonDRMin[0] > 0.4
 
-    if passKin :
-        passcuts[17] += 1
+            if passKin :
+            passcuts[17] += 1
+            if passWKin :
+            passcuts[14] += 1
+            if pass2DCut : 
+            passcuts[11] += 1
+            if passTopTagtau :
+            passcuts[9] += 1
+            if passTopTagmass :
+            passcuts[10] += 1
+            if passWPosttag:
+            passcuts[15] +=1
+            if passWPostM:
+            passcuts[16] +=1
+        
+        # Type 2 cuts applied
+        if options.Type2 : 
+            if (passKin2 and passWTagmass  and passHemidR)                                                            
 
-    if passWKin :
-        passcuts[14] += 1
+            if passKin2 :
+                passcuts[14] += 1
+            if passWTagmass :
+                passcuts[10] += 1
+            if passWPosttau2:
+                passcuts[15] +=1
+            if passWPostM2:
+                passcuts[16] +=1
 
-    if pass2DCut : 
-        passcuts[11] += 1
-
-    if passTopTagtau :
-        passcuts[9] += 1
-
-    if passTopTagmass :
-        passcuts[10] += 1
-
-    if passWPosttag:
-        passcuts[15] +=1
-
-    if passWPostM:
-        passcuts[16] +=1
-
-
-
-            if  (passTopTagtau and passTopTagmass and pass2DCut and passLepcut and passBtagBdisc and passBtagPt and passHemidPhi ): #
+        # Type 1 cuts applied
+        if not options.Type2 :
+            if  (passTopTagtau and passTopTagmass and pass2DCut and passLepcut and passBtagBdisc and passBtagPt and passHemidR ): #
                 if options.verbose and (15. < W_m < 40.): print "Fat Jet: SD Mass {0:6.3}, Pt {1:6.3}, tau32 {2:0.4} - W Subjet: SD Mass {3:6.3}, Pt {4:6.3}, tau21 {5:0.4} - dphiLepFat {6:6.3} ".format(FatJetSD_m, FatJetSD_pt, tau32, W_m, W_pt, W_tau21, DeltaPhiLepFat[0] )
                 #print "SD pt of W subjet {0:6.3} and Pt is {1:6.3}".format()
-                if passKin2 :
-                    if passWPost2tau :
-                        if passWPost2M :     
-                            if (ifile == 11) :
-                                h_ptWsubjet_Data_Type2.Fill(W_pt,TheWeight)
-                            if (ifile == 10 ) : #ttjets.root
-                                h_ptWsubjet_MC_Type2.Fill(W_pt,TheWeight )
+
                 if passKin and passWKin :
-                    # Fill the Combined Trees after selection
+
+
+
+
+                    # FIX THIS -Fill the Combined Trees after selection here 
                     if options.combineTrees :
-                        SemiLeptWeight_      [0] = weightS
-
-                        FatJetRhoRatio_      [0] = Rhorat
-                        FatJetMass_          [0] = fatmass
-                        FatJetPt_            [0] = fatpt
-                        FatJetMassSoftDrop_  [0] = FatJetSD_m
-                        FatJetPtSoftDrop_    [0] = FatJetSD_pt
-                        #FatJetTau1_          [0] = tau1
-                        #FatJetTau2_          [0] = tau2
-                        #FatJetTau3_          [0] = tau3
-                        FatJetTau32_         [0] = tau32
-                        FatJetTau21_         [0] = tau21
-
-                        FatJetSDsubjetWpt_   [0] = W_pt
-                        FatJetSDsubjetWEta_   [0] = W_eta
-                        FatJetSDsubjetWPhi_   [0] = W_phi
-                        FatJetSDsubjetWmass_ [0] = W_m
-                        FatJetSDsubjetWtau1_ [0] = W_tau1
-                        FatJetSDsubjetWtau2_ [0] = W_tau2
-                        FatJetSDsubjetWtau3_ [0] = W_tau3
-                        FatJetSDsubjetWtau21_ [0] = W_tau21
-
-                        FatJetSDsubjet_isRealW_ [0] = realw 
-                        FatJetSDsubjet_isFakeW_ [0] = fakew 
-
-                        FatJetSDsubjetBpt_   [0] = B_pt 
-                        FatJetSDsubjetBmass_ [0] = B_m
-                        FatJetSDbdiscB_      [0] = B_bdisc
-
-                        LeptonType_          [0] = LepType
-                        LeptonPt_            [0] = LepPt
-
-                        LeptonPtRel_         [0] = lepton_ptRel
-                        LeptonDRMin_         [0] = lepton_DRmin
-
-                        SemiLepMETpt_        [0] = MET_pt
-                        AK4bDisc_            [0] = ak4_bdisc
-                        SemiLeptRunNum_      [0] = runNum
-                        SemiLeptLumiBlock_   [0] = lumiBlock 
-                        SemiLeptEventNum_    [0] = eventNum
-
-                        foutlist[ifile].cd()
-                        treelist[ifile].Fill()
+                        print "Tree writing is not yet enabled"
+                        fout.cd()
+                        tree.Fill()
                         
 
                     fout.cd() 
-
                     TheWeight = weightS
+
+                    if LepType ==1 :
+                        ElgsfSF = getgsfTrackEffScaleFactor(LepEta)
+                        TheWeight = weightS * ElgsfSF
 
                     if (ifile != 11 and ifile != 0):
                         h_mWsubjet_MC.Fill(W_m , TheWeight )
