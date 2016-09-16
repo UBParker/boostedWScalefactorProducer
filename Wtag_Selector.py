@@ -121,12 +121,20 @@ def Wtag_Selector(argv) :
         return totalWeight
         #} 
     if options.applyElSF :
-        def getgsfTrackEffScaleFactor(eleta) : #{
-            finSF = ROOT.TFile.Open( "/home/amp/WJets/80xTrees/SimpleSelect/egammaEffitxt_SF2D.root","READ")
+        def getgsfTrackEffScaleFactor(eleta, elpt) : #{ https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaIDRecipesRun2#Electron_efficiencies_and_scale
+            finSF = ROOT.TFile.Open( "./egammaEffitxt_SF2D.root","READ")
             th2_EGamma_SF2D     = finSF.Get("EGamma_SF2D")
-            gsfSF = th2_EGamma_SF2D.Eval( eleta)
-            return gsfSF
+            if elpt <= 200. :
+                binx = th2_EGamma_SF2D.GetXaxis().FindBin( eleta )
+                biny = th2_EGamma_SF2D.GetYaxis().FindBin( elpt )
+                thegsfSF = th2_EGamma_SF2D.GetBinContent(binx, biny )
+            else :
+                binx = th2_EGamma_SF2D.GetXaxis().FindBin( eleta )
+                biny = th2_EGamma_SF2D.GetYaxis().FindBin( 200. )
+                thegsfSF = th2_EGamma_SF2D.GetBinContent(binx, biny )
+            return thegsfSF
             #}  
+
     if options.applyHIPCorr :
         if options.isMC :
             c=ROOT.KalmanMuonCalibrator("MC_80X_13TeV")
@@ -466,6 +474,10 @@ def Wtag_Selector(argv) :
     h_mWsubjet_b3p  = ROOT.TH1F("h_mWsubjet_b3p", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b4p  = ROOT.TH1F("h_mWsubjet_b4p", "; ;  ", numbins, 0, binlimit)
 
+    h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_ttjets = ROOT.TH1F("h_mWsubjet_ttjets", "; ;  ", numbins, 0, binlimit)
+
     binlimit2 = 500.
     numbins2 = 300
 
@@ -479,8 +491,8 @@ def Wtag_Selector(argv) :
     # Counters for cut flow table
     passcuts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     fillTree = False
-    passPre = 0
-    passPost = 0
+    NpassPre = 0
+    NpassPost = 0
 
     # Open Input file and read tree
     fin = ROOT.TFile.Open( filein )
@@ -851,7 +863,7 @@ def Wtag_Selector(argv) :
 
         # getting electron scale factors
         if options.applyElSF and LepType == 1 :
-            ElScaleFactor = getgsfTrackEffScaleFactor(LepEta)
+            ElScaleFactor = getgsfTrackEffScaleFactor( LepEta, LepPt )
 
 
         realw = -1
@@ -922,19 +934,15 @@ def Wtag_Selector(argv) :
             print "Muon:  pt {0:3.2f}, eta {1:3.2f}, MET_pt {2:3.2f}".format(LepPt, abs(LepEta),  MET_pt) 
 
         # Lepton cuts applied
-        if not passLepcut : continue
+        if not passLepcut : continue 
 
-        TheWeight = weightS
-        # applying electron scale factors
-        if LepType == 1 and options.applyElSF :
-            TheWeight = weightS * ElScaleFactor 
-
+        TheWeight = 1.0 
         fout.cd()
         h_lepPt.Fill(LepPt       , TheWeight)
         h_lepEta.Fill(LepEta     , TheWeight)
 
         HtLep = LepPt + MET_pt
-        h_lepHt.Fill(HtLep       , TheWeight)
+        h_lepHtLep.Fill(HtLep       , TheWeight)
 
         #AK4 Selection
         passBtagBdisc = ak4_bdisc > 0.8 
@@ -1011,18 +1019,18 @@ def Wtag_Selector(argv) :
         # Type 2 cuts applied
         if options.Type2 :
             if passKin2:
-                passPre +=1
+                NpassPre +=1
                 if  passWTagmass : # passWPosttau2 passWPostM2  
-                    passPost +=1                                                        
+                    NpassPost +=1                                                        
                     fillTree = True
 
         # Type 1 cuts applied
         if not options.Type2 :
             if passKin:
-                passPre +=1
+                NpassPre +=1
                 topandKin = passTopTagtau and passTopTagmass  and passWKin
                 if  ( topandKin and pass2DCut ):
-                    passPost +=1  
+                    NpassPost +=1  
                     fillTree = True
                     if options.verbose < 0. :
                         print "Fat Jet: SD Mass {0:6.3}, Pt {1:6.3}, tau32 {2:0.4} - W Subjet: SD Mass {3:6.3}, Pt {4:6.3}, tau21 {5:0.4} - dRLepFat {6:6.3} ".format(FatJetSD_m, FatJetSD_pt, tau32, W_m, W_pt, W_tau21, DeltaRLepFat[0] )
@@ -1042,6 +1050,11 @@ def Wtag_Selector(argv) :
                 thatMass = W_m
                 passPost = passWPosttau
 
+            TheWeight = weightS
+            # applying electron scale factors
+            if LepType == 1 and options.applyElSF :
+                TheWeight = weightS * ElScaleFactor
+
             if (options.dtype != 'data'): # ??? working here
                 h_mWsubjet_MC.Fill(thatMass , TheWeight )
             if (options.dtype == 'data'):
@@ -1059,7 +1072,7 @@ def Wtag_Selector(argv) :
                 h_mWsubjet_b4p.Fill(thatMass, TheWeight )
 
             if passPost :
-                passOp += 1 
+                NpassPost += 1 
                 if ( W_pt > 200.0 and W_pt < 300.0 ):
                     h_mWsubjet_b1.Fill(thatMass, TheWeight )
                 if ( W_pt > 300.0 and W_pt < 400.0 ) :                       
@@ -1112,9 +1125,9 @@ def Wtag_Selector(argv) :
         print "total passing W jet pt and eta cut:   " + str(passcuts[14] ) 
         print "total passing W jet mass cut:         " + str(passcuts[16] ) 
 
-        print "total passing pre-selection : " + str(passPre ) 
+        print "total passing pre-selection : " + str(NpassPre ) 
 
-        print "total passing final selection : " + str(passPost )
+        print "total passing final selection : " + str(NpassPost )
 
     else :
         print "..................................................."
@@ -1133,9 +1146,9 @@ def Wtag_Selector(argv) :
         print "total passing W subjet mass cut:         " + str(passcuts[16] )
 
 
-        print "total passing pre-selection : " + str(passPre ) 
+        print "total passing pre-selection : " + str(NpassPre ) 
 
-        print "total passing final selection : " + str(passPost )
+        print "total passing final selection : " + str(NpassPost )
 
 
     h_mWsubjet_b1.Write()
