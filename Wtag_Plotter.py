@@ -28,6 +28,11 @@ parser.add_option('--filestr', type='string', action='store',
                   default = "nom",
                   help='Label for plots')
 
+parser.add_option('--Type2', action='store_true',
+                  default=False,
+                  dest='Type2',
+                  help='Do you want to apply selection for type 2 tops as described in AN-16-215 ?')
+
 parser.add_option('--minval', type='float', action='store',
                   dest='minval',
                   default = 0.,
@@ -121,10 +126,7 @@ parser.add_option('--min3', type='float', action='store',
 (options, args) = parser.parse_args()
 argv = []
 
-
 #This script was adapted from original myMacro.py from ghm.web.cern.ch/gmh/plots/ 
-
-
 
 #set the tdr style
 tdrstyle.setTDRStyle()
@@ -157,8 +159,10 @@ R = 0.04*W_ref
 ROOT.gStyle.SetTitleOffset(1.0, "Y")
 
 
+type2 = '_'
+if options.Type2 : type2 = '_type2_'
 
-fout= ROOT.TFile('./output80xplotter/Wtag_highPtScaleFactor_80x_' + str(datatype)+ '_'+ options.infile + '.root', "RECREATE")
+fout= ROOT.TFile('./output80xplotter/Wtag'+type2+'highPtScaleFactor_80x_' + str(datatype)+ '_'+ options.infile + '.root', "RECREATE")
 
 
 if options.pre :
@@ -167,7 +171,7 @@ if options.pre :
         datatype = 'Mudata'
     if options.Eldata :
         datatype = 'Eldata'
-    fout= ROOT.TFile('./output80xplotter/Wtag_highPtScaleFactor_preWTag_80x_'+str(datatype)+ '_'+ options.infile + '.root', "RECREATE")
+    fout= ROOT.TFile('./output80xplotter/Wtag' +type2+'highPtScaleFactor_preWTag_80x_'+str(datatype)+ '_'+ options.infile + '.root', "RECREATE")
         
 ptBs =  array.array('d', [200., 300., 400., 500., 800.])
 nptBs = len(ptBs) - 1
@@ -210,8 +214,9 @@ else:
 # Create input file list
 dtypes = ['data', 'ttjets']
 filesin = [] 
+
 for dt in enumerate(dtypes) :
-    filesin.append['./output80xselector/histos_80x_' + dt + '_'+ options.filestr + '.root'
+    filesin.append['./output80xselector/histos' +type2+'80x_' + dt + '_'+ options.filestr + '.root'
 print "Using input files :  {0}".format(filesin)
 
 # Luminosity of input dataset
