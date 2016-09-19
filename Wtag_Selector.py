@@ -104,7 +104,7 @@ def Wtag_Selector(argv) :
 
     def getPUPPIweight(puppipt, puppieta) : #{
 
-        finCor1 = ROOT.TFile.Open( "/home/amp/WJets/80xTrees/SimpleSelect/PuppiCorr/PuppiSoftdropMassCorr/weights/puppiCorr.root","READ")
+        finCor1 = ROOT.TFile.Open( "./PuppiCorr/PuppiSoftdropMassCorr/weights/puppiCorr.root","READ")
         puppisd_corrGEN      = finCor1.Get("puppiJECcorr_gen")
         puppisd_corrRECO_cen = finCor1.Get("puppiJECcorr_reco_0eta1v3")
         puppisd_corrRECO_for = finCor1.Get("puppiJECcorr_reco_1v3eta2v5")
@@ -171,10 +171,6 @@ def Wtag_Selector(argv) :
 
     # Create output ROOT file to store ttree after selection-When selection is good, produce final ttrees with No wtag cuts for Roofit input
     if options.writeTree :
-        if options.is80x:
-            fileout = './output80xselector/%s_afterSelection_80x_v1p2_puppi.root'%options.dtype
-        else:
-            print "Must add 76x functionality to use this option"
             
         fout = ROOT.TFile( fileout, "RECREATE") 
 
@@ -459,6 +455,7 @@ def Wtag_Selector(argv) :
 
     if options.is80x :  
         fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
+        if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
         filein =  './%s/Puppi_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype)
 
 
@@ -473,6 +470,26 @@ def Wtag_Selector(argv) :
     h_mWsubjet_b2p  = ROOT.TH1F("h_mWsubjet_b2p", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b3p  = ROOT.TH1F("h_mWsubjet_b3p", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b4p  = ROOT.TH1F("h_mWsubjet_b4p", "; ;  ", numbins, 0, binlimit)
+
+    if not options.isMC :
+
+        h_mWsubjet_b1e  = ROOT.TH1F("h_mWsubjet_b1e", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b2e  = ROOT.TH1F("h_mWsubjet_b2e", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b3e  = ROOT.TH1F("h_mWsubjet_b3e", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b4e  = ROOT.TH1F("h_mWsubjet_b4e", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b1pe  = ROOT.TH1F("h_mWsubjet_b1pe", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b2pe  = ROOT.TH1F("h_mWsubjet_b2pe", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b3pe  = ROOT.TH1F("h_mWsubjet_b3pe", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b4pe  = ROOT.TH1F("h_mWsubjet_b4pe", "; ;  ", numbins, 0, binlimit)
+
+        h_mWsubjet_b1m  = ROOT.TH1F("h_mWsubjet_b1m", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b2m  = ROOT.TH1F("h_mWsubjet_b2m", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b3m  = ROOT.TH1F("h_mWsubjet_b3m", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b4m  = ROOT.TH1F("h_mWsubjet_b4m", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b1pm  = ROOT.TH1F("h_mWsubjet_b1pm", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b2pm  = ROOT.TH1F("h_mWsubjet_b2pm", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b3pm  = ROOT.TH1F("h_mWsubjet_b3pm", "; ;  ", numbins, 0, binlimit)
+        h_mWsubjet_b4pm  = ROOT.TH1F("h_mWsubjet_b4pm", "; ;  ", numbins, 0, binlimit)
 
     h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0, binlimit)
@@ -1051,11 +1068,12 @@ def Wtag_Selector(argv) :
                 passPost = passWPosttau
 
             TheWeight = weightS
+
             # applying electron scale factors
             if LepType == 1 and options.applyElSF :
                 TheWeight = weightS * ElScaleFactor
 
-            if (options.dtype != 'data'): # ??? working here
+            if (options.dtype != 'data'): 
                 h_mWsubjet_MC.Fill(thatMass , TheWeight )
             if (options.dtype == 'data'):
                 h_mWsubjet_Data.Fill(thatMass , TheWeight )
@@ -1070,8 +1088,27 @@ def Wtag_Selector(argv) :
                 h_mWsubjet_b3p.Fill(thatMass, TheWeight )
             if ( W_pt > 500.0 ) : 
                 h_mWsubjet_b4p.Fill(thatMass, TheWeight )
-
-            if passPost :
+            # Fill Electron data trees
+            if (options.dtype == 'data') and LepType == 1 :
+                if ( W_pt > 200.0 and W_pt < 300.0 ):
+                    h_mWsubjet_b1pe.Fill(thatMass, TheWeight )
+                if ( W_pt > 300.0 and W_pt < 400.0 ) :                       
+                    h_mWsubjet_b2pe.Fill(thatMass , TheWeight )
+                if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                    h_mWsubjet_b3pe.Fill(thatMass, TheWeight )
+                if ( W_pt > 500.0 ) : 
+                    h_mWsubjet_b4pe.Fill(thatMass, TheWeight )
+            # Fill Muon data trees
+            if (options.dtype == 'data') and LepType == 2 :
+                if ( W_pt > 200.0 and W_pt < 300.0 ):
+                    h_mWsubjet_b1pm.Fill(thatMass, TheWeight )
+                if ( W_pt > 300.0 and W_pt < 400.0 ) :                       
+                    h_mWsubjet_b2pm.Fill(thatMass , TheWeight )
+                if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                    h_mWsubjet_b3pm.Fill(thatMass, TheWeight )
+                if ( W_pt > 500.0 ) : 
+                    h_mWsubjet_b4pm.Fill(thatMass, TheWeight )
+            if passPost : # Post cut histos after tau21 cut 
                 NpassPost += 1 
                 if ( W_pt > 200.0 and W_pt < 300.0 ):
                     h_mWsubjet_b1.Fill(thatMass, TheWeight )
@@ -1081,7 +1118,26 @@ def Wtag_Selector(argv) :
                     h_mWsubjet_b3.Fill(thatMass, TheWeight )
                 if ( W_pt > 500.0 ) : 
                     h_mWsubjet_b4.Fill(thatMass, TheWeight )
-
+                # Fill Electron data trees
+                if (options.dtype == 'data') and LepType == 1 :
+                    if ( W_pt > 200.0 and W_pt < 300.0 ):
+                        h_mWsubjet_b1e.Fill(thatMass, TheWeight )
+                    if ( W_pt > 300.0 and W_pt < 400.0 ) :                       
+                        h_mWsubjet_b2e.Fill(thatMass , TheWeight )
+                    if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                        h_mWsubjet_b3e.Fill(thatMass, TheWeight )
+                    if ( W_pt > 500.0 ) : 
+                        h_mWsubjet_b4e.Fill(thatMass, TheWeight )
+                # Fill Muon data trees
+                if (options.dtype == 'data') and LepType == 2 :
+                    if ( W_pt > 200.0 and W_pt < 300.0 ):
+                        h_mWsubjet_b1m.Fill(thatMass, TheWeight )
+                    if ( W_pt > 300.0 and W_pt < 400.0 ) :                       
+                        h_mWsubjet_b2m.Fill(thatMass , TheWeight )
+                    if ( W_pt > 400.0 and W_pt < 500.0 ) : 
+                        h_mWsubjet_b3m.Fill(thatMass, TheWeight )
+                    if ( W_pt > 500.0 ) : 
+                        h_mWsubjet_b4m.Fill(thatMass, TheWeight )
 
     print "          ****Cut Flow Table****         "
     print "total number of events of type {0:s} passing each cut".format(options.dtype) 
