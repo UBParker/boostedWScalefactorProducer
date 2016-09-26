@@ -660,11 +660,11 @@ def Wtag_Selector(argv) :
     BJetEta             = array.array('f', [-1.])
     BJetPhi             = array.array('f', [-1.])
     BJetMass            = array.array('f', [-1.])
-    BJetbDisc2           = array.array('f', [-1.])
-    BJetPt2              = array.array('f', [-1.])
-    BJetEta2             = array.array('f', [-1.])
-    BJetPhi2             = array.array('f', [-1.])
-    BJetMass2            = array.array('f', [-1.])
+    BJet2bDisc           = array.array('f', [-1.])
+    BJet2Pt              = array.array('f', [-1.])
+    BJet2Eta             = array.array('f', [-1.])
+    BJet2Phi             = array.array('f', [-1.])
+    BJet2Mass            = array.array('f', [-1.])
     Type2PairMass       = array.array('f', [-1.])
     Type2PairPt         = array.array('f', [-1.])
     LeptonType          = array.array('i', [-1])
@@ -740,11 +740,11 @@ def Wtag_Selector(argv) :
     t.SetBranchAddress('FatJetSDsubjetBtau32' , FatJetSDsubjetBtau32 )
     t.SetBranchAddress('FatJetSDsubjetBtau21' , FatJetSDsubjetBtau21 )
     t.SetBranchAddress('FatJetSDsubjetBtau3' , FatJetSDsubjetBtau3 )
-    t.SetBranchAddress('BJet2bDisc'   , BJetbDisc )
-    t.SetBranchAddress('BJet2Pt'      , BJetPt    )
-    t.SetBranchAddress('BJet2Eta'     , BJetEta   )
-    t.SetBranchAddress('BJet2Phi'     , BJetPhi   )
-    t.SetBranchAddress('BJet2Mass'    , BJetMass  )
+    t.SetBranchAddress('BJet2bDisc'   , BJet2bDisc )
+    t.SetBranchAddress('BJet2Pt'      , BJet2Pt    )
+    t.SetBranchAddress('BJet2Eta'     , BJet2Eta   )
+    t.SetBranchAddress('BJet2Phi'     , BJet2Phi   )
+    t.SetBranchAddress('BJet2Mass'    , BJet2Mass  )
     t.SetBranchAddress('LeptonType'          , LeptonType          )
     t.SetBranchAddress('LeptonPt'            , LeptonPt            )
     t.SetBranchAddress('LeptonEta'           , LeptonEta           )
@@ -872,13 +872,9 @@ def Wtag_Selector(argv) :
 
 
         # ak4 Observables            
-        bJetCandP4puppi0 = ROOT.TLorentzVector()
-        if options.Type2 :
-            bJetCandP4puppi0.SetPtEtaPhiM( BJetPt[0], BJetEta[0], BJetPhi[0], BJetMass[0])
-            ak4_bdisc = BJetbDisc[0]
-        else :
-            bJetCandP4puppi0.SetPtEtaPhiM( NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
-            ak4_bdisc = AK4bDisc[0]
+        ak4CandP4puppi0 = ROOT.TLorentzVector()
+        ak4CandP4puppi0.SetPtEtaPhiM( NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
+        ak4_bdisc = AK4bDisc[0]
 
 
         # ak8 Observables 
@@ -915,10 +911,15 @@ def Wtag_Selector(argv) :
         W_eta = FatJetSDsubjetWEta[0]
         W_phi = FatJetSDsubjetWPhi[0]
         W_tau21 = FatJetSDsubjetWtau21[0]
+        if options.Type2 :
+            B_pt = BJet2Pt[0]
+            B_m = BJet2Mass[0]
+            B_bdisc = BJet2bDisc[0]
 
-        B_pt = FatJetSDsubjetBpt[0]
-        B_m = FatJetSDsubjetBmass[0]
-        B_bdisc = FatJetSDbdiscB[0]
+        if not options.Type2 :
+            B_pt = FatJetSDsubjetBpt[0]
+            B_m = FatJetSDsubjetBmass[0]
+            B_bdisc = FatJetSDbdiscB[0]
 
 
         #applying Thea's corrections for Type 2   FIX THIS SHOULD BE SD MASS AND PT RAW
@@ -965,7 +966,7 @@ def Wtag_Selector(argv) :
 
         #Electron Selection
         passEleMETcut  = LepType == 1 and MET_pt > 80. 
-        passEleEtacut  = LepType == 1 and  0. < abs(LepEta) < 1.442 or 1.56 < abs(LepEta) < 2.5 
+        passEleEtacut  = LepType == 1 and ( 0. < abs(LepEta) < 1.442 or 1.56 < abs(LepEta) < 2.5 )
         passElePtcut   = LepType == 1  and  LepPt > 120. 
         passEl         = (passEleMETcut and passElePtcut and passEleEtacut)
 
@@ -1044,9 +1045,10 @@ def Wtag_Selector(argv) :
             h_lepHtLep_MC.Fill(HtLep    , TheWeight)
 
         #AK4 Selection
-        passBtagBdisc = ak4_bdisc > 0.8 
-        passBtagPt = NearestAK4JetPt[0] > 30.
+        passBtagBdisc = ak4_bdisc > 0.8
+        passBtagPt = ak4CandP4puppi0.Perp() > 30.
         passBDrAK8 = drAK4AK8 > 0.8 
+
         passAK4 = (passBtagBdisc and passBtagPt and passBDrAK8)
         if passBtagBdisc :
             passcuts[12] += 1
@@ -1060,8 +1062,7 @@ def Wtag_Selector(argv) :
         # AK4 cuts applied
         if not passAK4 : continue
         Ht = 0.
-        for iak4,ak4jet in enumerate(NearestAK4JetPt) :
-            Ht += NearestAK4JetPt[iak4]
+        for iak4,ak4jet in enumerate(NearestAK4JetPt) : Ht += NearestAK4JetPt[iak4]
         St = Ht + HtLep
 
         if (options.dtype == 'data') :
