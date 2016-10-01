@@ -12,7 +12,6 @@ import math
 import array as array
 from optparse import OptionParser
 
-# This script reads several TTrees and writes combined trees into root files and well as a seperate output root file with the histograms of W candidate (SD subjet 0 from Semi-Leptonic TTbar selection) mass binned by the pt of the w candidate 
 
 def Wtag_Selector(argv) : 
     parser = OptionParser()
@@ -47,6 +46,11 @@ def Wtag_Selector(argv) :
                       dest='is80x',
                       help='Are the ttrees produced using CMSSW 80X?')
 
+    parser.add_option('--TreeMaker', action='store_true',
+                      default=False,
+                      dest='TreeMaker',
+                      help='Are the ttrees produced using B2GTTbarTreeMaker.cc ?')
+
     parser.add_option('--type', type='string', action='store',
                       dest='dtype',
                       default = '',
@@ -73,7 +77,7 @@ def Wtag_Selector(argv) :
                       help='Do you want to apply SD mass corrections from Thea ???')
 
     parser.add_option('--Type2', action='store_true',
-                      default=False,
+                      default=True,
                       dest='Type2',
                       help='Do you want to apply selection for type 2 tops as described in AN-16-215 ?')
 
@@ -453,7 +457,7 @@ def Wtag_Selector(argv) :
         TreeSemiLept.Branch('SemiLeptEventNum'       ,  SemiLeptEventNum     ,  'SemiLeptEventNum/F'        )
 
 
-    if options.is80x :  
+    if options.is80x and not options.TreeMaker:  
         if options.maxEvents > 0. :
             if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
             else : fout= ROOT.TFile('./output80xselector/histos_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
@@ -462,9 +466,19 @@ def Wtag_Selector(argv) :
             else : fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
         filein =  './%s/Puppi_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype)
 
+    if options.is80x and options.TreeMaker:  
+        if options.maxEvents > 0. :
+            if options.Type2 : fout= ROOT.TFile('./Joutput80xselector/Jhistos_type2_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
+            if not options.Type2 : fout= ROOT.TFile('./Joutput80xselector/Jhistos_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
+        else : 
+            if options.Type2 : fout= ROOT.TFile('./Joutput80xselector/Jhistos_type2_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
+            else : fout= ROOT.TFile('./Joutput80xselector/Jhistos_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
+        if options.dtype == 'data' :    filein =  './J%s/b2gtree_SingleMuon_Run2016BCD-PromptReco-v2_JSONsept9_V2_99percentFinished_All.root'%(options.dtype)
+        if options.dtype == 'ttjets' :    filein = './J%s/b2gtree_TT_TuneCUETP8M1_13TeV-powheg-pythia8_RunIISpring16MiniAODv2-PUSpring16_reHLT_V2_99percentFinished_All.root'%(options.dtype)
 
-    binlimit = 200.
-    numbins = 300
+
+    binlimit = 400.
+    numbins = 600
 
     h_mWsubjet_b1  = ROOT.TH1F("h_mWsubjet_b1", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b2  = ROOT.TH1F("h_mWsubjet_b2", "; ;  ", numbins, 0, binlimit)
@@ -518,54 +532,54 @@ def Wtag_Selector(argv) :
     h_mWsubjetFailtag_ElData = ROOT.TH1F("h_mWsubjetFailtag_ElData", "; ;  ", numbins, 0, binlimit)
     h_mWsubjetFailtag_MuData = ROOT.TH1F("h_mWsubjetFailtag_MuData", "; ;  ", numbins, 0, binlimit)
  
-    binlimit2 = 200.
-    numbins2 = 300
+    binlimit2 = 1000.
+    numbins2 = 1500
 
-    h_lepPt_Data     = ROOT.TH1F("h_lepPt_Data ", "; ;  ", numbins2, 0, binlimit2)
+    h_lepPt_Data     = ROOT.TH1F("h_lepPt_Data ", "; ;  ", numbins2, 0., binlimit2)
     h_lepEta_Data     = ROOT.TH1F("h_lepEta_Data ", "; ;  ", numbins2, -3., 3.)
-    h_lepHt_Data      = ROOT.TH1F("h_lepHt_Data ", "; ;  ", numbins2, 0, binlimit2)
-    h_lepHtLep_Data   = ROOT.TH1F("h_lepHtLep_Data ", "; ;  ", numbins2, 0, binlimit2)
-    h_lepSt_Data      = ROOT.TH1F("h_lepSt_Data ", "; ;  ", numbins2, 0, binlimit2)
+    h_lepHt_Data      = ROOT.TH1F("h_lepHt_Data ", "; ;  ", numbins2, 0., binlimit2)
+    h_lepHtLep_Data   = ROOT.TH1F("h_lepHtLep_Data ", "; ;  ", numbins2, 0., binlimit2)
+    h_lepSt_Data      = ROOT.TH1F("h_lepSt_Data ", "; ;  ", numbins2, 0., binlimit2)
 
-    h_lepPt_ElData     = ROOT.TH1F("h_lepPt_ElData ", "; ;  ", numbins2, 0, binlimit2)
+    h_lepPt_ElData     = ROOT.TH1F("h_lepPt_ElData ", "; ;  ", numbins2, 0., binlimit2)
     h_lepEta_ElData     = ROOT.TH1F("h_lepEta_ElData ", "; ;  ", numbins2, -3., 3.)
-    h_lepHt_ElData      = ROOT.TH1F("h_lepHt_ElData ", "; ;  ", numbins2, 0, binlimit2)
-    h_lepHtLep_ElData   = ROOT.TH1F("h_lepHtLep_ElData ", "; ;  ", numbins2, 0, binlimit2)
-    h_lepSt_ElData      = ROOT.TH1F("h_lepSt_ElData ", "; ;  ", numbins2, 0, binlimit2)
+    h_lepHt_ElData      = ROOT.TH1F("h_lepHt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    h_lepHtLep_ElData   = ROOT.TH1F("h_lepHtLep_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    h_lepSt_ElData      = ROOT.TH1F("h_lepSt_ElData ", "; ;  ", numbins2, 0., binlimit2)
 
-    h_lepPt_MuData     = ROOT.TH1F("h_lepPt_MuData ", "; ;  ", numbins2, 0, binlimit2)
+    h_lepPt_MuData     = ROOT.TH1F("h_lepPt_MuData ", "; ;  ", numbins2, 0., binlimit2)
     h_lepEta_MuData     = ROOT.TH1F("h_lepEta_MuData ", "; ;  ", numbins2, -3., 3.)
-    h_lepHt_MuData      = ROOT.TH1F("h_lepHt_MuData ", "; ;  ", numbins2, 0, binlimit2)
-    h_lepHtLep_MuData   = ROOT.TH1F("h_lepHtLep_MuData ", "; ;  ", numbins2, 0, binlimit2)
-    h_lepSt_MuData      = ROOT.TH1F("h_lepSt_MuData ", "; ;  ", numbins2, 0, binlimit2)
+    h_lepHt_MuData      = ROOT.TH1F("h_lepHt_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    h_lepHtLep_MuData   = ROOT.TH1F("h_lepHtLep_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    h_lepSt_MuData      = ROOT.TH1F("h_lepSt_MuData ", "; ;  ", numbins2, 0., binlimit2)
 
-    h_lepPt_MC     = ROOT.TH1F("h_lepPt_MC", "; ;  ", numbins2, 0, binlimit2)
+    h_lepPt_MC     = ROOT.TH1F("h_lepPt_MC", "; ;  ", numbins2, 0., binlimit2)
     h_lepEta_MC    = ROOT.TH1F("h_lepEta_MC", "; ;  ", numbins2, -3., 3.)
-    h_lepHt_MC     = ROOT.TH1F("h_lepHt_MC", "; ;  ", numbins2, 0, binlimit2)
-    h_lepHtLep_MC  = ROOT.TH1F("h_lepHtLep_MC", "; ;  ", numbins2, 0, binlimit2)
-    h_lepSt_MC     = ROOT.TH1F("h_lepSt_MC", "; ;  ", numbins2, 0, binlimit2)
+    h_lepHt_MC     = ROOT.TH1F("h_lepHt_MC", "; ;  ", numbins2, 0., binlimit2)
+    h_lepHtLep_MC  = ROOT.TH1F("h_lepHtLep_MC", "; ;  ", numbins2, 0., binlimit2)
+    h_lepSt_MC     = ROOT.TH1F("h_lepSt_MC", "; ;  ", numbins2, 0., binlimit2)
 
 
     h_AK8Tau21_Data           = ROOT.TH1F("h_AK8Tau21_Data", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_Data     = ROOT.TH1F("h_AK8subjetTau21_Data", "; ;  ", numbins2, 0.,1.)
-    h_AK8Pt_Data              = ROOT.TH1F("h_AK8Pt_Data", "; ;  ", numbins2, 0, binlimit2)
-    h_AK8subjetPt_Data        = ROOT.TH1F("h_AK8subjetPt_Data", "; ;  ", numbins2, 0, binlimit2)
+    h_AK8Pt_Data              = ROOT.TH1F("h_AK8Pt_Data", "; ;  ", numbins2, 0., binlimit2)
+    h_AK8subjetPt_Data        = ROOT.TH1F("h_AK8subjetPt_Data", "; ;  ", numbins2, 0., binlimit2)
 
     h_AK8Tau21_ElData           = ROOT.TH1F("h_AK8Tau21_ElData", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_ElData     = ROOT.TH1F("h_AK8subjetTau21_ElData", "; ;  ", numbins2, 0., 1.)
-    h_AK8Pt_ElData              = ROOT.TH1F("h_AK8Pt_ElData", "; ;  ", numbins2, 0, binlimit2)
-    h_AK8subjetPt_ElData        = ROOT.TH1F("h_AK8subjetPt_ElData", "; ;  ", numbins2, 0, binlimit2)
+    h_AK8Pt_ElData              = ROOT.TH1F("h_AK8Pt_ElData", "; ;  ", numbins2, 0., binlimit2)
+    h_AK8subjetPt_ElData        = ROOT.TH1F("h_AK8subjetPt_ElData", "; ;  ", numbins2, 0., binlimit2)
 
     h_AK8Tau21_MuData           = ROOT.TH1F("h_AK8Tau21_MuData", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_MuData     = ROOT.TH1F("h_AK8subjetTau21_MuData", "; ;  ", numbins2, 0., 1.)
-    h_AK8Pt_MuData              = ROOT.TH1F("h_AK8Pt_MuData", "; ;  ", numbins2, 0, binlimit2)
-    h_AK8subjetPt_MuData        = ROOT.TH1F("h_AK8subjetPt_MuData", "; ;  ", numbins2, 0, binlimit2)
+    h_AK8Pt_MuData              = ROOT.TH1F("h_AK8Pt_MuData", "; ;  ", numbins2, 0., binlimit2)
+    h_AK8subjetPt_MuData        = ROOT.TH1F("h_AK8subjetPt_MuData", "; ;  ", numbins2, 0., binlimit2)
 
 
     h_AK8Tau21_MC           = ROOT.TH1F("h_AK8Tau21_MC", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_MC     = ROOT.TH1F("h_AK8subjetTau21_MC", "; ;  ", numbins2,0., 1.)
-    h_AK8Pt_MC              = ROOT.TH1F("h_AK8Pt_MC", "; ;  ", numbins2, 0, binlimit2)
-    h_AK8subjetPt_MC        = ROOT.TH1F("h_AK8subjetPt_MC", "; ;  ", numbins2, 0, binlimit2)
+    h_AK8Pt_MC              = ROOT.TH1F("h_AK8Pt_MC", "; ;  ", numbins2, 0., binlimit2)
+    h_AK8subjetPt_MC        = ROOT.TH1F("h_AK8subjetPt_MC", "; ;  ", numbins2, 0., binlimit2)
 
     # Counters for cut flow table
     passcuts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -574,265 +588,1031 @@ def Wtag_Selector(argv) :
     NpassPost = 0
 
     # Open Input file and read tree
+
+
     fin = ROOT.TFile.Open( filein )
     if options.verbose :  print "Opened the File!  {}".format(filein)
 
-    t =  fin.Get("TreeSemiLept") 
-    SemiLeptTrig        = array.array('i', [0]  )
-    SemiLeptWeight      = array.array('f', [0.] )
-    BoosttypE           = array.array('i', [0] )
-    FatJetCorr          = array.array('f', [0.] )
-    FatJetCorrUp        = array.array('f', [0.] )
-    FatJetCorrDn        = array.array('f', [0.] )
-    FatJetMassCorr      = array.array('f', [0.] )
-    FatJetMassCorrUp    = array.array('f', [0.] )
-    FatJetMassCorrDn    = array.array('f', [0.] )
-    JetPtSmearFactor    = array.array('f', [0.] )
-    JetPtSmearFactorUp  = array.array('f', [0.] )
-    JetPtSmearFactorDn  = array.array('f', [0.] )
-    JetEtaScaleFactor   = array.array('f', [0.] )
-    JetPhiScaleFactor   = array.array('f', [0.] )
-    JetMatchedGenJetPt  = array.array('f', [0.] )
-    FatJetPtRaw         = array.array('f', [0.] )
-    FatJetEtaRaw        = array.array('f', [0.] )  
-    FatJetPhiRaw        = array.array('f', [0.] )
-    FatJetRapRaw        = array.array('f', [0.] )
-    FatJetMassRaw       = array.array('f', [0.] )
-    FatJetP             = array.array('f', [0.] )
-    FatJetPt            = array.array('f', [-1.])
-    FatJetEta           = array.array('f', [-1.])
-    FatJetPhi           = array.array('f', [-1.])
-    FatJetRap           = array.array('f', [-1.])
-    FatJetEnergy        = array.array('f', [-1.])
-    FatJetBDisc         = array.array('f', [-1.])
-    FatJetRhoRatio      = array.array('f', [-1.])
-    FatJetMass          = array.array('f', [-1.])
-    FatJetMassSoftDrop  = array.array('f', [-1.])
-    FatJetMassSDsumSubjetCorr        = array.array('f', [-1.])
-    FatJetMassSDsumSubjetRaw         = array.array('f', [-1.])
-    FatJetMassSDsumSubjetCorrUp      = array.array('f', [-1.])
-    FatJetMassSDsumSubjetCorrDn      = array.array('f', [-1.])
-    FatJetMassSDsumSubjetCorrSmear   = array.array('f', [-1.])
-    FatJetMassSDsumSubjetCorrSmearUp = array.array('f', [-1.])
-    FatJetMassSDsumSubjetCorrSmearDn = array.array('f', [-1.])
-    FatJetMassPruned    = array.array('f', [-1.])
-    FatJetMassFiltered  = array.array('f', [-1.])       
-    FatJetMassTrimmed   = array.array('f', [-1.])
-    FatJetTau1          = array.array('f', [-1.])
-    FatJetTau2          = array.array('f', [-1.])
-    FatJetTau3          = array.array('f', [-1.])
-    FatJetTau32         = array.array('f', [-1.])
-    FatJetTau21         = array.array('f', [-1.]) 
-    FatJetSDnsubjets    = array.array('f', [-1.])
-    FatJetSDmaxbdisc    = array.array('f', [-1.])
-    FatJetSDsubjetWpt   = array.array('f', [-1.])
-    FatJetSDsubjetWEta   = array.array('f', [-1.])
-    FatJetSDsubjetWPhi   = array.array('f', [-1.])
-    FatJetSDsubjetWmass = array.array('f', [-1.])
-    FatJetSDsubjetWtau1   = array.array('f', [-1.])
-    FatJetSDsubjetWtau2   = array.array('f', [-1.])
-    FatJetSDsubjetWtau3   = array.array('f', [-1.])
-    FatJetSDsubjetWtau21   = array.array('f', [-1.])
-    FatJetSDsubjetWtau32   = array.array('f', [-1.])
-    FatJetSDbdiscW      = array.array('f', [-1.])
-    FatJetSDsubjetBpt   = array.array('f', [-1.])
-    FatJetSDsubjetBmass = array.array('f', [-1.])
-    FatJetSDsubjetBtau1   = array.array('f', [-1.])
-    FatJetSDsubjetBtau2   = array.array('f', [-1.])
-    FatJetSDsubjetBtau3   = array.array('f', [-1.])
-    FatJetSDsubjetBtau21   = array.array('f', [-1.])
-    FatJetSDsubjetBtau32   = array.array('f', [-1.])
-    FatJetSDbdiscB      = array.array('f', [-1.])
-    FatJetCMSmaxbdisc   = array.array('f', [-1.])
-    FatJetCMSnsubjets   = array.array('f', [-1.])
-    FatJetCMSminMass    = array.array('f', [-1.])
-    FatJetCMSm01        = array.array('f', [-1.])
-    FatJetCMSm02        = array.array('f', [-1.])
-    FatJetCMSm12        = array.array('f', [-1.])
-    FatJetNHF           = array.array('f', [-1.])
-    FatJetCHF           = array.array('f', [-1.])
-    FatJetNEF           = array.array('f', [-1.])
-    FatJetCEF           = array.array('f', [-1.])
-    FatJetNC            = array.array('f', [-1.])
-    FatJetNCH           = array.array('f', [-1.])
-    BJetbDisc           = array.array('f', [-1.])
-    BJetPt              = array.array('f', [-1.])
-    BJetEta             = array.array('f', [-1.])
-    BJetPhi             = array.array('f', [-1.])
-    BJetMass            = array.array('f', [-1.])
-    BJet2bDisc           = array.array('f', [-1.])
-    BJet2Pt              = array.array('f', [-1.])
-    BJet2Eta             = array.array('f', [-1.])
-    BJet2Phi             = array.array('f', [-1.])
-    BJet2Mass            = array.array('f', [-1.])
-    Type2PairMass       = array.array('f', [-1.])
-    Type2PairPt         = array.array('f', [-1.])
-    LeptonType          = array.array('i', [-1])
-    LeptonPt            = array.array('f', [-1.])
-    LeptonEta           = array.array('f', [-1.])
-    LeptonPhi           = array.array('f', [-1.])
-    LeptonPx            = array.array('f', [-1.])
-    LeptonPy            = array.array('f', [-1.])
-    LeptonPz            = array.array('f', [-1.])
-    LeptonEnergy        = array.array('f', [-1.])
-    LeptonIso           = array.array('f', [-1.])
-    LeptonPtRel         = array.array('f', [-1.])
-    LeptonDRMin         = array.array('f', [-1.])
-    LeptonCharge        = array.array('f', [-1.])
-    LeptonLoose         = array.array('f', [-1.])
-    LeptonTight         = array.array('f', [-1.]) 
-    SemiLepMETpx        = array.array('f', [-1.])
-    SemiLepMETpy        = array.array('f', [-1.])
-    SemiLepMETpt        = array.array('f', [-1.])
-    SemiLepMETphi       = array.array('f', [-1.])
-    SemiLepNvtx         = array.array('f', [-1.])
-    SemiLepEventWeight  = array.array('f', [-1.])
-    SemilLepTTmass      = array.array('f', [-1.])  
-    DeltaPhiLepFat      = array.array('f', [-1.]) 
-    DeltaRLepFat        = array.array('f', [-1.])
-    DeltaRAK4AK8        = array.array('f', [-1.])
-    NearestAK4JetPt     = array.array('f', [-1.])
-    AK4bDisc            = array.array('f', [-1.])
-    NearestAK4JetPt     = array.array('f', [-1.])
-    NearestAK4JetEta    = array.array('f', [-1.])
-    NearestAK4JetPhi    = array.array('f', [-1.])
-    NearestAK4JetMass   = array.array('f', [-1.])
-    NearestAK4JetPt2     = array.array('f', [-1.])
-    NearestAK4JetEta2    = array.array('f', [-1.])
-    NearestAK4JetPhi2    = array.array('f', [-1.])
-    NearestAK4JetMass2   = array.array('f', [-1.])
-    SemiLeptRunNum      = array.array('f', [-1.])  
-    SemiLeptLumiBlock   = array.array('f', [-1.])  
-    SemiLeptEventNum    = array.array('f', [-1.])
-    SemiLeptEventNum2    = array.array('f', [-1.])  
-    PU_CorrDn           = array.array('f', [-1.])
-    PU_CorrUp           = array.array('f', [-1.])
+    if options.TreeMaker :
+        t =  fin.Get("ana/TreeSemiLept") 
+    if not options.TreeMaker :
+        t =  fin.Get("TreeSemiLept") 
+    if options.TreeMaker :
+
+        JetPtRaw                     = array.array('f', [0.] )      
+        JetEtaRaw                    = array.array('f', [0.] )
+        JetPhiRaw                    = array.array('f', [0.] )
+        JetMassRaw                   = array.array('f', [0.] )
+        JetP                         = array.array('f', [0.] )
+        JetPt                        = array.array('f', [0.] )
+        JetEta                       = array.array('f', [0.] )
+        JetPhi                       = array.array('f', [0.] )
+        JetRap                       = array.array('f', [0.] )
+        JetEnergy                    = array.array('f', [0.] )
+        JetMass                      = array.array('f', [0.] )
+        JetArea                      = array.array('f', [0.] )
+        JetSDmass                    = array.array('f', [0.] )
+        JetSDmassRaw                 = array.array('f', [0.] )
+        JetSDmassCorrL23             = array.array('f', [0.] )
+        JetSDmassCorrL23Up           = array.array('f', [0.] )
+        JetSDmassCorrL23Dn           = array.array('f', [0.] )
+        JetSDmassCorrL123            = array.array('f', [0.] )
+        JetSDmassCorrL123Up          = array.array('f', [0.] )
+        JetSDmassCorrL123Dn          = array.array('f', [0.] )
+        JetSDmassCorrL23Smear        = array.array('f', [0.] )
+        JetSDmassCorrL23SmearUp      = array.array('f', [0.] )
+        JetSDmassCorrL23SmearDn      = array.array('f', [0.] )
+        JetSDptRaw                   = array.array('f', [0.] )
+        JetSDptCorrL23               = array.array('f', [0.] )
+        JetSDptCorrL23Up             = array.array('f', [0.] )
+        JetSDptCorrL23Dn             = array.array('f', [0.] )
+        JetSDptCorrL123              = array.array('f', [0.] )
+        JetSDptCorrL123Up            = array.array('f', [0.] )
+        JetSDptCorrL123Dn            = array.array('f', [0.] )
+        JetSDptCorrL23Smear          = array.array('f', [0.] )
+        JetSDptCorrL23SmearUp        = array.array('f', [0.] )
+        JetSDptCorrL23SmearDn        = array.array('f', [0.] )
+        JetSDetaRaw                  = array.array('f', [0.] )
+        JetSDphiRaw                  = array.array('f', [0.] )
+        JetMassPruned                = array.array('f', [0.] )
+        JetMassTrimmed               = array.array('f', [0.] )
+        JetTau1                      = array.array('f', [0.] )
+        JetTau2                      = array.array('f', [0.] )
+        JetTau3                      = array.array('f', [0.] )
+        JetTau4                      = array.array('f', [0.] )
+        JetTau32                     = array.array('f', [0.] )
+        JetTau21                     = array.array('f', [0.] )
+        JetSDsubjet0bdisc            = array.array('f', [0.] )
+        JetSDsubjet1bdisc            = array.array('f', [0.] )
+        JetSDmaxbdisc                = array.array('f', [0.] )
+        JetSDmaxbdiscflavHadron      = array.array('f', [0.] )
+        JetSDmaxbdiscflavParton      = array.array('f', [0.] )
+        JetSDsubjet0pt               = array.array('f', [0.] )
+        JetSDsubjet0mass             = array.array('f', [0.] )
+        JetSDsubjet0eta              = array.array('f', [0.] )
+        JetSDsubjet0phi              = array.array('f', [0.] )
+        JetSDsubjet0area             = array.array('f', [0.] )
+        JetSDsubjet0flavHadron       = array.array('f', [0.] )
+        JetSDsubjet0flavParton       = array.array('f', [0.] )
+        JetSDsubjet0tau1             = array.array('f', [0.] )
+        JetSDsubjet0tau2             = array.array('f', [0.] )
+        JetSDsubjet0tau3             = array.array('f', [0.] )
+        JetSDsubjet1pt               = array.array('f', [0.] )
+        JetSDsubjet1mass             = array.array('f', [0.] )
+        JetSDsubjet1eta              = array.array('f', [0.] )
+        JetSDsubjet1phi              = array.array('f', [0.] )
+        JetSDsubjet1area             = array.array('f', [0.] )
+        JetSDsubjet1flavHadron                = array.array('f', [0.] )
+        JetSDsubjet1flavParton                = array.array('f', [0.] )
+        JetSDsubjet1tau1             = array.array('f', [0.] )
+        JetSDsubjet1tau2             = array.array('f', [0.] )
+        JetSDsubjet1tau3             = array.array('f', [0.] )
+        JetPuppiP                    = array.array('f', [0.] )
+        JetPuppiPt                   = array.array('f', [0.] )
+        JetPuppiEta                  = array.array('f', [0.] )
+        JetPuppiPhi                  = array.array('f', [0.] )
+        JetPuppiMass                 = array.array('f', [0.] )
+        JetPuppiSDmass               = array.array('f', [0.] )
+        JetPuppiSDmassCorr           = array.array('f', [0.] )
+        JetPuppiSDmassCorrUp         = array.array('f', [0.] )
+        JetPuppiSDmassCorrDn         = array.array('f', [0.] )
+        JetPuppiSDmassCorrL23Smear           = array.array('f', [0.] )
+        JetPuppiSDmassCorrL23SmearUp         = array.array('f', [0.] )
+        JetPuppiSDmassCorrL23SmearDn         = array.array('f', [0.] )
+        JetPuppiSDpt                 = array.array('f', [0.] )
+        JetPuppiSDptCorr             = array.array('f', [0.] )
+        JetPuppiSDptCorrUp           = array.array('f', [0.] )
+        JetPuppiSDptCorrDn           = array.array('f', [0.] )
+        JetPuppiSDptCorrL23Smear             = array.array('f', [0.] )
+        JetPuppiSDptCorrL23SmearUp           = array.array('f', [0.] )
+        JetPuppiSDptCorrL23SmearDn           = array.array('f', [0.] )
+        JetPuppiSDeta                = array.array('f', [0.] )
+        JetPuppiSDphi                = array.array('f', [0.] )
+        JetPuppiTau1                 = array.array('f', [0.] )
+        JetPuppiTau2                 = array.array('f', [0.] )
+        JetPuppiTau3                 = array.array('f', [0.] )
+        JetPuppiTau4                 = array.array('f', [0.] )
+        JetPuppiTau32                = array.array('f', [0.] )
+        JetPuppiTau21                = array.array('f', [0.] )
+        JetPuppiSDsubjet0bdisc               = array.array('f', [0.] )
+        JetPuppiSDsubjet1bdisc               = array.array('f', [0.] )
+        JetPuppiSDmaxbdisc           = array.array('f', [0.] )
+        JetPuppiSDmaxbdiscflavHadron         = array.array('f', [0.] )
+        JetPuppiSDmaxbdiscflavParton         = array.array('f', [0.] )
+        JetPuppiSDsubjet0pt          = array.array('f', [0.] )
+        JetPuppiSDsubjet0mass                = array.array('f', [0.] )
+        JetPuppiSDsubjet0eta         = array.array('f', [0.] )
+        JetPuppiSDsubjet0phi         = array.array('f', [0.] )
+        JetPuppiSDsubjet0area                = array.array('f', [0.] )
+        JetPuppiSDsubjet0flavHadron          = array.array('f', [0.] )
+        JetPuppiSDsubjet0flavParton          = array.array('f', [0.] )
+        JetPuppiSDsubjet0tau1                = array.array('f', [0.] )
+        JetPuppiSDsubjet0tau2                = array.array('f', [0.] )
+        JetPuppiSDsubjet0tau3                = array.array('f', [0.] )
+        JetPuppiSDsubjet1pt          = array.array('f', [0.] )
+        JetPuppiSDsubjet1mass                = array.array('f', [0.] )
+        JetPuppiSDsubjet1eta         = array.array('f', [0.] )
+        JetPuppiSDsubjet1phi         = array.array('f', [0.] )
+        JetPuppiSDsubjet1area                = array.array('f', [0.] )
+        JetPuppiSDsubjet1flavHadron          = array.array('f', [0.] )
+        JetPuppiSDsubjet1flavParton          = array.array('f', [0.] )
+        JetPuppiSDsubjet1tau1                = array.array('f', [0.] )
+        JetPuppiSDsubjet1tau2                = array.array('f', [0.] )
+        JetPuppiSDsubjet1tau3                = array.array('f', [0.] )
+        JetCHF                       = array.array('f', [0.] )
+        JetNHF                       = array.array('f', [0.] )
+        JetCM                        = array.array('f', [0.] )
+        JetNM                        = array.array('f', [0.] )
+        JetNEF                       = array.array('f', [0.] )
+        JetCEF                       = array.array('f', [0.] )
+        JetMF                        = array.array('f', [0.] )
+        JetMult                      = array.array('f', [0.] )
+        JetPuppiCHF                  = array.array('f', [0.] )
+        JetPuppiNHF                  = array.array('f', [0.] )
+        JetPuppiCM                   = array.array('f', [0.] )
+        JetPuppiNM                   = array.array('f', [0.] )
+        JetPuppiNEF                  = array.array('f', [0.] )
+        JetPuppiCEF                  = array.array('f', [0.] )
+        JetPuppiMF                   = array.array('f', [0.] )
+        JetPuppiMult                 = array.array('f', [0.] )
+        JetMassCorrFactor            = array.array('f', [0.] )
+        JetMassCorrFactorUp          = array.array('f', [0.] )
+        JetMassCorrFactorDn          = array.array('f', [0.] )
+        JetCorrFactor                = array.array('f', [0.] )
+        JetCorrFactorUp              = array.array('f', [0.] )
+        JetCorrFactorDn              = array.array('f', [0.] )
+        JetPtSmearFactor             = array.array('f', [0.] )
+        JetPtSmearFactorUp           = array.array('f', [0.] )
+        JetPtSmearFactorDn           = array.array('f', [0.] )
+        JetPuppiMassCorrFactor               = array.array('f', [0.] )
+        JetPuppiMassCorrFactorUp             = array.array('f', [0.] )
+        JetPuppiMassCorrFactorDn             = array.array('f', [0.] )
+        JetPuppiCorrFactor           = array.array('f', [0.] )
+        JetPuppiCorrFactorUp         = array.array('f', [0.] )
+        JetPuppiCorrFactorDn         = array.array('f', [0.] )
+        JetPuppiPtSmearFactor                = array.array('f', [0.] )
+        JetPuppiPtSmearFactorUp              = array.array('f', [0.] )
+        JetPuppiPtSmearFactorDn              = array.array('f', [0.] )
+        JetEtaScaleFactor            = array.array('f', [0.] )
+        JetPhiScaleFactor            = array.array('f', [0.] )
+        JetMatchedGenJetDR           = array.array('f', [0.] )
+        JetMatchedGenJetPt           = array.array('f', [0.] )
+        JetMatchedGenJetMass         = array.array('f', [0.] )
+        JetGenMatched_TopHadronic            = array.array('f', [0.] )
+        JetGenMatched_TopPt          = array.array('f', [0.] )
+        JetGenMatched_TopEta         = array.array('f', [0.] )
+        JetGenMatched_TopPhi         = array.array('f', [0.] )
+        JetGenMatched_TopMass                = array.array('f', [0.] )
+        JetGenMatched_bPt            = array.array('f', [0.] )
+        JetGenMatched_WPt            = array.array('f', [0.] )
+        JetGenMatched_Wd1Pt          = array.array('f', [0.] )
+        JetGenMatched_Wd2Pt          = array.array('f', [0.] )
+        JetGenMatched_Wd1ID          = array.array('f', [0.] )
+        JetGenMatched_Wd2ID          = array.array('f', [0.] )
+        JetGenMatched_MaxDeltaRPartonTop     = array.array('f', [0.] )
+        JetGenMatched_MaxDeltaRWPartonTop    = array.array('f', [0.] )
+        JetGenMatched_MaxDeltaRWPartonW      = array.array('f', [0.] )
+        JetGenMatched_DeltaR_t_b             = array.array('f', [0.] )
+        JetGenMatched_DeltaR_t_W             = array.array('f', [0.] )
+        JetGenMatched_DeltaR_t_Wd1           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_t_Wd2           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_W_b1            = array.array('f', [0.] )
+        JetGenMatched_DeltaR_W_Wd1           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_W_Wd2           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_Wd1_Wd2         = array.array('f', [0.] )
+        JetGenMatched_DeltaR_Wd1_b           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_Wd2_b           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_jet_t           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_jet_W           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_jet_b           = array.array('f', [0.] )
+        JetGenMatched_DeltaR_jet_Wd1         = array.array('f', [0.] )
+        JetGenMatched_DeltaR_jet_Wd2         = array.array('f', [0.] )
+        JetGenMatched_DeltaR_pup0_b          = array.array('f', [0.] )
+        JetGenMatched_DeltaR_pup0_Wd1        = array.array('f', [0.] )
+        JetGenMatched_DeltaR_pup0_Wd2        = array.array('f', [0.] )
+        JetGenMatched_DeltaR_pup1_b          = array.array('f', [0.] )
+        JetGenMatched_DeltaR_pup1_Wd1        = array.array('f', [0.] )
+        JetGenMatched_DeltaR_pup1_Wd2        = array.array('f', [0.] )
+        JetGenMatched_partonPt               = array.array('f', [0.] )
+        JetGenMatched_partonEta              = array.array('f', [0.] )
+        JetGenMatched_partonPhi              = array.array('f', [0.] )
+        JetGenMatched_partonMass             = array.array('f', [0.] )
+        JetGenMatched_partonID               = array.array('f', [0.] )
+        JetGenMatched_DeltaRjetParton        = array.array('f', [0.] )
+        SemiLeptMETpx                = array.array('f', [0.] )
+        SemiLeptMETpy                = array.array('f', [0.] )
+        SemiLeptMETpt                = array.array('f', [0.] )
+        SemiLeptMETphi               = array.array('f', [0.] )
+        SemiLeptMETsumET             = array.array('f', [0.] )
+        SemiLeptNvtx                 = array.array('f', [0.] )
+        SemiLeptNPUtrue              = array.array('f', [0.] )
+        SemiLeptRho                  = array.array('f', [0.] )
+        SemiLeptEventWeight          = array.array('f', [0.] )
+        SemiLeptPUweight     = array.array('f', [0.] )
+        SemiLeptPUweight_MBup= array.array('f', [0.] )
+        SemiLeptPUweight_MBdn= array.array('f', [0.] )
 
 
-    t.SetBranchAddress('SemiLeptTrig'        , SemiLeptTrig        )
-    t.SetBranchAddress('SemiLeptWeight'      , SemiLeptWeight      )
-    t.SetBranchAddress('FatJetPt'            , FatJetPt            )
-    t.SetBranchAddress('FatJetEta'           , FatJetEta           )
-    t.SetBranchAddress('FatJetPhi'           , FatJetPhi           )
-    t.SetBranchAddress('FatJetRap'           , FatJetRap           )
-    t.SetBranchAddress('FatJetEnergy'        , FatJetEnergy        )
-    t.SetBranchAddress('FatJetBDisc'         , FatJetBDisc         )
-    t.SetBranchAddress('FatJetMass'          , FatJetMass          )
-    t.SetBranchAddress('FatJetMassSoftDrop'  , FatJetMassSoftDrop  )
-    t.SetBranchAddress('FatJetTau32'         , FatJetTau32         )
-    t.SetBranchAddress('FatJetTau21'         , FatJetTau21         )
-    t.SetBranchAddress('FatJetRhoRatio'      , FatJetRhoRatio      )
-    t.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
-    t.SetBranchAddress('FatJetSDbdiscB'      , FatJetSDbdiscB      )
-    t.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
-    t.SetBranchAddress('FatJetSDsubjetWEta'   , FatJetSDsubjetWEta )
-    t.SetBranchAddress('FatJetSDsubjetWPhi'   , FatJetSDsubjetWPhi )
-    t.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
-    t.SetBranchAddress('FatJetSDsubjetWtau1' , FatJetSDsubjetWtau1 )
-    t.SetBranchAddress('FatJetSDsubjetWtau2' , FatJetSDsubjetWtau2 )
-    t.SetBranchAddress('FatJetSDsubjetWtau3' , FatJetSDsubjetWtau3 )
-    t.SetBranchAddress('FatJetSDsubjetWtau21' , FatJetSDsubjetWtau21 )
-    t.SetBranchAddress('FatJetSDsubjetWtau32' , FatJetSDsubjetWtau32 )
-    t.SetBranchAddress('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt   )
-    t.SetBranchAddress('FatJetSDsubjetBmass' , FatJetSDsubjetBmass )
-    t.SetBranchAddress('FatJetSDsubjetBtau1' , FatJetSDsubjetBtau1 )
-    t.SetBranchAddress('FatJetSDsubjetBtau2' , FatJetSDsubjetBtau2 )
-    t.SetBranchAddress('FatJetSDsubjetBtau32' , FatJetSDsubjetBtau32 )
-    t.SetBranchAddress('FatJetSDsubjetBtau21' , FatJetSDsubjetBtau21 )
-    t.SetBranchAddress('FatJetSDsubjetBtau3' , FatJetSDsubjetBtau3 )
-    t.SetBranchAddress('BJet2bDisc'   , BJet2bDisc )
-    t.SetBranchAddress('BJet2Pt'      , BJet2Pt    )
-    t.SetBranchAddress('BJet2Eta'     , BJet2Eta   )
-    t.SetBranchAddress('BJet2Phi'     , BJet2Phi   )
-    t.SetBranchAddress('BJet2Mass'    , BJet2Mass  )
-    t.SetBranchAddress('LeptonType'          , LeptonType          )
-    t.SetBranchAddress('LeptonPt'            , LeptonPt            )
-    t.SetBranchAddress('LeptonEta'           , LeptonEta           )
-    t.SetBranchAddress('LeptonPhi'           , LeptonPhi           )
-    t.SetBranchAddress('LeptonEnergy'        , LeptonEnergy        )
-    t.SetBranchAddress('LeptonIso'           , LeptonIso           )
-    t.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
-    t.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
-    t.SetBranchAddress('LeptonCharge'        , LeptonCharge        )
-    t.SetBranchAddress('LeptonLoose'         , LeptonLoose         )
-    t.SetBranchAddress('LeptonTight'         , LeptonTight         )
-    t.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
-    t.SetBranchAddress('AK4bDisc'            , AK4bDisc            )
-    t.SetBranchAddress('SemiLepMETphi'       , SemiLepMETphi       )
-    t.SetBranchAddress('SemiLepNvtx'         , SemiLepNvtx         )
-    t.SetBranchAddress('DeltaPhiLepFat'      , DeltaPhiLepFat      )
-    t.SetBranchAddress('DeltaRLepFat'        , DeltaRLepFat        )
-    t.SetBranchAddress('DeltaRAK4AK8'        , DeltaRAK4AK8        )
-    t.SetBranchAddress('NearestAK4JetPt'     , NearestAK4JetPt     )
-    t.SetBranchAddress('NearestAK4JetEta'    , NearestAK4JetEta    )
-    t.SetBranchAddress('NearestAK4JetPhi'    , NearestAK4JetPhi    )
-    t.SetBranchAddress('NearestAK4JetMass'   , NearestAK4JetMass   )
-    t.SetBranchAddress('SemiLepEventWeight'     ,  SemiLepEventWeight   )
-    t.SetBranchAddress('SemiLeptRunNum'         ,  SemiLeptRunNum       )
-    t.SetBranchAddress('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock    )
-    t.SetBranchAddress('SemiLeptEventNum'       ,  SemiLeptEventNum     )
-    t.SetBranchAddress('PU_CorrDn'       ,  PU_CorrDn     )
-    t.SetBranchAddress('PU_CorrUp'       ,  PU_CorrUp     )
+        SemiLeptGenTTmass            = array.array('f', [0.] )
 
-    t.SetBranchStatus ('*', 0)
-    t.SetBranchStatus ('FatJetPt', 1)
-    t.SetBranchStatus ('FatJetEta', 1)
-    t.SetBranchStatus ('FatJetPhi', 1)
-    t.SetBranchStatus ('FatJetMass', 1)
-    t.SetBranchStatus ('FatJetMassSoftDrop', 1)
-    t.SetBranchStatus ('FatJetTau32', 1)
-    t.SetBranchStatus ('FatJetTau21', 1)
-    t.SetBranchStatus ('FatJetRhoRatio', 1)
-    t.SetBranchStatus('BJet2Pt' , 1)
-    t.SetBranchStatus('BJet2Eta' , 1)
-    t.SetBranchStatus('BJet2Phi' , 1 )
-    t.SetBranchStatus('BJet2Mass' , 1)
-    t.SetBranchStatus('BJet2bDisc' , 1)
-    t.SetBranchStatus('FatJetSDsubjetWpt',1)
-    t.SetBranchStatus('FatJetSDsubjetWtau1',1)
-    t.SetBranchStatus('FatJetSDsubjetWtau2',1)
-    t.SetBranchStatus('FatJetSDsubjetWtau3',1)
-    t.SetBranchStatus('FatJetSDsubjetWtau21',1)
-    t.SetBranchStatus('FatJetSDsubjetWtau32',1)
-    t.SetBranchStatus('FatJetSDbdiscW',1)
-    t.SetBranchStatus('FatJetSDsubjetWEta',1)
-    t.SetBranchStatus('FatJetSDsubjetWPhi',1)
-    t.SetBranchStatus('FatJetSDsubjetBtau1',1)
-    t.SetBranchStatus('FatJetSDsubjetBtau2',1)
-    t.SetBranchStatus('FatJetSDsubjetBtau3',1)
-    t.SetBranchStatus('FatJetSDsubjetBtau21',1)
-    t.SetBranchStatus('FatJetSDsubjetBtau32',1)
-    t.SetBranchStatus('FatJetSDbdiscB',1)
-    t.SetBranchStatus('FatJetSDsubjetBpt',1)
-    t.SetBranchStatus('FatJetSDsubjetWmass',1)
-    t.SetBranchStatus ('SemiLeptTrig', 1)
-    t.SetBranchStatus ('DeltaPhiLepFat'  ,1   )
-    t.SetBranchStatus ('DeltaRLepFat'    ,1   )
-    t.SetBranchStatus ('DeltaRAK4AK8'    ,1   )
-    t.SetBranchStatus ('NearestAK4JetPt'   ,1 )
-    t.SetBranchStatus ('NearestAK4JetEta'  ,1 )
-    t.SetBranchStatus ('NearestAK4JetPhi'  ,1 )
-    t.SetBranchStatus ('NearestAK4JetMass' ,1 )
-    t.SetBranchStatus ('SemiLepMETpt'  , 1  )
-    t.SetBranchStatus ('AK4bDisc'      , 1  )
-    t.SetBranchStatus ('SemiLepMETphi' , 1  )
-    t.SetBranchStatus ('LeptonType'          , 1)
-    t.SetBranchStatus ('LeptonPt'            , 1)
-    t.SetBranchStatus ('LeptonEta'           , 1)
-    t.SetBranchStatus ('LeptonPhi'           , 1)
-    t.SetBranchStatus ('LeptonEnergy'        , 1)
-    t.SetBranchStatus ('LeptonIso'           , 1)
-    t.SetBranchStatus ('LeptonPtRel'         , 1)
-    t.SetBranchStatus ('LeptonDRMin'         , 1)
-    t.SetBranchStatus ('LeptonCharge'        , 1)
-    t.SetBranchStatus ('LeptonLoose'         , 1)
-    t.SetBranchStatus ('LeptonTight'         , 1)
-    t.SetBranchStatus ('SemiLepEventWeight'  , 1) 
-    t.SetBranchStatus ('SemiLeptRunNum'      , 1)
-    t.SetBranchStatus ('SemiLeptLumiBlock'   , 1)
-    t.SetBranchStatus ('SemiLeptEventNum'    , 1)
-    t.SetBranchStatus ('PU_CorrDn'           , 1)
-    t.SetBranchStatus ('PU_CorrUp'           , 1)
+        HTlep                        = array.array('f', [0.] )
+        ST                           = array.array('f', [0.] )                
+        ST_CorrDn                    = array.array('f', [0.] )                
+        ST_CorrUp                    = array.array('f', [0.] )                
+        ST_PtSmearNom                = array.array('f', [0.] )                
+        ST_PtSmearUp                 = array.array('f', [0.] )                
+        ST_PtSmearDn                 = array.array('f', [0.] )   
+
+        SemiLeptQ2weight_CorrDn              = array.array('f', [0.] )
+        SemiLeptQ2weight_CorrUp              = array.array('f', [0.] )
+        SemiLeptNNPDF3weight_CorrDn          = array.array('f', [0.] )
+        SemiLeptNNPDF3weight_CorrUp          = array.array('f', [0.] )
+        SemiLeptRunNum               = array.array('f', [0.] )
+        SemiLeptLumiBlock            = array.array('f', [0.] )
+        SemiLeptEventNum             = array.array('f', [0.] )
+        SemiLeptPassMETFilters               = array.array('f', [0.] )       
+
+        AK4dRminPt                   = array.array('f', [0.] )
+        AK4dRminEta                  = array.array('f', [0.] )
+        AK4dRminPhi                  = array.array('f', [0.] )
+        AK4dRminMass                 = array.array('f', [0.] )
+        AK4dRminBdisc                = array.array('f', [0.] )
+        AK4dRminLep                  = array.array('f', [0.] )
+        AK4BtagdRminPt               = array.array('f', [0.] )
+        AK4BtagdRminBdisc            = array.array('f', [0.] )
+        AK4BtagdRminLep              = array.array('f', [0.] )
+        LepHemiContainsAK4BtagLoose          = array.array('f', [0.] )
+        LepHemiContainsAK4BtagMedium         = array.array('f', [0.] )
+        LepHemiContainsAK4BtagTight          = array.array('f', [0.] )
+
+
+        LeptonPhi                    = array.array('f', [0.] )
+        LeptonPt                     = array.array('f', [0.] )
+        LeptonEta                    = array.array('f', [0.] )
+        LeptonMass                   = array.array('f', [0.] )
+        PtRel                        = array.array('f', [0.] )
+        LeptonIsMu                   = array.array('f', [0.] )
+        MuTight                      = array.array('f', [0.] )
+        MuMedium                     = array.array('f', [0.] )
+        DeltaRJetLep                 = array.array('f', [0.] ) 
+        DeltaPhiJetLep               = array.array('f', [0.] ) 
+        MuIso                        = array.array('f', [0.] )
+        Elecron_absiso               = array.array('f', [0.] )
+        Elecron_relIsoWithDBeta      = array.array('f', [0.] )
+        Elecron_absiso_EA            = array.array('f', [0.] )
+        Elecron_relIsoWithEA         = array.array('f', [0.] )
+
+
+        t.SetBranchAddress('JetPtRaw', JetPtRaw)   
+        t.SetBranchAddress('JetEtaRaw', JetEtaRaw)      
+        t.SetBranchAddress('JetPhiRaw',  JetPhiRaw    )
+        t.SetBranchAddress('JetMassRaw', JetMassRaw     )
+        t.SetBranchAddress('JetP',  JetP    )
+        t.SetBranchAddress('JetPt', JetPt     )
+        t.SetBranchAddress('JetEta',   JetEta   )
+        t.SetBranchAddress('JetPhi',  JetPhi    )
+        t.SetBranchAddress('JetMass', JetMass     )
+        t.SetBranchAddress('JetSDmass',  JetSDmass    )
+        t.SetBranchAddress('JetSDmassRaw',  JetSDmassRaw    )
+        t.SetBranchAddress('JetSDptRaw',    JetSDptRaw  )
+        t.SetBranchAddress('JetSDetaRaw',  JetSDetaRaw    )
+        t.SetBranchAddress('JetSDphiRaw',   JetSDphiRaw   )
+        #t.SetBranchAddress('JetMassPruned              ',      )
+        #t.SetBranchAddress('JetMassTrimmed             ',      )
+        t.SetBranchAddress('JetTau32',   JetTau32   )
+        t.SetBranchAddress('JetTau21',   JetTau21   )
+        '''
+        t.SetBranchAddress('JetSDsubjet0bdisc', JetSDsubjet0bdisc     )
+        t.SetBranchAddress('JetSDsubjet1bdisc',  JetSDsubjet1bdisc    )
+        t.SetBranchAddress('JetSDmaxbdisc', JetSDmaxbdisc     )
+        #t.SetBranchAddress('JetSDmaxbdiscflavHadron    ',      )
+        #t.SetBranchAddress('JetSDmaxbdiscflavParton    ',      )
+        t.SetBranchAddress('JetSDsubjet0pt', JetSDsubjet0pt     )
+        t.SetBranchAddress('JetSDsubjet0mass', 1     )
+        t.SetBranchAddress('JetSDsubjet0eta',  1     )
+        t.SetBranchAddress('JetSDsubjet0phi',  1     )
+        #t.SetBranchAddress('JetSDsubjet0area           ',      )
+        #t.SetBranchAddress('JetSDsubjet0flavHadron     ',      )
+        #t.SetBranchAddress('JetSDsubjet0flavParton     ',      )
+        t.SetBranchAddress('JetSDsubjet0tau1',  1    )
+        t.SetBranchAddress('JetSDsubjet0tau2',  1    )
+        t.SetBranchAddress('JetSDsubjet0tau3',  1    )
+        t.SetBranchAddress('JetSDsubjet1pt',    1    )
+        t.SetBranchAddress('JetSDsubjet1mass',  JetSDsubjet1mass    )
+        t.SetBranchAddress('JetSDsubjet1eta',   JetSDsubjet1eta    )
+        t.SetBranchAddress('JetSDsubjet1phi',  JetSDsubjet1phi    )
+        #t.SetBranchAddress('JetSDsubjet1area           ',      )
+        #t.SetBranchAddress('JetSDsubjet1flavHadron              ',      )
+        #t.SetBranchAddress('JetSDsubjet1flavParton              ',      )
+        t.SetBranchAddress('JetSDsubjet1tau1',    JetSDsubjet1tau1  )
+        t.SetBranchAddress('JetSDsubjet1tau2',    JetSDsubjet1tau2   )
+        t.SetBranchAddress('JetSDsubjet1tau3',   JetSDsubjet1tau3   )
+        #t.SetBranchAddress('JetPuppiP                  ',      )
+        '''    
+        t.SetBranchAddress('JetPuppiPt',  JetPuppiPt   )
+        t.SetBranchAddress('JetPuppiEta',  JetPuppiEta   )
+        t.SetBranchAddress('JetPuppiPhi',  JetPuppiPhi    )
+        t.SetBranchAddress('JetPuppiMass',  JetPuppiMass    )
+
+        t.SetBranchAddress('JetPuppiSDmass', JetPuppiSDmass    )
+        t.SetBranchAddress('JetPuppiSDmassCorr',  JetPuppiSDmassCorr    )
+        #t.SetBranchAddress('JetPuppiSDmassCorrUp       ',      )
+        #t.SetBranchAddress('JetPuppiSDmassCorrDn       ',      )
+        #t.SetBranchAddress('JetPuppiSDmassCorrL23Smear         ',      )
+        #t.SetBranchAddress('JetPuppiSDmassCorrL23SmearUp       ',      )
+        #t.SetBranchAddress('JetPuppiSDmassCorrL23SmearDn       ',      )
+        
+        t.SetBranchAddress('JetPuppiSDpt',   JetPuppiSDpt  )
+        t.SetBranchAddress('JetPuppiSDptCorr', JetPuppiSDptCorr     )
+        #t.SetBranchAddress('JetPuppiSDptCorrUp         ',      )
+        #t.SetBranchAddress('JetPuppiSDptCorrDn         ',      )
+        #t.SetBranchAddress('JetPuppiSDptCorrL23Smear           ',      )
+        #t.SetBranchAddress('JetPuppiSDptCorrL23SmearUp         ',      )
+        #t.SetBranchAddress('JetPuppiSDptCorrL23SmearDn         ',      )
+        t.SetBranchAddress('JetPuppiSDeta',   JetPuppiSDeta   )
+        t.SetBranchAddress('JetPuppiSDphi',   JetPuppiSDphi   )
+        t.SetBranchAddress('JetPuppiTau1', JetPuppiTau1     )
+        t.SetBranchAddress('JetPuppiTau2', JetPuppiTau2     )
+        t.SetBranchAddress('JetPuppiTau3',  JetPuppiTau3    )
+        #t.SetBranchAddress('JetPuppiTau4               ',      )
+        t.SetBranchAddress('JetPuppiTau32', JetPuppiTau32     )
+        t.SetBranchAddress('JetPuppiTau21', JetPuppiTau21      )
+        '''
+        t.SetBranchAddress('JetPuppiSDsubjet0bdisc             ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1bdisc             ',      )
+        t.SetBranchAddress('JetPuppiSDmaxbdisc         ',      )
+        t.SetBranchAddress('JetPuppiSDmaxbdiscflavHadron       ',      )
+        t.SetBranchAddress('JetPuppiSDmaxbdiscflavParton       ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0pt        ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0mass              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0eta       ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0phi       ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0area              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0flavHadron        ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0flavParton        ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0tau1              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0tau2              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet0tau3              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1pt        ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1mass              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1eta       ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1phi       ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1area              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1flavHadron        ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1flavParton        ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1tau1              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1tau2              ',      )
+        t.SetBranchAddress('JetPuppiSDsubjet1tau3              ',      )
+        
+        t.SetBranchAddress('JetCHF                     ',      )
+        t.SetBranchAddress('JetNHF                     ',      )
+        t.SetBranchAddress('JetCM                      ',      )
+        t.SetBranchAddress('JetNM                      ',      )
+        t.SetBranchAddress('JetNEF                     ',      )
+        t.SetBranchAddress('JetCEF                     ',      )
+        t.SetBranchAddress('JetMF                      ',      )
+        t.SetBranchAddress('JetMult                    ',      )
+        t.SetBranchAddress('JetPuppiCHF                ',      )
+        t.SetBranchAddress('JetPuppiNHF                ',      )
+        t.SetBranchAddress('JetPuppiCM                 ',      )
+        t.SetBranchAddress('JetPuppiNM                 ',      )
+        t.SetBranchAddress('JetPuppiNEF                ',      )
+        t.SetBranchAddress('JetPuppiCEF                ',      )
+        t.SetBranchAddress('JetPuppiMF                 ',      )
+        t.SetBranchAddress('JetPuppiMult               ',      )
+        t.SetBranchAddress('JetMassCorrFactor          ',      )
+        t.SetBranchAddress('JetMassCorrFactorUp        ',      )
+        t.SetBranchAddress('JetMassCorrFactorDn        ',      )
+        #t.SetBranchAddress('JetCorrFactor              ',      )
+        #t.SetBranchAddress('JetCorrFactorUp            ',      )
+        #t.SetBranchAddress('JetCorrFactorDn            ',      )
+        #t.SetBranchAddress('JetPtSmearFactor           ',      )
+        #t.SetBranchAddress('JetPtSmearFactorUp         ',      )
+        #t.SetBranchAddress('JetPtSmearFactorDn         ',      )
+        #t.SetBranchAddress('JetPuppiMassCorrFactor             ',      )
+        #t.SetBranchAddress('JetPuppiMassCorrFactorUp           ',      )
+        #t.SetBranchAddress('JetPuppiMassCorrFactorDn           ',      )
+        #t.SetBranchAddress('JetPuppiCorrFactor         ',      )
+        #t.SetBranchAddress('JetPuppiCorrFactorUp       ',      )
+        #t.SetBranchAddress('JetPuppiCorrFactorDn       ',      )
+        #t.SetBranchAddress('JetPuppiPtSmearFactor              ',      )
+        #t.SetBranchAddress('JetPuppiPtSmearFactorUp            ',      )
+        #t.SetBranchAddress('JetPuppiPtSmearFactorDn            ',      )
+        #t.SetBranchAddress('JetEtaScaleFactor          ',      )
+        #t.SetBranchAddress('JetPhiScaleFactor          ',      )
+       
+        t.SetBranchAddress('JetMatchedGenJetDR         ',      )
+        t.SetBranchAddress('JetMatchedGenJetPt         ',      )
+        t.SetBranchAddress('JetMatchedGenJetMass       ',      )
+        t.SetBranchAddress('JetGenMatched_TopHadronic          ',      )
+        t.SetBranchAddress('JetGenMatched_TopPt        ',      )
+        t.SetBranchAddress('JetGenMatched_TopEta       ',      )
+        t.SetBranchAddress('JetGenMatched_TopPhi       ',      )
+        t.SetBranchAddress('JetGenMatched_TopMass              ',      )
+        t.SetBranchAddress('JetGenMatched_bPt          ',      )
+        t.SetBranchAddress('JetGenMatched_WPt          ',      )
+        t.SetBranchAddress('JetGenMatched_Wd1Pt        ',      )
+        t.SetBranchAddress('JetGenMatched_Wd2Pt        ',      )
+        t.SetBranchAddress('JetGenMatched_Wd1ID        ',      )
+        t.SetBranchAddress('JetGenMatched_Wd2ID        ',      )
+        t.SetBranchAddress('JetGenMatched_MaxDeltaRPartonTop   ',      )
+        t.SetBranchAddress('JetGenMatched_MaxDeltaRWPartonTop  ',      )
+        t.SetBranchAddress('JetGenMatched_MaxDeltaRWPartonW    ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_t_b           ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_t_W           ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_t_Wd1         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_t_Wd2         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_W_b1          ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_W_Wd1         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_W_Wd2         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_Wd1_Wd2       ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_Wd1_b         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_Wd2_b         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_jet_t         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_jet_W         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_jet_b         ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_jet_Wd1       ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_jet_Wd2       ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_pup0_b        ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_pup0_Wd1      ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_pup0_Wd2      ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_pup1_b        ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_pup1_Wd1      ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaR_pup1_Wd2      ',      )
+        t.SetBranchAddress('JetGenMatched_partonPt             ',      )
+        t.SetBranchAddress('JetGenMatched_partonEta            ',      )
+        t.SetBranchAddress('JetGenMatched_partonPhi            ',      )
+        t.SetBranchAddress('JetGenMatched_partonMass           ',      )
+        t.SetBranchAddress('JetGenMatched_partonID            ',      )
+        t.SetBranchAddress('JetGenMatched_DeltaRjetParton      ',      )
+        '''
+        t.SetBranchAddress('SemiLeptMETpx',  SemiLeptMETpx  )
+        t.SetBranchAddress('SemiLeptMETpy',  SemiLeptMETpy   )
+        t.SetBranchAddress('SemiLeptMETpt',  SemiLeptMETpt   )
+        t.SetBranchAddress('SemiLeptMETphi',  SemiLeptMETphi   )
+        #t.SetBranchAddress('SemiLeptMETsumET',   )
+        #t.SetBranchAddress('SemiLeptNvtx               ',      )
+        #t.SetBranchAddress('SemiLeptNPUtrue            ',      )
+        t.SetBranchAddress('SemiLeptRho',  SemiLeptRho   )
+        t.SetBranchAddress('SemiLeptEventWeight',  SemiLeptEventWeight    )
+        t.SetBranchAddress('SemiLeptPUweight', SemiLeptPUweight    )
+        t.SetBranchAddress('SemiLeptPUweight_MBup',   SemiLeptPUweight_MBup   )
+        t.SetBranchAddress('SemiLeptPUweight_MBdn', SemiLeptPUweight_MBdn  )
+
+
+        #t.SetBranchAddress('SemiLeptGenTTmass          ',      )
+        t.SetBranchAddress('HTlep',  HTlep  )
+        t.SetBranchAddress('ST',   ST   )                
+        #t.SetBranchAddress('ST_CorrDn                  ',      )                
+        #t.SetBranchAddress('ST_CorrUp                    ',      )               
+        #t.SetBranchAddress('ST_PtSmearNom                ',      )               
+        #t.SetBranchAddress('ST_PtSmearUp                 ',      )               
+        #t.SetBranchAddress('ST_PtSmearDn                 ',      )  
+
+        #t.SetBranchAddress('SemiLeptQ2weight_CorrDn                 ',      ) 
+        #t.SetBranchAddress('SemiLeptQ2weight_CorrUp               ',      ) 
+        #t.SetBranchAddress('SemiLeptNNPDF3weight_CorrDn            ',      ) 
+        #t.SetBranchAddress('SemiLeptNNPDF3weight_CorrUp            ',      ) 
+        t.SetBranchAddress('SemiLeptRunNum',  SemiLeptRunNum  ) 
+        t.SetBranchAddress('SemiLeptLumiBlock',  SemiLeptLumiBlock   ) 
+        t.SetBranchAddress('SemiLeptEventNum',  SemiLeptEventNum    ) 
+        #t.SetBranchAddress('SemiLeptPassMETFilters',   1   )      
+
+        t.SetBranchAddress('AK4dRminPt',  AK4dRminPt   )
+        t.SetBranchAddress('AK4dRminEta',  AK4dRminEta  )
+        t.SetBranchAddress('AK4dRminPhi',  AK4dRminPhi  )
+        t.SetBranchAddress('AK4dRminMass', AK4dRminMass )
+        t.SetBranchAddress('AK4dRminBdisc', AK4dRminBdisc )
+        t.SetBranchAddress('AK4dRminLep',   AK4dRminLep   )
+        #t.SetBranchAddress('SemiBtagdRminPt', SemiBtagdRminPt  )
+        #t.SetBranchAddress('SemiBtagdRminBdisc',  SemiBtagdRminBdisc   )
+        #t.SetBranchAddress('AK4BtagdRminLep', AK4BtagdRminLep   )
+        t.SetBranchAddress('LepHemiContainsAK4BtagLoose',  LepHemiContainsAK4BtagLoose   )
+        t.SetBranchAddress('LepHemiContainsAK4BtagMedium', LepHemiContainsAK4BtagMedium   )
+        t.SetBranchAddress('LepHemiContainsAK4BtagTight',  LepHemiContainsAK4BtagTight  )
+
+        t.SetBranchAddress('LeptonPhi', LeptonPhi    )
+        t.SetBranchAddress('LeptonPt',  LeptonPt  )
+        t.SetBranchAddress('LeptonEta',  LeptonEta  )
+        t.SetBranchAddress('LeptonMass',  LeptonMass  )
+        t.SetBranchAddress('PtRel',   PtRel  )
+        t.SetBranchAddress('LeptonIsMu', LeptonIsMu     )
+        t.SetBranchAddress('MuTight',  MuTight  )
+        #t.SetBranchAddress('MuMedium                   ',      )
+        t.SetBranchAddress('DeltaRJetLep', DeltaRJetLep   ) 
+        #t.SetBranchAddress('DeltaPhiJetLep             ',      ) 
+        t.SetBranchAddress('MuIso',MuIso    )
+        #t.SetBranchAddress('Semion_absiso             ',      )
+        #t.SetBranchAddress('Semion_relIsoWithDBeta            ',      )
+        #t.SetBranchAddress('Semion_absiso_EA          ',      )
+        #t.SetBranchAddress('Semion_relIsoWithEA      ',      )
+
+
+        t.SetBranchStatus('*', 0 )
+        t.SetBranchStatus('JetPtRaw', 1)   
+        t.SetBranchStatus('JetEtaRaw', 1)      
+        t.SetBranchStatus('JetPhiRaw',  1 )
+        t.SetBranchStatus('JetMassRaw', 1     )
+        t.SetBranchStatus('JetP',  1    )
+        t.SetBranchStatus('JetPt', 1     )
+        t.SetBranchStatus('JetEta',   1   )
+        t.SetBranchStatus('JetPhi',  1   )
+        t.SetBranchStatus('JetMass', 1     )
+        t.SetBranchStatus('JetSDmass',  1    )
+        t.SetBranchStatus('JetSDmassRaw', 1   )
+        t.SetBranchStatus('JetSDptRaw',    1 )
+        t.SetBranchStatus('JetSDetaRaw',  1    )
+        t.SetBranchStatus('JetSDphiRaw',   1   )
+        #t.SetBranchStatus('JetMassPruned              ',      )
+        #t.SetBranchStatus('JetMassTrimmed             ',      )
+        t.SetBranchStatus('JetTau32',   1   )
+        t.SetBranchStatus('JetTau21',   1   )
+        t.SetBranchStatus('JetSDsubjet0bdisc', 1    )
+        t.SetBranchStatus('JetSDsubjet1bdisc',  1    )
+        t.SetBranchStatus('JetSDmaxbdisc', 1     )
+        #t.SetBranchStatus('JetSDmaxbdiscflavHadron    ',      )
+        #t.SetBranchStatus('JetSDmaxbdiscflavParton    ',      )
+        t.SetBranchStatus('JetSDsubjet0pt', 1     )
+        t.SetBranchStatus('JetSDsubjet0mass', 1     )
+        t.SetBranchStatus('JetSDsubjet0eta',  1     )
+        t.SetBranchStatus('JetSDsubjet0phi',  1     )
+        #t.SetBranchStatus('JetSDsubjet0area           ',      )
+        #t.SetBranchStatus('JetSDsubjet0flavHadron     ',      )
+        #t.SetBranchStatus('JetSDsubjet0flavParton     ',      )
+        t.SetBranchStatus('JetSDsubjet0tau1',  1    )
+        t.SetBranchStatus('JetSDsubjet0tau2',  1    )
+        t.SetBranchStatus('JetSDsubjet0tau3',  1    )
+        t.SetBranchStatus('JetSDsubjet1pt',    1    )
+        t.SetBranchStatus('JetSDsubjet1mass',  1    )
+        t.SetBranchStatus('JetSDsubjet1eta',   1    )
+        t.SetBranchStatus('JetSDsubjet1phi',   1    )
+        #t.SetBranchStatus('JetSDsubjet1area           ',      )
+        #t.SetBranchStatus('JetSDsubjet1flavHadron              ',      )
+        #t.SetBranchStatus('JetSDsubjet1flavParton              ',      )
+        t.SetBranchStatus('JetSDsubjet1tau1',    1   )
+        t.SetBranchStatus('JetSDsubjet1tau2',    1   )
+        t.SetBranchStatus('JetSDsubjet1tau3',    1   )
+        #t.SetBranchStatus('JetPuppiP                  ',      )
+        t.SetBranchStatus('JetPuppiPt',   1   )
+        t.SetBranchStatus('JetPuppiEta',  1    )
+        t.SetBranchStatus('JetPuppiPhi',  1    )
+        t.SetBranchStatus('JetPuppiMass',  1    )
+        t.SetBranchStatus('JetPuppiSDmass', 1     )
+        t.SetBranchStatus('JetPuppiSDmassCorr',  1    )
+        #t.SetBranchStatus('JetPuppiSDmassCorrUp       ',      )
+        #t.SetBranchStatus('JetPuppiSDmassCorrDn       ',      )
+        #t.SetBranchStatus('JetPuppiSDmassCorrL23Smear         ',      )
+        #t.SetBranchStatus('JetPuppiSDmassCorrL23SmearUp       ',      )
+        #t.SetBranchStatus('JetPuppiSDmassCorrL23SmearDn       ',      )
+        t.SetBranchStatus('JetPuppiSDpt',    1  )
+        t.SetBranchStatus('JetPuppiSDptCorr', 1     )
+        ''' 
+        t.SetBranchStatus('JetPuppiSDptCorrUp         ',      )
+        t.SetBranchStatus('JetPuppiSDptCorrDn         ',      )
+        t.SetBranchStatus('JetPuppiSDptCorrL23Smear           ',      )
+        t.SetBranchStatus('JetPuppiSDptCorrL23SmearUp         ',      )
+        t.SetBranchStatus('JetPuppiSDptCorrL23SmearDn         ',      )
+        '''
+        t.SetBranchStatus('JetPuppiSDeta',    1  )
+        t.SetBranchStatus('JetPuppiSDphi',    1  )
+        t.SetBranchStatus('JetPuppiTau1',     1  )
+        t.SetBranchStatus('JetPuppiTau2',     1  )
+        t.SetBranchStatus('JetPuppiTau3               ',      )
+        #t.SetBranchStatus('JetPuppiTau4               ',      )
+        t.SetBranchStatus('JetPuppiTau32',    1  )
+        t.SetBranchStatus('JetPuppiTau21',    1  )
+        '''
+        t.SetBranchStatus('JetPuppiSDsubjet0bdisc             ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1bdisc             ',      )
+        t.SetBranchStatus('JetPuppiSDmaxbdisc         ',      )
+        t.SetBranchStatus('JetPuppiSDmaxbdiscflavHadron       ',      )
+        t.SetBranchStatus('JetPuppiSDmaxbdiscflavParton       ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0pt        ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0mass              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0eta       ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0phi       ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0area              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0flavHadron        ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0flavParton        ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0tau1              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0tau2              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet0tau3              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1pt        ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1mass              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1eta       ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1phi       ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1area              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1flavHadron        ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1flavParton        ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1tau1              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1tau2              ',      )
+        t.SetBranchStatus('JetPuppiSDsubjet1tau3              ',      )
+        
+        t.SetBranchStatus('JetCHF                     ',      )
+        t.SetBranchStatus('JetNHF                     ',      )
+        t.SetBranchStatus('JetCM                      ',      )
+        t.SetBranchStatus('JetNM                      ',      )
+        t.SetBranchStatus('JetNEF                     ',      )
+        t.SetBranchStatus('JetCEF                     ',      )
+        t.SetBranchStatus('JetMF                      ',      )
+        t.SetBranchStatus('JetMult                    ',      )
+        t.SetBranchStatus('JetPuppiCHF                ',      )
+        t.SetBranchStatus('JetPuppiNHF                ',      )
+        t.SetBranchStatus('JetPuppiCM                 ',      )
+        t.SetBranchStatus('JetPuppiNM                 ',      )
+        t.SetBranchStatus('JetPuppiNEF                ',      )
+        t.SetBranchStatus('JetPuppiCEF                ',      )
+        t.SetBranchStatus('JetPuppiMF                 ',      )
+        t.SetBranchStatus('JetPuppiMult               ',      )
+        t.SetBranchStatus('JetMassCorrFactor          ',      )
+        t.SetBranchStatus('JetMassCorrFactorUp        ',      )
+        t.SetBranchStatus('JetMassCorrFactorDn        ',      )
+        #t.SetBranchStatus('JetCorrFactor              ',      )
+        #t.SetBranchStatus('JetCorrFactorUp            ',      )
+        #t.SetBranchStatus('JetCorrFactorDn            ',      )
+        #t.SetBranchStatus('JetPtSmearFactor           ',      )
+        #t.SetBranchStatus('JetPtSmearFactorUp         ',      )
+        #t.SetBranchStatus('JetPtSmearFactorDn         ',      )
+        #t.SetBranchStatus('JetPuppiMassCorrFactor             ',      )
+        #t.SetBranchStatus('JetPuppiMassCorrFactorUp           ',      )
+        #t.SetBranchStatus('JetPuppiMassCorrFactorDn           ',      )
+        #t.SetBranchStatus('JetPuppiCorrFactor         ',      )
+        #t.SetBranchStatus('JetPuppiCorrFactorUp       ',      )
+        #t.SetBranchStatus('JetPuppiCorrFactorDn       ',      )
+        #t.SetBranchStatus('JetPuppiPtSmearFactor              ',      )
+        #t.SetBranchStatus('JetPuppiPtSmearFactorUp            ',      )
+        #t.SetBranchStatus('JetPuppiPtSmearFactorDn            ',      )
+        #t.SetBranchStatus('JetEtaScaleFactor          ',      )
+        #t.SetBranchStatus('JetPhiScaleFactor          ',      )
+       
+        t.SetBranchStatus('JetMatchedGenJetDR         ',      )
+        t.SetBranchStatus('JetMatchedGenJetPt         ',      )
+        t.SetBranchStatus('JetMatchedGenJetMass       ',      )
+        t.SetBranchStatus('JetGenMatched_TopHadronic          ',      )
+        t.SetBranchStatus('JetGenMatched_TopPt        ',      )
+        t.SetBranchStatus('JetGenMatched_TopEta       ',      )
+        t.SetBranchStatus('JetGenMatched_TopPhi       ',      )
+        t.SetBranchStatus('JetGenMatched_TopMass              ',      )
+        t.SetBranchStatus('JetGenMatched_bPt          ',      )
+        t.SetBranchStatus('JetGenMatched_WPt          ',      )
+        t.SetBranchStatus('JetGenMatched_Wd1Pt        ',      )
+        t.SetBranchStatus('JetGenMatched_Wd2Pt        ',      )
+        t.SetBranchStatus('JetGenMatched_Wd1ID        ',      )
+        t.SetBranchStatus('JetGenMatched_Wd2ID        ',      )
+        t.SetBranchStatus('JetGenMatched_MaxDeltaRPartonTop   ',      )
+        t.SetBranchStatus('JetGenMatched_MaxDeltaRWPartonTop  ',      )
+        t.SetBranchStatus('JetGenMatched_MaxDeltaRWPartonW    ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_t_b           ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_t_W           ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_t_Wd1         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_t_Wd2         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_W_b1          ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_W_Wd1         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_W_Wd2         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_Wd1_Wd2       ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_Wd1_b         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_Wd2_b         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_jet_t         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_jet_W         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_jet_b         ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_jet_Wd1       ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_jet_Wd2       ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_pup0_b        ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_pup0_Wd1      ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_pup0_Wd2      ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_pup1_b        ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_pup1_Wd1      ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaR_pup1_Wd2      ',      )
+        t.SetBranchStatus('JetGenMatched_partonPt             ',      )
+        t.SetBranchStatus('JetGenMatched_partonEta            ',      )
+        t.SetBranchStatus('JetGenMatched_partonPhi            ',      )
+        t.SetBranchStatus('JetGenMatched_partonMass           ',      )
+        t.SetBranchStatus('JetGenMatched_partonID            ',      )
+        t.SetBranchStatus('JetGenMatched_DeltaRjetParton      ',      )
+        '''
+        t.SetBranchStatus('SemiLeptMETpx',   1   )
+        t.SetBranchStatus('SemiLeptMETpy',   1   )
+        t.SetBranchStatus('SemiLeptMETpt',   1   )
+        t.SetBranchStatus('SemiLeptMETphi',  1   )
+        #t.SetBranchStatus('SemiLeptMETsumET',   )
+        #t.SetBranchStatus('SemiLeptNvtx               ',      )
+        #t.SetBranchStatus('SemiLeptNPUtrue            ',      )
+        t.SetBranchStatus('SemiLeptRho',   1   )
+        t.SetBranchStatus('SemiLeptEventWeight',  1    )
+        t.SetBranchStatus('SemiLeptPUweight',  1    )
+        t.SetBranchStatus('SemiLeptPUweight_MBup',   1   )
+        t.SetBranchStatus('SemiLeptPUweight_MBdn',   1   )
+
+
+        #t.SetBranchStatus('SemiLeptGenTTmass          ',      )
+        t.SetBranchStatus('HTlep',   1   )
+        t.SetBranchStatus('ST',   1   )                
+        #t.SetBranchStatus('ST_CorrDn                  ',      )                
+        #t.SetBranchStatus('ST_CorrUp                    ',      )               
+        #t.SetBranchStatus('ST_PtSmearNom                ',      )               
+        #t.SetBranchStatus('ST_PtSmearUp                 ',      )               
+        #t.SetBranchStatus('ST_PtSmearDn                 ',      )  
+
+        #t.SetBranchStatus('SemiLeptQ2weight_CorrDn                 ',      ) 
+        #t.SetBranchStatus('SemiLeptQ2weight_CorrUp               ',      ) 
+        #t.SetBranchStatus('SemiLeptNNPDF3weight_CorrDn            ',      ) 
+        #t.SetBranchStatus('SemiLeptNNPDF3weight_CorrUp            ',      ) 
+        t.SetBranchStatus('SemiLeptRunNum',   1   ) 
+        t.SetBranchStatus('SemiLeptLumiBlock',   1   ) 
+        t.SetBranchStatus('SemiLeptEventNum',  1    ) 
+        #t.SetBranchStatus('SemiLeptPassMETFilters',   1   )      
+
+        t.SetBranchStatus('AK4dRminPt', 1      )
+        t.SetBranchStatus('AK4dRminEta', 1     )
+        t.SetBranchStatus('AK4dRminPhi', 1     )
+        t.SetBranchStatus('AK4dRminMass', 1    )
+        t.SetBranchStatus('AK4dRminBdisc', 1   )
+        t.SetBranchStatus('AK4dRminLep',   1   )
+        t.SetBranchStatus('SemiBtagdRminPt',  1    )
+        t.SetBranchStatus('SemiBtagdRminBdisc',   1   )
+        t.SetBranchStatus('AK4BtagdRminLep',   1   )
+        t.SetBranchStatus('LepHemiContainsAK4BtagLoose',  1   )
+        t.SetBranchStatus('LepHemiContainsAK4BtagMedium', 1   )
+        t.SetBranchStatus('LepHemiContainsAK4BtagTight',  1 )
+
+        t.SetBranchStatus('LeptonPhi', 1     )
+        t.SetBranchStatus('LeptonPt',   1   )
+        t.SetBranchStatus('LeptonEta',   1   )
+        t.SetBranchStatus('LeptonMass',   1   )
+        t.SetBranchStatus('PtRel',    1  )
+        t.SetBranchStatus('LeptonIsMu', 1      )
+        t.SetBranchStatus('MuTight',   1   )
+        #t.SetBranchStatus('MuMedium                   ',      )
+        t.SetBranchStatus('DeltaRJetLep',  1    ) 
+        #t.SetBranchStatus('DeltaPhiJetLep             ',      ) 
+        t.SetBranchStatus('MuIso', 1     )
+        #t.SetBranchStatus('Semion_absiso             ',      )
+        #t.SetBranchStatus('Semion_relIsoWithDBeta            ',      )
+        #t.SetBranchStatus('Semion_absiso_EA          ',      )
+        #t.SetBranchStatus('Semion_relIsoWithEA      ',      )
+
+
+    if not options.TreeMaker :
+
+        SemiLeptTrig        = array.array('i', [0]  )
+        SemiLeptWeight      = array.array('f', [0.] )
+        BoosttypE           = array.array('i', [0] )
+        FatJetCorr          = array.array('f', [0.] )
+        FatJetCorrUp        = array.array('f', [0.] )
+        FatJetCorrDn        = array.array('f', [0.] )
+        FatJetMassCorr      = array.array('f', [0.] )
+        FatJetMassCorrUp    = array.array('f', [0.] )
+        FatJetMassCorrDn    = array.array('f', [0.] )
+        JetPtSmearFactor    = array.array('f', [0.] )
+        JetPtSmearFactorUp  = array.array('f', [0.] )
+        JetPtSmearFactorDn  = array.array('f', [0.] )
+        JetEtaScaleFactor   = array.array('f', [0.] )
+        JetPhiScaleFactor   = array.array('f', [0.] )
+        JetMatchedGenJetPt  = array.array('f', [0.] )
+        FatJetPtRaw         = array.array('f', [0.] )
+        FatJetEtaRaw        = array.array('f', [0.] )  
+        FatJetPhiRaw        = array.array('f', [0.] )
+        FatJetRapRaw        = array.array('f', [0.] )
+        FatJetMassRaw       = array.array('f', [0.] )
+        FatJetP             = array.array('f', [0.] )
+        FatJetPt            = array.array('f', [-1.])
+        FatJetEta           = array.array('f', [-1.])
+        FatJetPhi           = array.array('f', [-1.])
+        FatJetRap           = array.array('f', [-1.])
+        FatJetEnergy        = array.array('f', [-1.])
+        FatJetBDisc         = array.array('f', [-1.])
+        FatJetRhoRatio      = array.array('f', [-1.])
+        FatJetMass          = array.array('f', [-1.])
+        FatJetMassSoftDrop  = array.array('f', [-1.])
+        FatJetMassSDsumSubjetCorr        = array.array('f', [-1.])
+        FatJetMassSDsumSubjetRaw         = array.array('f', [-1.])
+        FatJetMassSDsumSubjetCorrUp      = array.array('f', [-1.])
+        FatJetMassSDsumSubjetCorrDn      = array.array('f', [-1.])
+        FatJetMassSDsumSubjetCorrSmear   = array.array('f', [-1.])
+        FatJetMassSDsumSubjetCorrSmearUp = array.array('f', [-1.])
+        FatJetMassSDsumSubjetCorrSmearDn = array.array('f', [-1.])
+        FatJetMassPruned    = array.array('f', [-1.])
+        FatJetMassFiltered  = array.array('f', [-1.])       
+        FatJetMassTrimmed   = array.array('f', [-1.])
+        FatJetTau1          = array.array('f', [-1.])
+        FatJetTau2          = array.array('f', [-1.])
+        FatJetTau3          = array.array('f', [-1.])
+        FatJetTau32         = array.array('f', [-1.])
+        FatJetTau21         = array.array('f', [-1.]) 
+        FatJetSDnsubjets    = array.array('f', [-1.])
+        FatJetSDmaxbdisc    = array.array('f', [-1.])
+        FatJetSDsubjetWpt   = array.array('f', [-1.])
+        FatJetSDsubjetWEta   = array.array('f', [-1.])
+        FatJetSDsubjetWPhi   = array.array('f', [-1.])
+        FatJetSDsubjetWmass = array.array('f', [-1.])
+        FatJetSDsubjetWtau1   = array.array('f', [-1.])
+        FatJetSDsubjetWtau2   = array.array('f', [-1.])
+        FatJetSDsubjetWtau3   = array.array('f', [-1.])
+        FatJetSDsubjetWtau21   = array.array('f', [-1.])
+        FatJetSDsubjetWtau32   = array.array('f', [-1.])
+        FatJetSDbdiscW      = array.array('f', [-1.])
+        FatJetSDsubjetBpt   = array.array('f', [-1.])
+        FatJetSDsubjetBmass = array.array('f', [-1.])
+        FatJetSDsubjetBtau1   = array.array('f', [-1.])
+        FatJetSDsubjetBtau2   = array.array('f', [-1.])
+        FatJetSDsubjetBtau3   = array.array('f', [-1.])
+        FatJetSDsubjetBtau21   = array.array('f', [-1.])
+        FatJetSDsubjetBtau32   = array.array('f', [-1.])
+        FatJetSDbdiscB      = array.array('f', [-1.])
+        FatJetCMSmaxbdisc   = array.array('f', [-1.])
+        FatJetCMSnsubjets   = array.array('f', [-1.])
+        FatJetCMSminMass    = array.array('f', [-1.])
+        FatJetCMSm01        = array.array('f', [-1.])
+        FatJetCMSm02        = array.array('f', [-1.])
+        FatJetCMSm12        = array.array('f', [-1.])
+        FatJetNHF           = array.array('f', [-1.])
+        FatJetCHF           = array.array('f', [-1.])
+        FatJetNEF           = array.array('f', [-1.])
+        FatJetCEF           = array.array('f', [-1.])
+        FatJetNC            = array.array('f', [-1.])
+        FatJetNCH           = array.array('f', [-1.])
+        BJetbDisc           = array.array('f', [-1.])
+        BJetPt              = array.array('f', [-1.])
+        BJetEta             = array.array('f', [-1.])
+        BJetPhi             = array.array('f', [-1.])
+        BJetMass            = array.array('f', [-1.])
+        BJet2bDisc           = array.array('f', [-1.])
+        BJet2Pt              = array.array('f', [-1.])
+        BJet2Eta             = array.array('f', [-1.])
+        BJet2Phi             = array.array('f', [-1.])
+        BJet2Mass            = array.array('f', [-1.])
+        Type2PairMass       = array.array('f', [-1.])
+        Type2PairPt         = array.array('f', [-1.])
+        LeptonType          = array.array('i', [-1])
+        LeptonPt            = array.array('f', [-1.])
+        LeptonEta           = array.array('f', [-1.])
+        LeptonPhi           = array.array('f', [-1.])
+        LeptonPx            = array.array('f', [-1.])
+        LeptonPy            = array.array('f', [-1.])
+        LeptonPz            = array.array('f', [-1.])
+        LeptonEnergy        = array.array('f', [-1.])
+        LeptonIso           = array.array('f', [-1.])
+        LeptonPtRel         = array.array('f', [-1.])
+        LeptonDRMin         = array.array('f', [-1.])
+        LeptonCharge        = array.array('f', [-1.])
+        LeptonLoose         = array.array('f', [-1.])
+        LeptonTight         = array.array('f', [-1.]) 
+        SemiLepMETpx        = array.array('f', [-1.])
+        SemiLepMETpy        = array.array('f', [-1.])
+        SemiLepMETpt        = array.array('f', [-1.])
+        SemiLepMETphi       = array.array('f', [-1.])
+        SemiLepNvtx         = array.array('f', [-1.])
+        SemiLepEventWeight  = array.array('f', [-1.])
+        SemilLepTTmass      = array.array('f', [-1.])  
+        DeltaPhiLepFat      = array.array('f', [-1.]) 
+        DeltaRLepFat        = array.array('f', [-1.])
+        DeltaRAK4AK8        = array.array('f', [-1.])
+        NearestAK4JetPt     = array.array('f', [-1.])
+        AK4bDisc            = array.array('f', [-1.])
+        NearestAK4JetPt     = array.array('f', [-1.])
+        NearestAK4JetEta    = array.array('f', [-1.])
+        NearestAK4JetPhi    = array.array('f', [-1.])
+        NearestAK4JetMass   = array.array('f', [-1.])
+        NearestAK4JetPt2     = array.array('f', [-1.])
+        NearestAK4JetEta2    = array.array('f', [-1.])
+        NearestAK4JetPhi2    = array.array('f', [-1.])
+        NearestAK4JetMass2   = array.array('f', [-1.])
+        SemiLeptRunNum      = array.array('f', [-1.])  
+        SemiLeptLumiBlock   = array.array('f', [-1.])  
+        SemiLeptEventNum    = array.array('f', [-1.])
+        SemiLeptEventNum2    = array.array('f', [-1.])  
+        PU_CorrDn           = array.array('f', [-1.])
+        PU_CorrUp           = array.array('f', [-1.])
+
+
+        t.SetBranchAddress('SemiLeptTrig'        , SemiLeptTrig        )
+        t.SetBranchAddress('SemiLeptWeight'      , SemiLeptWeight      )
+        t.SetBranchAddress('FatJetPt'            , FatJetPt            )
+        t.SetBranchAddress('FatJetEta'           , FatJetEta           )
+        t.SetBranchAddress('FatJetPhi'           , FatJetPhi           )
+        t.SetBranchAddress('FatJetRap'           , FatJetRap           )
+        t.SetBranchAddress('FatJetEnergy'        , FatJetEnergy        )
+        t.SetBranchAddress('FatJetBDisc'         , FatJetBDisc         )
+        t.SetBranchAddress('FatJetMass'          , FatJetMass          )
+        t.SetBranchAddress('FatJetMassSoftDrop'  , FatJetMassSoftDrop  )
+        t.SetBranchAddress('FatJetTau32'         , FatJetTau32         )
+        t.SetBranchAddress('FatJetTau21'         , FatJetTau21         )
+        t.SetBranchAddress('FatJetRhoRatio'      , FatJetRhoRatio      )
+        t.SetBranchAddress('FatJetSDbdiscW'      , FatJetSDbdiscW      )
+        t.SetBranchAddress('FatJetSDbdiscB'      , FatJetSDbdiscB      )
+        t.SetBranchAddress('FatJetSDsubjetWpt'   , FatJetSDsubjetWpt   )
+        t.SetBranchAddress('FatJetSDsubjetWEta'   , FatJetSDsubjetWEta )
+        t.SetBranchAddress('FatJetSDsubjetWPhi'   , FatJetSDsubjetWPhi )
+        t.SetBranchAddress('FatJetSDsubjetWmass' , FatJetSDsubjetWmass )
+        t.SetBranchAddress('FatJetSDsubjetWtau1' , FatJetSDsubjetWtau1 )
+        t.SetBranchAddress('FatJetSDsubjetWtau2' , FatJetSDsubjetWtau2 )
+        t.SetBranchAddress('FatJetSDsubjetWtau3' , FatJetSDsubjetWtau3 )
+        t.SetBranchAddress('FatJetSDsubjetWtau21' , FatJetSDsubjetWtau21 )
+        t.SetBranchAddress('FatJetSDsubjetWtau32' , FatJetSDsubjetWtau32 )
+        t.SetBranchAddress('FatJetSDsubjetBpt'   , FatJetSDsubjetBpt   )
+        t.SetBranchAddress('FatJetSDsubjetBmass' , FatJetSDsubjetBmass )
+        t.SetBranchAddress('FatJetSDsubjetBtau1' , FatJetSDsubjetBtau1 )
+        t.SetBranchAddress('FatJetSDsubjetBtau2' , FatJetSDsubjetBtau2 )
+        t.SetBranchAddress('FatJetSDsubjetBtau32' , FatJetSDsubjetBtau32 )
+        t.SetBranchAddress('FatJetSDsubjetBtau21' , FatJetSDsubjetBtau21 )
+        t.SetBranchAddress('FatJetSDsubjetBtau3' , FatJetSDsubjetBtau3 )
+        t.SetBranchAddress('BJet2bDisc'   , BJet2bDisc )
+        t.SetBranchAddress('BJet2Pt'      , BJet2Pt    )
+        t.SetBranchAddress('BJet2Eta'     , BJet2Eta   )
+        t.SetBranchAddress('BJet2Phi'     , BJet2Phi   )
+        t.SetBranchAddress('BJet2Mass'    , BJet2Mass  )
+        t.SetBranchAddress('LeptonType'          , LeptonType          )
+        t.SetBranchAddress('LeptonPt'            , LeptonPt            )
+        t.SetBranchAddress('LeptonEta'           , LeptonEta           )
+        t.SetBranchAddress('LeptonPhi'           , LeptonPhi           )
+        t.SetBranchAddress('LeptonEnergy'        , LeptonEnergy        )
+        t.SetBranchAddress('LeptonIso'           , LeptonIso           )
+        t.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
+        t.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
+        t.SetBranchAddress('LeptonCharge'        , LeptonCharge        )
+        t.SetBranchAddress('LeptonLoose'         , LeptonLoose         )
+        t.SetBranchAddress('LeptonTight'         , LeptonTight         )
+        t.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
+        t.SetBranchAddress('SemiLepMETpx'        , SemiLepMETpx        )
+        t.SetBranchAddress('SemiLepMETpy'        , SemiLepMETpy        )
+        t.SetBranchAddress('AK4bDisc'            , AK4bDisc            )
+        t.SetBranchAddress('SemiLepMETphi'       , SemiLepMETphi       )
+        t.SetBranchAddress('SemiLepNvtx'         , SemiLepNvtx         )
+        t.SetBranchAddress('DeltaPhiLepFat'      , DeltaPhiLepFat      )
+        t.SetBranchAddress('DeltaRLepFat'        , DeltaRLepFat        )
+        t.SetBranchAddress('DeltaRAK4AK8'        , DeltaRAK4AK8        )
+        t.SetBranchAddress('NearestAK4JetPt'     , NearestAK4JetPt     )
+        t.SetBranchAddress('NearestAK4JetEta'    , NearestAK4JetEta    )
+        t.SetBranchAddress('NearestAK4JetPhi'    , NearestAK4JetPhi    )
+        t.SetBranchAddress('NearestAK4JetMass'   , NearestAK4JetMass   )
+        t.SetBranchAddress('SemiLepEventWeight'     ,  SemiLepEventWeight   )
+        t.SetBranchAddress('SemiLeptRunNum'         ,  SemiLeptRunNum       )
+        t.SetBranchAddress('SemiLeptLumiBlock'      ,  SemiLeptLumiBlock    )
+        t.SetBranchAddress('SemiLeptEventNum'       ,  SemiLeptEventNum     )
+        t.SetBranchAddress('PU_CorrDn'       ,  PU_CorrDn     )
+        t.SetBranchAddress('PU_CorrUp'       ,  PU_CorrUp     )
+
+        t.SetBranchStatus ('*', 0)
+        t.SetBranchStatus ('FatJetPt', 1)
+        t.SetBranchStatus ('FatJetEta', 1)
+        t.SetBranchStatus ('FatJetPhi', 1)
+        t.SetBranchStatus ('FatJetMass', 1)
+        t.SetBranchStatus ('FatJetMassSoftDrop', 1)
+        t.SetBranchStatus ('FatJetTau32', 1)
+        t.SetBranchStatus ('FatJetTau21', 1)
+        t.SetBranchStatus ('FatJetRhoRatio', 1)
+        t.SetBranchStatus('BJet2Pt' , 1)
+        t.SetBranchStatus('BJet2Eta' , 1)
+        t.SetBranchStatus('BJet2Phi' , 1 )
+        t.SetBranchStatus('BJet2Mass' , 1)
+        t.SetBranchStatus('BJet2bDisc' , 1)
+        t.SetBranchStatus('FatJetSDsubjetWpt',1)
+        t.SetBranchStatus('FatJetSDsubjetWtau1',1)
+        t.SetBranchStatus('FatJetSDsubjetWtau2',1)
+        t.SetBranchStatus('FatJetSDsubjetWtau3',1)
+        t.SetBranchStatus('FatJetSDsubjetWtau21',1)
+        t.SetBranchStatus('FatJetSDsubjetWtau32',1)
+        t.SetBranchStatus('FatJetSDbdiscW',1)
+        t.SetBranchStatus('FatJetSDsubjetWEta',1)
+        t.SetBranchStatus('FatJetSDsubjetWPhi',1)
+        t.SetBranchStatus('FatJetSDsubjetBtau1',1)
+        t.SetBranchStatus('FatJetSDsubjetBtau2',1)
+        t.SetBranchStatus('FatJetSDsubjetBtau3',1)
+        t.SetBranchStatus('FatJetSDsubjetBtau21',1)
+        t.SetBranchStatus('FatJetSDsubjetBtau32',1)
+        t.SetBranchStatus('FatJetSDbdiscB',1)
+        t.SetBranchStatus('FatJetSDsubjetBpt',1)
+        t.SetBranchStatus('FatJetSDsubjetWmass',1)
+        t.SetBranchStatus ('SemiLeptTrig', 1)
+        t.SetBranchStatus ('DeltaPhiLepFat'  ,1   )
+        t.SetBranchStatus ('DeltaRLepFat'    ,1   )
+        t.SetBranchStatus ('DeltaRAK4AK8'    ,1   )
+        t.SetBranchStatus ('NearestAK4JetPt'   ,1 )
+        t.SetBranchStatus ('NearestAK4JetEta'  ,1 )
+        t.SetBranchStatus ('NearestAK4JetPhi'  ,1 )
+        t.SetBranchStatus ('NearestAK4JetMass' ,1 )
+        t.SetBranchStatus ('SemiLepMETpt'  , 1  )
+        t.SetBranchStatus ('SemiLepMETpx'  , 1  )
+        t.SetBranchStatus ('SemiLepMETpy'  , 1  )
+        t.SetBranchStatus ('AK4bDisc'      , 1  )
+        t.SetBranchStatus ('SemiLepMETphi' , 1  )
+        t.SetBranchStatus ('LeptonType'          , 1)
+        t.SetBranchStatus ('LeptonPt'            , 1)
+        t.SetBranchStatus ('LeptonEta'           , 1)
+        t.SetBranchStatus ('LeptonPhi'           , 1)
+        t.SetBranchStatus ('LeptonEnergy'        , 1)
+        t.SetBranchStatus ('LeptonIso'           , 1)
+        t.SetBranchStatus ('LeptonPtRel'         , 1)
+        t.SetBranchStatus ('LeptonDRMin'         , 1)
+        t.SetBranchStatus ('LeptonCharge'        , 1)
+        t.SetBranchStatus ('LeptonLoose'         , 1)
+        t.SetBranchStatus ('LeptonTight'         , 1)
+        t.SetBranchStatus ('SemiLepEventWeight'  , 1) 
+        t.SetBranchStatus ('SemiLeptRunNum'      , 1)
+        t.SetBranchStatus ('SemiLeptLumiBlock'   , 1)
+        t.SetBranchStatus ('SemiLeptEventNum'    , 1)
+        t.SetBranchStatus ('PU_CorrDn'           , 1)
+        t.SetBranchStatus ('PU_CorrUp'           , 1)
 
 
     entries = t.GetEntriesFast()
@@ -843,108 +1623,235 @@ def Wtag_Selector(argv) :
 
     # Begin Event Loop
     for jentry in xrange( eventsToRun ):
-        if jentry % 100000 == 0 :
+        if jentry % 100000 == 0 or options.verbose :
             print 'processing ' + str(jentry)
         ientry = t.GetEntry( jentry )
         if ientry < 0:
             break
         # Event Info
-        weightS = SemiLepEventWeight[0]
-        eventNum = SemiLeptEventNum[0]
-        type1or2 = BoosttypE[0]
-        runNum = SemiLeptRunNum[0]
-        lumiBlock = SemiLeptLumiBlock[0]
+        
+        if options.TreeMaker :
+            weightS = SemiLeptEventWeight[0]
+            eventNum = SemiLeptEventNum[0]
 
-        # Lepton Observables
-        theLepton = ROOT.TLorentzVector()
-        theLepton.SetPtEtaPhiE( LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0] ) # Assume massless
-        LepPt = theLepton.Perp()
-        LepEta = theLepton.Eta()
-        LepPhi = theLepton.Phi()
-        LepType =  LeptonType[0]
-        lepton_ptRel = LeptonPtRel[0]
-        lepton_DRmin = LeptonDRMin[0] 
+            # Lepton Observables
+            theLepton = ROOT.TLorentzVector()
+            theLepton.SetPtEtaPhiM( LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonMass[0] ) 
+            LepPt = theLepton.Perp()
+            LepEta = theLepton.Eta()
+            LepPhi = theLepton.Phi()
+            LepMass = theLepton.M()
 
-        # MET Observables
-        nuCandP4 = ROOT.TLorentzVector( )
-        nuCandP4.SetPtEtaPhiM( SemiLepMETpt[0], 0, SemiLepMETphi[0], SemiLepMETpt[0] )
-        MET_pt = nuCandP4.Perp()
+            LepType = 2
+            LepisMu =  1. # FIX THIS LeptonIsMu[0] does not appear functional
+            Muistight = MuTight[0]
+            MuIsolation = MuIso[0]    
+            LeptonIsol = MuIsolation
+
+            lepton_ptRel = PtRel[0]
+
+            lepton_DRmin = DeltaRJetLep[0] 
+
+            DeltaRLepFat = [] # DR lepton and AK8
+            DeltaRLepFat.append( DeltaRJetLep[0] )
+            LeptonDRMin = [] # DR lepton and AK4
+            LeptonDRMin.append( AK4dRminLep[0] )
+
+            # MET Observables
+            nuCandP4 = ROOT.TLorentzVector( )
+            nuCandP4.SetPxPyPzE(SemiLeptMETpx[0], SemiLeptMETpy[0], 0.0, SemiLeptMETpt[0])
+            MET_pt = nuCandP4.Perp()
+
+            # ak4 Observables            
+            ak4CandP4puppi0 = ROOT.TLorentzVector()
+            ak4CandP4puppi0.SetPtEtaPhiM( AK4dRminPt[0], AK4dRminEta[0], AK4dRminPhi[0], AK4dRminMass[0])
+            ak4_bdisc = AK4dRminBdisc[0]
+            ak4_HemiHasBtagLoose = LepHemiContainsAK4BtagLoose[0]
+            ak4_HemiHasBtagMedium = LepHemiContainsAK4BtagMedium[0]
+            ak4_HemiHasBtagTight = LepHemiContainsAK4BtagTight[0]
+        if not options.TreeMaker :
+            if options.verbose : print "checking not Treemaker"
+            weightS = SemiLepEventWeight[0]
+            eventNum = SemiLeptEventNum[0]
+            #type1or2 = BoosttypE[0]
+            runNum = SemiLeptRunNum[0]
+            lumiBlock = SemiLeptLumiBlock[0]
+
+            # Lepton Observables
+            theLepton = ROOT.TLorentzVector()
+            theLepton.SetPtEtaPhiE( LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0] ) # Assume massless
+            if options.verbose : print "The lepton 4 vector is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}- iso is {4:3.3f}".format(LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0], LeptonIso[0])
+            LepPt = theLepton.Perp()
+            LepEta = theLepton.Eta()
+            LepPhi = theLepton.Phi()
+            LepType =  LeptonType[0]
+            LepMass = theLepton.M()
+            LeptonIsol = LeptonIso[0]
+            lepton_ptRel = LeptonPtRel[0]
+            lepton_DRmin = LeptonDRMin[0] 
+
+            # MET Observables
+            nuCandP4 = ROOT.TLorentzVector( )
+            #nuCandP4.SetPtEtaPhiM( SemiLepMETpt[0], 0, SemiLepMETphi[0], SemiLepMETpt[0] )
+            nuCandP4.SetPxPyPzE(SemiLepMETpx[0], SemiLepMETpy[0], 0.0, SemiLepMETpt[0])
+            MET_pt = nuCandP4.Perp()
+            if options.verbose : print "The MET 4 vetor is (px, py, pz, pt) : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(SemiLepMETpx[0], SemiLepMETpy[0], 0.0, SemiLepMETpt[0])
+
+            # ak4 Observables            
+            ak4CandP4puppi0 = ROOT.TLorentzVector()
+            ak4CandP4puppi0.SetPtEtaPhiM( NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
+            ak4_bdisc = AK4bDisc[0]
+            if options.verbose : print "The AK4 4 vetor is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
 
 
-        # ak4 Observables            
-        ak4CandP4puppi0 = ROOT.TLorentzVector()
-        ak4CandP4puppi0.SetPtEtaPhiM( NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
-        ak4_bdisc = AK4bDisc[0]
+        if options.TreeMaker :
+            # ak8 Observables 
+
+            FatJetP4 = ROOT.TLorentzVector()    # fix this, obs should be SD mass but its empty in new Jim trees
+            FatJetP4.SetPtEtaPhiM( JetPuppiPt[0], JetPuppiEta[0], JetPuppiPhi[0], JetPuppiMass[0] ) #* JetPuppiSDmassCorr[0])
+            drAK4AK8 = 1.1 # fix this, should be DR btw AK4 and AK8
+            fateta =  JetPuppiEta[0]
+            FatJetSD_m = JetPuppiMass[0] # fix this should be JetPuppiSDmass[0]
+            #print "Fat jet SD mass is : {0}".format(JetPuppiMass[0] ) 
+            FatJetSD_pt = JetPuppiSDpt[0]
+            tau32 = JetPuppiTau32[0]
+            tau21 = JetPuppiTau21[0]
+            #tau3 = JetPuppiTau3[0]
+            #tau2 = JetPuppiTau2[0]
+            #tau1 = JetPuppiTau1[0]
 
 
-        # ak8 Observables 
+            # ak8 subjet Observables      # fix this (define these for type 1 selection)       
+            '''
+            W_m = FatJetSDsubjetWmass[0]
+            W_pt = FatJetSDsubjetWpt[0]
+            W_tau1 = FatJetSDsubjetWtau1[0]
+            W_tau2 = FatJetSDsubjetWtau2[0]
+            W_tau3 = FatJetSDsubjetWtau3[0]
+            W_bdisc = FatJetSDbdiscW[0]
+            W_eta = FatJetSDsubjetWEta[0]
+            W_phi = FatJetSDsubjetWPhi[0]
+            W_tau21 = FatJetSDsubjetWtau21[0]
+            if options.Type2 :
+                B_pt = BJet2Pt[0]
+                B_m = BJet2Mass[0]
+                B_bdisc = BJet2bDisc[0]
 
-        FatJetP4 = ROOT.TLorentzVector()    
-        FatJetP4.SetPtEtaPhiM( FatJetPt[0], FatJetEta[0], FatJetPhi[0], FatJetMass[0])     
-        fatpt = FatJetP4.Perp()
-        fateta = FatJetP4.Eta()
-        fatmass = FatJetP4.M()
-        drAK4AK8 = DeltaRAK4AK8[0]
+            if not options.Type2 :
+                B_pt = FatJetSDsubjetBpt[0]
+                B_m = FatJetSDsubjetBmass[0]
+                B_bdisc = FatJetSDbdiscB[0]
 
-        FatJetSD_m = FatJetMassSoftDrop[0]
-        Rhorat = FatJetRhoRatio[0]
-        if (Rhorat > 0.001): # FatJetSDpt = m / (R*sqrt(rhoRatio))
-            sqrtRhorat = math.sqrt(Rhorat)
-            FatJetSD_pt = FatJetSD_m / (0.8 * sqrtRhorat  )
-        else:
-            FatJetSD_pt = 0.
-        tau32 = FatJetTau32[0]
-        tau21 = FatJetTau21[0]
-        tau3 = FatJetTau3[0]
-        tau2 = FatJetTau2[0]
-        tau1 = FatJetTau1[0]
+            '''
+            #applying Thea's corrections for Type 2   
+            if options.applyTheaCorr and  options.Type2  and FatJetSD_pt >  170. : # and type1or2 == 2 :
+                W_mRaw = FatJetSD_m  # mass is initially raw, multiply by correction factor to give corrected mass
+                W_ptRaw = FatJetSD_pt
+                W_eta = JetPuppiSDeta[0]
+                puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
+                FatJetSD_m = W_mRaw * puppiCorr
+            '''  # fix this, change to work for options.TreeMaker
+            #applying Thea's corrections for Type 1
+            if options.applyTheaCorr and ( not options.Type2 ) and FatJetSD_pt > (options.Ak8PtCut - 20. ) and W_pt > 170. and type1or2 == 1  :
+                W_mRaw = FatJetSDsubjetWmassRaw[0]
+                W_ptRaw = FatJetSDsubjetWptRaw[0]
+                puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
+                W_m =  W_mRaw  * puppiCorr
+            '''
+            # applying High Intensity Proton (HIP) muon corrections
+
+            # Fix this LeptonIsMu does not appear to be functional
+            if LepisMu >= 1 : LepType = 2
+            else : LepType = 1
+            #print "Leptype is : {0}".format(LepType)
+
+            if options.Type2 :
+                if options.applyHIPCorr and LepisMu >0. and LepPt > 50. and abs(LepEta) < 2.1 and LeptonIso[0] < 0.1 and FatJetSD_pt > 200. : 
+                    HIPcorrPt = getHIPMuonCorr(LepPt, LepEta, LepPhi, int(LeptonCharge[0]))
+                    LepPt = HIPcorrPt
+            else :
+                if options.applyHIPCorr and LepisMu >0. and LepPt > 50. and abs(LepEta) < 2.1 and LeptonIso[0] < 0.1 and FatJetSD_pt > (options.Ak8PtCut - 20. ) : 
+                    HIPcorrPt = getHIPMuonCorr(LepPt, LepEta, LepPhi, int(LeptonCharge[0]))
+                    LepPt = HIPcorrPt
+            # getting electron scale factors
+            if options.verbose: print "the value of LepisMu is {0}".format( LepisMu )
+            if options.applyElSF and LepisMu <= 0. :
+                ElScaleFactor = getgsfTrackEffScaleFactor( LepEta, LepPt )
+                if options.verbose: print "Electron Scale factor is : {0:4.3f} ".format( ElScaleFactor )
+
+        if not options.TreeMaker :
+            # ak8 Observables 
+
+            FatJetP4 = ROOT.TLorentzVector()    
+            FatJetP4.SetPtEtaPhiM( FatJetPt[0], FatJetEta[0], FatJetPhi[0], FatJetMass[0])     
+            fatpt = FatJetP4.Perp()
+            fateta = FatJetP4.Eta()
+            fatmass = FatJetP4.M()
+            drAK4AK8 = DeltaRAK4AK8[0]
+
+            FatJetSD_m = FatJetMassSoftDrop[0]
+            Rhorat = FatJetRhoRatio[0]
+            if (Rhorat > 0.001): # FatJetSDpt = m / (R*sqrt(rhoRatio))
+                sqrtRhorat = math.sqrt(Rhorat)
+                FatJetSD_pt = FatJetSD_m / (0.8 * sqrtRhorat  )
+            else:
+                FatJetSD_pt = 0.
+
+            if options.verbose : print "Fat jet P4 is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f} ".format( FatJetPt[0], FatJetEta[0], FatJetPhi[0], FatJetMass[0] )
+            if options.verbose : print "Fat jet SD pt and mass are:  {0:3.3f}  {1:3.3f} ".format( FatJetSD_pt, FatJetMassSoftDrop[0] )
+            tau32 = FatJetTau32[0]
+            tau21 = FatJetTau21[0]
+            #tau3 = FatJetTau3[0]
+            #tau2 = FatJetTau2[0]
+            #tau1 = FatJetTau1[0]
+
+            if options.verbose : print "Fat jet tau  21 32 : {0:3.3f}  {1:3.3f}  ".format( FatJetTau21[0], FatJetTau32[0])
+
+            # ak8 subjet Observables             
+
+            W_m = FatJetSDsubjetWmass[0]
+            W_pt = FatJetSDsubjetWpt[0]
+            W_tau1 = FatJetSDsubjetWtau1[0]
+            W_tau2 = FatJetSDsubjetWtau2[0]
+            W_tau3 = FatJetSDsubjetWtau3[0]
+            W_bdisc = FatJetSDbdiscW[0]
+            W_eta = FatJetSDsubjetWEta[0]
+            W_phi = FatJetSDsubjetWPhi[0]
+            W_tau21 = FatJetSDsubjetWtau21[0]
+            if options.Type2 :
+                B_pt = BJet2Pt[0]
+                B_m = BJet2Mass[0]
+                B_bdisc = BJet2bDisc[0]
+
+            if not options.Type2 :
+                B_pt = FatJetSDsubjetBpt[0]
+                B_m = FatJetSDsubjetBmass[0]
+                B_bdisc = FatJetSDbdiscB[0]
 
 
-        # ak8 subjet Observables             
+            #applying Thea's corrections for Type 2   FIX THIS SHOULD BE SD MASS AND PT RAW
+            if options.applyTheaCorr and  options.Type2  and FatJetSD_pt >  170. : #and type1or2 == 2 :
+                W_mRaw = FatJetSD_m # SD mass is raw
+                W_ptRaw = FatJetSD_pt
+                puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
+                FatJetSD_m = W_mRaw * puppiCorr
 
-        W_m = FatJetSDsubjetWmass[0]
-        W_pt = FatJetSDsubjetWpt[0]
-        W_tau1 = FatJetSDsubjetWtau1[0]
-        W_tau2 = FatJetSDsubjetWtau2[0]
-        W_tau3 = FatJetSDsubjetWtau3[0]
-        W_bdisc = FatJetSDbdiscW[0]
-        W_eta = FatJetSDsubjetWEta[0]
-        W_phi = FatJetSDsubjetWPhi[0]
-        W_tau21 = FatJetSDsubjetWtau21[0]
-        if options.Type2 :
-            B_pt = BJet2Pt[0]
-            B_m = BJet2Mass[0]
-            B_bdisc = BJet2bDisc[0]
+            #applying Thea's corrections for Type 1
+            if options.applyTheaCorr and ( not options.Type2 ) and FatJetSD_pt > (options.Ak8PtCut - 20. ) and W_pt > 170.: # and type1or2 == 1  :
+                W_mRaw = FatJetSDsubjetWmassRaw[0]
+                W_ptRaw = FatJetSDsubjetWptRaw[0]
+                puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
+                W_m =  W_mRaw  * puppiCorr
 
-        if not options.Type2 :
-            B_pt = FatJetSDsubjetBpt[0]
-            B_m = FatJetSDsubjetBmass[0]
-            B_bdisc = FatJetSDbdiscB[0]
+            # applying High Intensity Proton (HIP) muon corrections
+            if options.applyHIPCorr and LepType == 2 and LepPt > 50. and abs(LepEta) < 2.1 and LeptonIso[0] < 0.1 and FatJetSD_pt > 200. : 
+                HIPcorrPt = getHIPMuonCorr(LepPt, LepEta, LepPhi, int(LeptonCharge[0]))
+                LepPt = HIPcorrPt
 
-
-        #applying Thea's corrections for Type 2   FIX THIS SHOULD BE SD MASS AND PT RAW
-        if options.applyTheaCorr and  options.Type2  and FatJetSD_pt >  170. and type1or2 == 2 :
-            W_mRaw = FatJetSD_m # SD mass is raw
-            W_ptRaw = FatJetSD_pt
-            puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
-            FatJetSD_m = W_mRaw * puppiCorr
-
-        #applying Thea's corrections for Type 1
-        if options.applyTheaCorr and ( not options.Type2 ) and FatJetSD_pt > (options.Ak8PtCut - 20. ) and W_pt > 170. and type1or2 == 1  :
-            W_mRaw = FatJetSDsubjetWmassRaw[0]
-            W_ptRaw = FatJetSDsubjetWptRaw[0]
-            puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
-            W_m =  W_mRaw  * puppiCorr
-
-        # applying High Intensity Proton (HIP) muon corrections
-        if options.applyHIPCorr and LepType == 2 and LepPt > 50 and abs(LepEta) < 2.1 and LeptonIso[0] < 0.1 and FatJetSD_pt > 200. : 
-            HIPcorrPt = getHIPMuonCorr(LepPt, LepEta, LepPhi, int(LeptonCharge[0]))
-            LepPt = HIPcorrPt
-
-        # getting electron scale factors
-        if options.applyElSF and LepType == 1 :
-            ElScaleFactor = getgsfTrackEffScaleFactor( LepEta, LepPt )
-        if options.verbose: print "Electron Scale factor is : {0:4.3f}".format( ElScaleFactor )
+            # getting electron scale factors
+            if options.applyElSF and LepType == 1 :
+                ElScaleFactor = getgsfTrackEffScaleFactor( LepEta, LepPt )
+                if options.verbose: print "Electron Scale factor is : {0:4.3f}".format( ElScaleFactor )
 
 
         realw = -1
@@ -965,6 +1872,9 @@ def Wtag_Selector(argv) :
         # Now we do our kinematic calculation based on the semi-leptonic selection detailed in AN-16-215 (previous selection was B2G-15-002)
 
         #Electron Selection
+
+
+
         passEleMETcut  = LepType == 1 and MET_pt > 80. 
         passEleEtacut  = LepType == 1 and ( 0. < abs(LepEta) < 1.442 or 1.56 < abs(LepEta) < 2.5 )
         passElePtcut   = LepType == 1  and  LepPt > 120. 
@@ -979,33 +1889,43 @@ def Wtag_Selector(argv) :
         if passEl :
             passcuts[18] +=1
 
+        if options.verbose and LepType == 2 : print "Pre-selection Muon : pt {0:3.3f} eta {1:3.3f} METpt {2:3.3f} Iso {3:3.3f} Leptype {4:3.3f}".format(LepPt, LepEta, MET_pt, LeptonIsol, LepType  ) 
+
         #Muon Selection
         passMuPtcut     = LepType == 2 and LepPt > 53. 
         passMuEtacut    = LepType == 2 and abs(LepEta) < 2.1 
-        passMuMETcut    = LepType == 2 and MET_pt > 40. and LepPt > 53. and abs(LepEta) < 2.1 
-        passMuIsocut    = LepType == 2 and LeptonIso[0] < 0.1
+        passMuMETcut    = LepType == 2 and MET_pt > 40.
+        passMuIsocut    = LepType == 2 and LeptonIsol < 0.1
         passMu          = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut )
 
         if passMuPtcut :
             passcuts[3]   +=1
+            if options.verbose : print "Muon p4 passing Muon pt >53 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         if passMuEtacut :
             passcuts[19]  +=1
+            if options.verbose : print "Muon p4 passing Muon |eta|<2.1 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         if passMuMETcut :
             passcuts[20]  +=1
+            if options.verbose : print "Muon p4 passing Muon MET>40 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         if passMuIsocut :
             passcuts[4]   +=1  
+            if options.verbose : print "Muon p4 passing Muon Iso<0.1 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         if passMu :
             passcuts[21]  +=1
-
+            if options.verbose : print "Muon p4 passing all Muon cuts : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         #Lepton Selection
-        passLepDrmin    = LeptonDRMin[0] > 0.3
-        passHemidR = DeltaRLepFat[0] > 1. 
-        passLepcut =  passLepDrmin and (  passEl or passMu  ) # FIX this apply passHemidR 
+        #passLepDrmin    = LeptonDRMin[0] > 0.3
+        passHemidR = DeltaRLepFat[0] >= 1. 
+        passLepcut =  passMu  and passHemidR  #  passLepDrmin and   (passMu or passEl) or fix this when you add in electrons
 
-        if passLepDrmin :
-            passcuts[22] += 1
+        if options.verbose and LepType == 2 : print " Dr(Lep, AK8) {0:3.3f} ".format( DeltaRLepFat[0])
+
+        #if passLepDrmin :
+        #    passcuts[22] += 1
+        #    if options.verbose and LepType == 2: print "Lepton p4 passing  Dr( Lep, AK4) > 0.3 : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         if passHemidR:
             passcuts[7] += 1
+            if options.verbose and LepType == 2 : print "Lepton p4 passing  Dr( Lep, AK8) > 1. : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
         if passLepcut :
             passcuts[5] += 1
 
@@ -1016,18 +1936,20 @@ def Wtag_Selector(argv) :
 
         # Lepton cuts applied
         if not passLepcut : continue 
+        if fatpt < 200. : continue
 
         TheWeight = weightS
 
         # applying electron scale factors
         if LepType == 1 and options.applyElSF and options.dtype != 'data':
             TheWeight = weightS * ElScaleFactor
+            if options.verbose : print "An electron SF of {0:2.3f} was applied ".format(ElScaleFactor)
  
         HtLep = LepPt + MET_pt
         fout.cd()
 
-        if (options.dtype == 'data') :
-            TheWeight = 1.0
+        if (str(options.dtype) == 'data') :
+            TheWeight = 1.0 # Precautionary measure: This should already be set to 1 regardless
             h_lepPt_Data.Fill(LepPt       , TheWeight)
             h_lepEta_Data.Fill(LepEta     , TheWeight)
             h_lepHtLep_Data.Fill(HtLep    , TheWeight)
@@ -1035,11 +1957,11 @@ def Wtag_Selector(argv) :
                 h_lepPt_ElData.Fill(LepPt       , TheWeight)
                 h_lepEta_ElData.Fill(LepEta     , TheWeight)
                 h_lepHtLep_ElData.Fill(HtLep    , TheWeight)
-            if LepType == 2 :
+            elif LepType == 2 :
                 h_lepPt_MuData.Fill(LepPt       , TheWeight)
                 h_lepEta_MuData.Fill(LepEta     , TheWeight)
                 h_lepHtLep_MuData.Fill(HtLep    , TheWeight)
-        if (options.dtype != 'data') :
+        if (str(options.dtype) == 'ttjets') : # fix this should be != 'data'
             h_lepPt_MC.Fill(LepPt       , TheWeight)
             h_lepEta_MC.Fill(LepEta     , TheWeight)
             h_lepHtLep_MC.Fill(HtLep    , TheWeight)
@@ -1062,46 +1984,72 @@ def Wtag_Selector(argv) :
         # AK4 cuts applied
         if not passAK4 : continue
         Ht = 0.
-        for iak4,ak4jet in enumerate(NearestAK4JetPt) : Ht += NearestAK4JetPt[iak4]
-        St = Ht + HtLep
+        if options.TreeMaker :
+            for iak4,ak4jet in enumerate(AK4dRminPt) : Ht += AK4dRminPt[iak4] 
+        if  not options.TreeMaker :
+            for iak4,ak4jet in enumerate(NearestAK4JetPt) : Ht += NearestAK4JetPt[iak4]   
 
-        if (options.dtype == 'data') :
-            h_lepHt_Data.Fill(Ht ,               TheWeight )
-            h_lepSt_Data.Fill(St ,               TheWeight )
-            h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
-            h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
-            h_AK8subjetTau21_Data.Fill(W_tau21,  TheWeight )
-            h_AK8subjetPt_Data.Fill(W_pt, TheWeight )
-            if LepType == 1 :
-                h_lepHt_ElData.Fill(Ht ,     TheWeight )
-                h_lepSt_ElData.Fill(St ,     TheWeight )
-                h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
-                h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
-                h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
-                h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
-            if LepType == 2 :
-                h_lepHt_MuData.Fill(Ht ,     TheWeight )
-                h_lepSt_MuData.Fill(St ,     TheWeight )
-                h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
-                h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
-                h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
-                h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
-        if (options.dtype != 'data') :
-            h_lepHt_MC.Fill(Ht ,     TheWeight )
-            h_lepSt_MC.Fill(St ,     TheWeight )
-            h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
-            h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )
-            h_AK8subjetTau21_MC.Fill(W_tau21,  TheWeight )
-            h_AK8subjetPt_MC.Fill(W_pt, TheWeight )
-
+        if options.TreeMaker:
+            if (options.dtype == 'data') :
+                h_lepSt_Data.Fill(ST[0] ,               TheWeight )  
+                h_lepHt_Data.Fill(Ht ,               TheWeight )
+                h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                if LepisMu <= 0. : # 
+                    h_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    h_lepSt_ElData.Fill(ST[0] ,     TheWeight )
+                    h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                    h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                    #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
+                    #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                if LepisMu < 0. :
+                    h_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    h_lepSt_MuData.Fill(ST[0] ,     TheWeight )
+                    h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                    h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                    #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
+                    #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+            if (options.dtype != 'data') :
+                h_lepSt_MC.Fill(ST[0] ,               TheWeight )  
+                h_lepHt_MC.Fill(Ht ,               TheWeight )
+                h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
+        if not options.TreeMaker:
+            St = Ht + HtLep
+            if (options.dtype == 'data') :
+                h_lepSt_Data.Fill(St ,               TheWeight )
+                h_lepHt_Data.Fill(Ht ,               TheWeight )
+                h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                #h_AK8subjetTau21_Data.Fill(W_tau21,  TheWeight )
+                #h_AK8subjetPt_Data.Fill(W_pt, TheWeight )
+                if LepType == 1 :
+                    h_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    h_lepSt_ElData.Fill(St ,     TheWeight )
+                    h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                    h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                    #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
+                    #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                if LepType == 2 :
+                    h_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    h_lepSt_MuData.Fill(St ,     TheWeight )
+                    h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                    h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                    #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
+                    #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+            if (options.dtype != 'data') :
+                h_lepSt_MC.Fill(St ,               TheWeight )  
+                h_lepHt_MC.Fill(Ht ,               TheWeight )
+                h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )  
         #AK8 Selection
 
         if options.Type2 :                                                                    # Type 2 AK8 selection
             #passWPre2 = FatJetSD_m > 50.
-            passKin2 =  FatJetSD_pt > 200. and abs(fateta) < 2.4 
-            passWTagmass = 0.2 < FatJetSD_m < 160.
+            passKin2 =  fatpt > 200. and abs(fateta) < 2.4 
+            passWTagmass = 0.1 < fatmass < 150.
             passWPosttau2 = tau21 < options.tau21Cut 
-            passWPostM2 = 55. < FatJetSD_m < 115.
+            passWPostM2 = 40. < fatmass < 150.
 
             if passKin2 :
                 passcuts[14] += 1
@@ -1118,7 +2066,7 @@ def Wtag_Selector(argv) :
             passWPostM = 55. < W_m < 115.
             passWPosttau =  W_tau21 < options.tau21Cut 
 
-            passKin = FatJetSD_pt > options.Ak8PtCut
+            passKin = fatpt > options.Ak8PtCut
             #print "Fat Jet SD Pt : {0}".format(FatJetSD_pt)  
             passWKin = W_pt > 200.  and abs(W_eta) < 2.4 
 
@@ -1149,7 +2097,7 @@ def Wtag_Selector(argv) :
                 if  passWTagmass : # passWPosttau2 passWPostM2  
                     NpassPost +=1                                         
         # Type 1 cuts applied
-        if not options.Type2 :
+        elif not options.Type2 :
             if passKin:
                 NpassPre +=1
                 topandKin = passTopTagtau and passTopTagmass  and passWKin
@@ -1241,7 +2189,6 @@ def Wtag_Selector(argv) :
                 if ( 200. < W_pt < 800.0 ) : 
                     h_mWsubjet_b5pm.Fill(thatMass, TheWeight )
             if passPost : # Post cut histos after tau21 cut 
-                NpassPost += 1 
                 if ( W_pt > 200.0 and W_pt < 300.0 ):
                     h_mWsubjet_b1.Fill(thatMass, TheWeight )
                 if ( W_pt > 300.0 and W_pt < 400.0 ) :                       
@@ -1297,7 +2244,7 @@ def Wtag_Selector(argv) :
     print "..................................................."
     print "                  Lepton                           "
     print "..................................................."
-    print "DR(lepton, AK4) cut:       {0}".format(passcuts[22] )
+    #print "DR(lepton, AK4) cut:       {0}".format(passcuts[22] )
     print "DR(lepton, AK8) cut:       {0}".format(passcuts[7]  )
     print "ALL Lepton cuts:           {0}".format(passcuts[5]  )
     print "..................................................."
