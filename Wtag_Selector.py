@@ -146,6 +146,7 @@ def Wtag_Selector(argv) :
             c=ROOT.KalmanMuonCalibrator("DATA_80X_13TeV")
         def getHIPMuonCorr(pt, eta, phi, charge) : #{
             # apply HIP muon corrections as described here https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonScaleResolKalman
+            if pt > 200. : return pt
             if charge < 0. :
                 chargeSign = -1 
             if charge > 0. :
@@ -1669,6 +1670,7 @@ def Wtag_Selector(argv) :
             ak4_HemiHasBtagLoose = LepHemiContainsAK4BtagLoose[0]
             ak4_HemiHasBtagMedium = LepHemiContainsAK4BtagMedium[0]
             ak4_HemiHasBtagTight = LepHemiContainsAK4BtagTight[0]
+
         if not options.TreeMaker :
             if options.verbose : print "checking not Treemaker"
             weightS = SemiLepEventWeight[0]
@@ -1680,7 +1682,9 @@ def Wtag_Selector(argv) :
             # Lepton Observables
             theLepton = ROOT.TLorentzVector()
             theLepton.SetPtEtaPhiE( LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0] ) # Assume massless
-            if options.verbose : print "The lepton 4 vector is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}- iso is {4:3.3f}".format(LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0], LeptonIso[0])
+            if options.verbose : 
+                print "The lepton 4 vector is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}- iso is {4:3.3f}".format(LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0], LeptonIso[0])
+                print "The theLepton.Perp() is {0:3.3f} :".format(theLepton.Perp())
             LepPt = theLepton.Perp()
             LepEta = theLepton.Eta()
             LepPhi = theLepton.Phi()
@@ -1961,7 +1965,7 @@ def Wtag_Selector(argv) :
                 h_lepPt_MuData.Fill(LepPt       , TheWeight)
                 h_lepEta_MuData.Fill(LepEta     , TheWeight)
                 h_lepHtLep_MuData.Fill(HtLep    , TheWeight)
-        if (str(options.dtype) == 'ttjets') : # fix this should be != 'data'
+        if (str(options.dtype) != 'data') : # fix this should be != 'data'
             h_lepPt_MC.Fill(LepPt       , TheWeight)
             h_lepEta_MC.Fill(LepEta     , TheWeight)
             h_lepHtLep_MC.Fill(HtLep    , TheWeight)
@@ -1985,9 +1989,13 @@ def Wtag_Selector(argv) :
         if not passAK4 : continue
         Ht = 0.
         if options.TreeMaker :
-            for iak4,ak4jet in enumerate(AK4dRminPt) : Ht += AK4dRminPt[iak4] 
+            for iak4,ak4jet in enumerate(AK4dRminPt) : 
+                if AK4dRminPt[iak4] > 30. :
+                    Ht += AK4dRminPt[iak4] 
         if  not options.TreeMaker :
-            for iak4,ak4jet in enumerate(NearestAK4JetPt) : Ht += NearestAK4JetPt[iak4]   
+            for iak4,ak4jet in enumerate(NearestAK4JetPt) : 
+                if NearestAK4JetPt[iak4] > 30. :
+                    Ht += NearestAK4JetPt[iak4]   
 
         if options.TreeMaker:
             if (options.dtype == 'data') :
