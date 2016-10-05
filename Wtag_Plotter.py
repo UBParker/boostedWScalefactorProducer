@@ -23,6 +23,21 @@ parser.add_option('--maxEvents', type='int', action='store',
               dest='maxEvents',
               help='Number of events to run. -1 is all events')
 
+parser.add_option('--TreeMaker', action='store_true',
+                  default=False,
+                  dest='TreeMaker',
+                  help='Are the ttrees produced using B2GTTbarTreeMaker.cc ?')
+
+parser.add_option('--treeLocation', type='string', action='store',
+                  dest='treeLocation',
+                  default = 'Last80xTrees',#'80xTTrees',
+                  help='directory ??? where CRAB output ttrees created by NtupleReader are located /store/group/lpctlbsm/aparker/???') 
+
+parser.add_option('--CSelect', action='store_true',
+                  default=False,
+                  dest='CSelect',
+                  help='Are the histos made using the .cc code from jim whuch loops over the treemaker trees (only makes sense to use with --treemaker) ?')
+
 parser.add_option('--passTau21', action='store_true',
                   default=True,
                   dest='passTau21',
@@ -44,7 +59,7 @@ parser.add_option('--filestr', type='string', action='store',
                   help='Label for plots')
 
 parser.add_option('--Type2', action='store_true',
-                  default=False,
+                  default=True,
                   dest='Type2',
                   help='Do you want to apply selection for type 2 tops as described in AN-16-215 ?')
 
@@ -89,7 +104,7 @@ parser.add_option('--Mudata',  action='store_true',
                   help='Plot only muon data')
 
 parser.add_option('--allMC', action='store_true',
-                  default=True,
+                  default=False,
                   dest='allMC',
                   help='Do you want to plot all MC? (or just ttjets)')
 
@@ -105,7 +120,7 @@ parser.add_option('--ttSF', action='store_true',
 
 parser.add_option('--fixFit',  action='store_true',
                   dest='fixFit',
-                  default = False,
+                  default = True,
                   help='Constrain the mean and sigma of Gaussian.')
 
 parser.add_option('--max0', type='float', action='store',
@@ -153,7 +168,14 @@ argv = []
 
 #This script was adapted from original myMacro.py from ghm.web.cern.ch/gmh/plots/ 
 
-
+if options.TreeMaker and (not options.Type2):
+    plotdir = 'JWsubjetSF'
+if options.TreeMaker and  options.Type2 :
+    plotdir = 'JWjetSF'
+if (not options.TreeMaker) and (not options.Type2):
+    plotdir = 'WsubjetSF'
+if ( not options.TreeMaker) and  options.Type2 :
+    plotdir = 'WjetSF'
 # define the scaling operations
 
 def scaleST(hstT1_, hstT2_, hstT3_, hstT4_):
@@ -217,7 +239,8 @@ def scaleSTp(hstTp1_, hstTp2_, hstTp3_, hstTp4_):
 
 def scaleTT(httbarT_):
     if httbarT_.Integral() > 0 : 
-        httbarT_.Scale(lumi* 831.76 /91061600.)# 97994456.) # 97994456. )91061600.) # ##hdataT.GetEntries()/ httbarT.Integral())
+        httbarT_.Scale(lumi* 831.76 /  91061600. *0.75) # fix this when tt sample is complete
+
         # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
     else :
         print "tt bin {0} empty".format(int(ipt))
@@ -227,7 +250,7 @@ def scaleTT(httbarT_):
 def scaleTTp(httbarTp_):
     if ipt <=4 :
         if httbarTp_.Integral() > 0 : 
-            httbarTp_.Scale(lumi * 831.76 / 91061600.)#97994456.)# 182123200.) # 91061600.) #  97994456. ) # hdataT.GetEntries()/ httbarT.Integral())
+            httbarTp_.Scale(lumi * 831.76 /  91061600.) # hdataT.GetEntries()/ httbarT.Integral())
         else :
             print "tt p bin {0} empty".format(int(ipt))
             httbarTp_.Scale( 0.)
@@ -373,12 +396,17 @@ if options.Eldata :
 type2 = '_'
 if options.Type2 : type2 = '_type2_'
 
-if not options.pre :
-    fout= ROOT.TFile('./output80xplotter/Wtag'+type2+datatype+'highPtScaleFactor_80x_' + options.infile + '.root', "RECREATE")
-
-if options.pre :
-    fout= ROOT.TFile('./output80xplotter/Wtag' +type2+datatype+'highPtScaleFactor_preWTag_80x_'+ options.infile + '.root', "RECREATE")
-        
+if options.TreeMaker:
+    if not options.pre :
+        fout= ROOT.TFile('./Joutput80xplotter/JWtag'+type2+datatype+'highPtSF_80x_' + options.infile + '_' + options.treeLocation+ '.root', "RECREATE")
+    if options.pre :
+        fout= ROOT.TFile('./Joutput80xplotter/JWtag' +type2+datatype+'highPtSF_preWTag_80x_'+ options.infile + '_' + options.treeLocation+'.root', "RECREATE")
+if not options.TreeMaker:
+    if not options.pre :
+        fout= ROOT.TFile('./output80xplotter/Wtag'+type2+datatype+'highPtSF_80x_' + options.treeLocation +'_'+ options.infile  + '.root', "RECREATE")
+    if options.pre :
+        fout= ROOT.TFile('./output80xplotter/Wtag'+type2+datatype+'highPtSF_preWTag_80x_' + options.treeLocation+'_'+options.infile + '.root', "RECREATE")
+            
 ptBs =  array.array('d', [200., 300., 400., 500., 800.])
 nptBs = len(ptBs) - 1
 
@@ -418,21 +446,31 @@ else:
     hMCEff = ROOT.TH1F("hMCEff", " ; ; ", nptBs, ptBs)
 
 # Create input file list
-dtypes = ['data', 'ttjets','st1', 'st2', 'st3', 'st4', 'wjets1', 'wjets2', 'wjets3', 'wjets4', 'wjets5', 'wjets6', 'wjets7'] 
+if options.TreeMaker or not options.allMC: dtypes = ['data', 'ttjets' ]
+else : dtypes = ['data', 'ttjets','st1', 'st2', 'st3', 'st4', 'wjets1', 'wjets2', 'wjets3', 'wjets4', 'wjets5', 'wjets6', 'wjets7'] 
+
+
 filesin = [] 
 
 for idt, dt in enumerate(dtypes) :
-    if options.maxEvents > 0. :
-        filesin.append('./output80xselector/histos' +str(type2)+'80x_' +str(options.maxEvents)+'_'+str(dt) + '_'+ options.filestr + '.root')
-    else :
-        filesin.append('./output80xselector/histos' +str(type2)+'80x_' +str(dt) + '_'+ options.filestr + '.root')    
+
+    if options.TreeMaker :
+        if options.maxEvents > 0. :
+            filesin.append('./Joutput80xselector/Jhistos' +str(type2)+'80x_' +str(options.maxEvents)+'_'+str(dt) + '_'+ options.filestr + '.root')
+        else :
+            filesin.append('./Joutput80xselector/Jhistos' +'_type2_'+'80x_' +str(dt) + '_'+ options.filestr + '.root')# fix this replace _ with str(type2)
+    if not options.TreeMaker :
+        if options.maxEvents > 0. :
+            filesin.append('./output80xselector/histos' +str(type2)+'80x_' +str(options.maxEvents)+'_'+str(dt) +  '_'+ options.treeLocation + '_'+ options.filestr +'.root')
+        else :
+            filesin.append('./output80xselector/histos' +str(type2)+'80x_' +str(dt) +  '_'+ options.treeLocation + '_'+ options.filestr +'.root')    
 print "Using input files :  {0}".format(filesin[0], filesin[1])
 
 # Luminosity of input dataset
 lumi = 12300. #2136.0
 
-binlimit = 200.
-numbins = 300
+binlimit = 400.
+numbins = 600
 
 for ifin, fin in enumerate(filesin) :
     filei = ROOT.TFile.Open( fin )
@@ -749,6 +787,13 @@ for ifin, fin in enumerate(filesin) :
         httbar_lephtlep    = filei.Get("h_lepHtLep_MC")
         httbar_lepht       = filei.Get("h_lepHt_MC")  
         httbar_lepst       = filei.Get("h_lepSt_MC") 
+
+        httbarp_leppt       = filei.Get("hp_lepPt_MC")
+        httbarp_lepeta      = filei.Get("hp_lepEta_MC")
+        httbarp_lephtlep    = filei.Get("hp_lepHtLep_MC")
+        httbarp_lepht       = filei.Get("hp_lepHt_MC")  
+        httbarp_lepst       = filei.Get("hp_lepSt_MC") 
+
         httbar_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         httbar_ak8pt       = filei.Get("h_AK8Pt_MC")  
         httbar_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
@@ -775,6 +820,12 @@ for ifin, fin in enumerate(filesin) :
         httbar_lephtlep.Sumw2()
         httbar_lepht.Sumw2()
         httbar_lepst.Sumw2()
+        httbarp_leppt.Sumw2()
+        httbarp_lepeta.Sumw2()
+        httbarp_lephtlep.Sumw2()
+        httbarp_lepht.Sumw2()
+        httbarp_lepst.Sumw2()
+
         httbar_ak8tau21.Sumw2()
         httbar_ak8pt.Sumw2()
         httbar_ak8SJtau21.Sumw2()
@@ -1792,7 +1843,7 @@ nMuDataupost = array.array('d', [0., 0., 0., 0.])
 nElDataupost = array.array('d', [0., 0., 0., 0.])
 
 if not options.pre : 
-    filein2 = ROOT.TFile.Open('./output80xplotter/Wtag'+type2+datatype+'highPtScaleFactor_preWTag_80x_'+ options.infile + '.root') 
+    filein2 = ROOT.TFile.Open('./output80xplotter/Wtag'+type2+datatype+'highPtSF_preWTag_80x_'+ options.treeLocation +'_'+ options.infile+'.root') 
     h_NpassDataPre = filein2.Get("hNpassDataPre")
     h_NpassMuDataPre = filein2.Get("hNpassMuDataPre")
     h_NpassElDataPre = filein2.Get("hNpassElDataPre")
@@ -1853,7 +1904,7 @@ binlabels = [ "200 < P_{T} < 300  ",
               " #tau_{21} > 0.6 "]
 
 # Rebin Values for Pt binned W candidate Mass histograms
-rebinBybin = [ 15, 15, 30, 15, 15, 15, 15 ]
+rebinBybin = [ 1, 1, 1, 1, 1, 1, 1]
 
 for ipt in xrange(0, len(binlabels) ) :
     if ipt <= 3: pt = ptBs[int(ipt)]
@@ -1864,15 +1915,16 @@ for ipt in xrange(0, len(binlabels) ) :
         hdataTp = hdata_b1p.Clone()
         httbarT = httjets_b1.Clone()
         httbarTp = httjets_b1p.Clone()
-        hstT1 = hst1_b1.Clone()
-        hstTp1 = hst1_b1p.Clone()
-        hstT2 = hst2_b1.Clone()
-        hstTp2 = hst2_b1p.Clone()
-        hstT3 = hst3_b1.Clone()
-        hstTp3 = hst3_b1p.Clone()
-        hstT4 = hst4_b1.Clone()
-        hstTp4 = hst4_b1p.Clone()
+
         if options.allMC :
+            hstT1 = hst1_b1.Clone()
+            hstTp1 = hst1_b1p.Clone()
+            hstT2 = hst2_b1.Clone()
+            hstTp2 = hst2_b1p.Clone()
+            hstT3 = hst3_b1.Clone()
+            hstTp3 = hst3_b1p.Clone()
+            hstT4 = hst4_b1.Clone()
+            hstTp4 = hst4_b1p.Clone()
             hwjetsT1 = hwjets1_b1.Clone()
             hwjetsTp1 = hwjets1_b1p.Clone()
             hwjetsT2 = hwjets2_b1.Clone()
@@ -1899,15 +1951,16 @@ for ipt in xrange(0, len(binlabels) ) :
         hdataTp = hdata_b2p.Clone()
         httbarT = httjets_b2.Clone()
         httbarTp = httjets_b2p.Clone()
-        hstT1 = hst1_b2.Clone()
-        hstTp1 = hst1_b2p.Clone()
-        hstT2 = hst2_b2.Clone()
-        hstTp2 = hst2_b2p.Clone()
-        hstT3 = hst3_b2.Clone()
-        hstTp3 = hst3_b2p.Clone()
-        hstT4 = hst4_b2.Clone()
-        hstTp4 = hst4_b2p.Clone()
+
         if options.allMC :
+            hstT1 = hst1_b2.Clone()
+            hstTp1 = hst1_b2p.Clone()
+            hstT2 = hst2_b2.Clone()
+            hstTp2 = hst2_b2p.Clone()
+            hstT3 = hst3_b2.Clone()
+            hstTp3 = hst3_b2p.Clone()
+            hstT4 = hst4_b2.Clone()
+            hstTp4 = hst4_b2p.Clone()
             hwjetsT1 = hwjets1_b2.Clone()
             hwjetsTp1 = hwjets1_b2p.Clone()
             hwjetsT2 = hwjets2_b2.Clone()
@@ -1933,15 +1986,15 @@ for ipt in xrange(0, len(binlabels) ) :
         hdataTp = hdata_b3p.Clone()
         httbarT = httjets_b3.Clone()
         httbarTp = httjets_b3p.Clone()
-        hstT1 = hst1_b3.Clone()
-        hstTp1 = hst1_b3p.Clone()
-        hstT2 = hst2_b3.Clone()
-        hstTp2 = hst2_b3p.Clone()
-        hstT3 = hst3_b3.Clone()
-        hstTp3 = hst3_b3p.Clone()
-        hstT4 = hst4_b3.Clone()
-        hstTp4 = hst4_b3p.Clone()
         if options.allMC :
+            hstT1 = hst1_b3.Clone()
+            hstTp1 = hst1_b3p.Clone()
+            hstT2 = hst2_b3.Clone()
+            hstTp2 = hst2_b3p.Clone()
+            hstT3 = hst3_b3.Clone()
+            hstTp3 = hst3_b3p.Clone()
+            hstT4 = hst4_b3.Clone()
+            hstTp4 = hst4_b3p.Clone()
             hwjetsT1 = hwjets1_b3.Clone()
             hwjetsTp1 = hwjets1_b3p.Clone()
             hwjetsT2 = hwjets2_b3.Clone()
@@ -1967,15 +2020,15 @@ for ipt in xrange(0, len(binlabels) ) :
         hdataTp = hdata_b4p.Clone()
         httbarT = httjets_b4.Clone()
         httbarTp = httjets_b4p.Clone()
-        hstT1 = hst1_b4.Clone()
-        hstTp1 = hst1_b4p.Clone()
-        hstT2 = hst2_b4.Clone()
-        hstTp2 = hst2_b4p.Clone()
-        hstT3 = hst3_b4.Clone()
-        hstTp3 = hst3_b4p.Clone()
-        hstT4 = hst4_b4.Clone()
-        hstTp4 = hst4_b4p.Clone()
         if options.allMC :
+            hstT1 = hst1_b4.Clone()
+            hstTp1 = hst1_b4p.Clone()
+            hstT2 = hst2_b4.Clone()
+            hstTp2 = hst2_b4p.Clone()
+            hstT3 = hst3_b4.Clone()
+            hstTp3 = hst3_b4p.Clone()
+            hstT4 = hst4_b4.Clone()
+            hstTp4 = hst4_b4p.Clone()
             hwjetsT1 = hwjets1_b4.Clone()
             hwjetsTp1 = hwjets1_b4p.Clone()
             hwjetsT2 = hwjets2_b4.Clone()
@@ -2001,15 +2054,15 @@ for ipt in xrange(0, len(binlabels) ) :
         hdataTp = hdata_b5p.Clone()
         httbarT = httjets_b5.Clone()
         httbarTp = httjets_b5p.Clone()
-        hstT1 = hst1_b5.Clone()
-        hstTp1 = hst1_b5p.Clone()
-        hstT2 = hst2_b5.Clone()
-        hstTp2 = hst2_b5p.Clone()
-        hstT3 = hst3_b5.Clone()
-        hstTp3 = hst3_b5p.Clone()
-        hstT4 = hst4_b5.Clone()
-        hstTp4 = hst4_b5p.Clone() 
         if options.allMC :
+            hstT1 = hst1_b5.Clone()
+            hstTp1 = hst1_b5p.Clone()
+            hstT2 = hst2_b5.Clone()
+            hstTp2 = hst2_b5p.Clone()
+            hstT3 = hst3_b5.Clone()
+            hstTp3 = hst3_b5p.Clone()
+            hstT4 = hst4_b5.Clone()
+            hstTp4 = hst4_b5p.Clone() 
             hwjetsT1 = hwjets1_b5.Clone()
             hwjetsTp1 = hwjets1_b5p.Clone()
             hwjetsT2 = hwjets2_b5.Clone()
@@ -2033,10 +2086,6 @@ for ipt in xrange(0, len(binlabels) ) :
     if ipt == 5 :
         hdataT = hdata_Pass.Clone()
         httbarT = httbar_Pass.Clone()
-        hstT1 = hst1_Pass.Clone()
-        hstT2 = hst2_Pass.Clone()
-        hstT3 = hst3_Pass.Clone()
-        hstT4 = hst4_Pass.Clone() 
         if options.allMC :
             hwjetsT1 = hwjets1_Pass.Clone()
             hwjetsT2 = hwjets2_Pass.Clone()
@@ -2045,16 +2094,20 @@ for ipt in xrange(0, len(binlabels) ) :
             hwjetsT5 = hwjets5_Pass.Clone()
             hwjetsT6 = hwjets6_Pass.Clone()
             hwjetsT7 = hwjets7_Pass.Clone()
+            hstT1 = hst1_Pass.Clone()
+            hstT2 = hst2_Pass.Clone()
+            hstT3 = hst3_Pass.Clone()
+            hstT4 = hst4_Pass.Clone() 
         heldataT = heldata_Pass.Clone()
         hmudataT = hmudata_Pass.Clone()
     if ipt == 6 :
         hdataT = hdata_Fail.Clone()
         httbarT = httbar_Fail.Clone()
-        hstT1 = hst1_Fail.Clone()
-        hstT2 = hst2_Fail.Clone()
-        hstT3 = hst3_Fail.Clone()
-        hstT4 = hst4_Fail.Clone()
         if options.allMC :
+            hstT1 = hst1_Fail.Clone()
+            hstT2 = hst2_Fail.Clone()
+            hstT3 = hst3_Fail.Clone()
+            hstT4 = hst4_Fail.Clone()
             hwjetsT1 = hwjets1_Fail.Clone()
             hwjetsT2 = hwjets2_Fail.Clone()
             hwjetsT3 = hwjets3_Fail.Clone()
@@ -2072,14 +2125,15 @@ for ipt in xrange(0, len(binlabels) ) :
 
     httbarT = scaleTT(httbarT)
 
-    hstT = scaleST(hstT1, hstT2, hstT3, hstT4)
     if options.allMC :
+        hstT = scaleST(hstT1, hstT2, hstT3, hstT4)
         hwjetsT = scaleWjets(hwjetsT1, hwjetsT2, hwjetsT3, hwjetsT4, hwjetsT5, hwjetsT6, hwjetsT7)
 
     if ipt <=4 :
-        hstTp = scaleSTp(hstTp1, hstTp2, hstTp3, hstTp4)
+
         httbarTp = scaleTTp(httbarTp)
         if options.allMC :
+            hstTp = scaleSTp(hstTp1, hstTp2, hstTp3, hstTp4)
             hwjetsTp = scaleWjetsp(hwjetsTp1, hwjetsTp2, hwjetsTp3, hwjetsTp4, hwjetsTp5, hwjetsTp6, hwjetsTp7)
         
     # Find the tt scale factor
@@ -2097,12 +2151,12 @@ for ipt in xrange(0, len(binlabels) ) :
     hMC = httbar.Clone()
     hMC.SetDirectory(0)
     hMC.Sumw2()
-    hMC.Add(hstT)
     if options.allMC:
+        hMC.Add(hstT)
         hMC.Add(hwjetsT)
     if (hdata.Integral() > 0.) and (hMC.Integral() > 0.) and options.ttSF: 
         diff = float(hdata.Integral())- float(  hMC.Integral()  )
-        sf = abs(    diff/ float(  httbar.Integral()          +  1 )     )     
+        sf = abs(    diff/ float(  httbar.Integral()    +1.      )     )     
     if not options.ttSF: 
         sf = 1.
     if sf < 0. : print "NEGATIVE tt SCALE FACTOR"
@@ -2128,29 +2182,33 @@ for ipt in xrange(0, len(binlabels) ) :
     hmudataT.Rebin(rebinBybin[ipt])
     heldataT.Rebin(rebinBybin[ipt])
     httbarT.Rebin(rebinBybin[ipt])
-    hstT.Rebin(rebinBybin[ipt])
+
     if ipt < 5 :
         hdataTp.Rebin(rebinBybin[ipt])
         hmudataTp.Rebin(rebinBybin[ipt])
         heldataTp.Rebin(rebinBybin[ipt])
         httbarTp.Rebin(rebinBybin[ipt])
-        hstTp.Rebin(rebinBybin[ipt])
         if options.allMC :
+            hstTp.Rebin(rebinBybin[ipt])
             hwjetsTp.Rebin(rebinBybin[ipt])
+            hstTp.SetFillColor(ROOT.kCyan )
     if options.allMC :
+        hstT.Rebin(rebinBybin[ipt])
         hwjetsT.Rebin(rebinBybin[ipt])
+        hwjetsTp.SetFillColor(ROOT.kRed )
+        hwjetsT.SetFillColor(ROOT.kRed)
+        hstT.SetFillColor(ROOT.kCyan )
 
     httbarT.SetFillColor(ROOT.kGreen + 2)
-    hstT.SetFillColor(ROOT.kCyan )
+
     if ipt < 5 :
         httbarTp.SetFillColor(ROOT.kGreen + 2)
-        hstTp.SetFillColor(ROOT.kCyan )
+
         hdataTp.SetMarkerStyle(20)
         hmudataTp.SetMarkerStyle(20)
         heldataTp.SetMarkerStyle(20)
-    if options.allMC :
-        hwjetsTp.SetFillColor(ROOT.kRed )
-        hwjetsT.SetFillColor(ROOT.kRed)
+
+
 
     hdataT.SetMarkerStyle(20)
     hmudataT.SetMarkerStyle(20)
@@ -2159,14 +2217,20 @@ for ipt in xrange(0, len(binlabels) ) :
     mc = ROOT.THStack('WmaSS','; Soft Drop Mass ( GeV ) ;Number of Events')
     if options.allMC :
         mc.Add( hwjetsT)
-    mc.Add( hstT)
+        mc.Add( hstT)
     mc.Add( httbarT)
+
+    mchist = httbarT.Clone()
+    if options.allMC : 
+        mchist.Add( hwjetsT )
+        mchist.Add( hstT )
 
     if options.pre :
         httbarT = httbarTp.Clone()
-        hstT = hstTp.Clone()
+
         if options.allMC :
             hwjetsT = hwjetsTp.Clone()
+            hstT = hstTp.Clone()
         hdataT = hdataTp.Clone()
         hmudataT = hmudataTp.Clone()
         heldataT = heldataTp.Clone()
@@ -2260,10 +2324,7 @@ for ipt in xrange(0, len(binlabels) ) :
         ElDatameans[ipt] = Emean_data
         ElDatasigmas[ipt] = Ewidth_data
 
-    mchist = httbarT.Clone()
-    if options.allMC : 
-        mchist.Add( hwjetsT )
-    mchist.Add( hstT )
+
 
 
     fitter_mc = ROOT.TF1("fitter_mc", "gaus", minn , maxx )
@@ -2302,8 +2363,9 @@ for ipt in xrange(0, len(binlabels) ) :
     jms_uncert = jms
     
     binSizeData = hdataT.GetBinWidth(0)
-    binSizeMC = mchist.GetBinWidth(0)
+    binSizeMC = mchist.GetBinWidth(0) # was mchist
 
+    print "Bin size in data {0:1.2f} and MC  {1:1.2f}".format(binSizeData, binSizeMC )
     mclow = 0. 
     mchigh = 0.
 
@@ -2359,7 +2421,13 @@ for ipt in xrange(0, len(binlabels) ) :
             nMuDataupost[ipt] = math.sqrt(nMuDatapost[ipt] )
             nElDataupost[ipt] = math.sqrt(nElDatapost[ipt] )
 
-    if mean_mc > 0. : # ??? working here 
+    meanrat = 0.
+    meanrat_uncert = 0.
+    meanratel_uncert = 0.
+    meanratel = 0.
+    meanratmu = 0.
+    meanratmu_uncert = 0.
+    if mean_mc > 0. : 
         meanrat = mean_data / mean_mc
         meanrat_uncert = meanrat * math.sqrt( (emean_data/mean_data)**2 + (emean_mc/mean_mc)**2 )
         if options.Mudata :
@@ -2371,7 +2439,12 @@ for ipt in xrange(0, len(binlabels) ) :
             if  ( abs(Emean_data) > 0.01 ) and  ( abs(mean_mc) > 0.01 ) :
                 meanratel = Emean_data / mean_mc
                 meanratel_uncert = meanratel * math.sqrt( (Eemean_data/Emean_data)**2 + (emean_mc/mean_mc)**2 )
-
+    jms = 0.
+    jms_uncert = 0.
+    jms_mu = 0.
+    jms_mu_uncert = 0.
+    jms_el = 0.
+    jms_el_uncert = 0.
     if width_mc > 0. :
         jms = width_data / width_mc
         jms_uncert = jms * math.sqrt( (ewidth_data/width_data)**2 + (ewidth_mc/width_mc)**2 )
@@ -2442,7 +2515,7 @@ for ipt in xrange(0, len(binlabels) ) :
         ROOT.gStyle.SetOptStat(0000000000)
         cmsTextFont   = 61  
 
-        if not (options.Mudata or options.Eldata) :
+        if not (options.Mudata and options.Eldata) :
             c = ROOT.TCanvas('WmaSS','WmaSS',50,50,W,H)
             c.SetFillColor(0)
             c.SetBorderMode(0)
@@ -2455,12 +2528,12 @@ for ipt in xrange(0, len(binlabels) ) :
             c.SetTickx(0)
             c.SetTicky(0)
 
-            hdataT.Draw('e')
+            #hdataT.Draw('e')
             mc.Draw("histsame")
             hdataT.Draw('esamex0')
 
-            hdataT.Draw('e same')
-            hdataT.Draw("axis same")
+            #hdataT.Draw('e same')
+            #hdataT.Draw("axis same")
             fitter_mc.Draw("same")
             fitter_data.Draw("same")
 
@@ -2477,15 +2550,18 @@ for ipt in xrange(0, len(binlabels) ) :
             leg.AddEntry( httbarT, 't#bar{t}', 'f')
             if options.allMC :
                 leg.AddEntry( hwjetsT, 'W + jets', 'f')
-            leg.AddEntry( hstT, 'Single Top', 'f')
+                leg.AddEntry( hstT, 'Single Top', 'f')
             '''
             leg.AddEntry( hzjets, 'Z+Jets', 'f')
 
             '''
             max1 = hdataT.GetMaximum()
-            max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
+            max2 = mc.GetMaximum() # mc.GetHistogram().GetMaximum()
 
             hdataT.SetMaximum( max (max1,max2) * 1.618 )
+
+            hdataT.GetXaxis().SetRangeUser( 40.0, 130. )
+            mc.GetXaxis().SetRangeUser( 40.0, 130. )
 
             if options.Type2 :
                 hdataT.SetXTitle("Soft Drop Jet Mass (GeV)")
@@ -2510,17 +2586,17 @@ for ipt in xrange(0, len(binlabels) ) :
             if options.pre :
                 sele = options.filestr + '_preWTag'
             if ipt < 5 :
-                c.Print('WsubjetSF/AllData/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
-                c.Print('WsubjetSF/AllData/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                c.Print('WsubjetSF/AllData/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+                c.Print(plotdir + '/AllData/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
+                c.Print(plotdir + '/AllData/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                c.Print(plotdir + '/AllData/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
             if ipt == 5 :
-                c.Print('WsubjetSF/AllData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
-                c.Print('WsubjetSF/AllData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                c.Print('WsubjetSF/AllData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
+                c.Print(plotdir + '/AllData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
+                c.Print(plotdir + '/AllData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                c.Print(plotdir + '/AllData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
             if ipt == 6 :
-                c.Print('WsubjetSF/AllData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
-                c.Print('WsubjetSF/AllData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                c.Print('WsubjetSF/AllData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
+                c.Print(plotdir + '/AllData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
+                c.Print(plotdir + '/AllData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                c.Print(plotdir + '/AllData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
 
         if options.Mudata:
             cc = ROOT.TCanvas('WmaSSMu','WmaSSMu',50,50,W,H)
@@ -2557,13 +2633,15 @@ for ipt in xrange(0, len(binlabels) ) :
             leg.AddEntry( httbarT, 't#bar{t}', 'f')
             if options.allMC :
                 leg.AddEntry( hwjetsT, 'W + jets', 'f')
-            leg.AddEntry( hstT, 'Single Top', 'f')
+                leg.AddEntry( hstT, 'Single Top', 'f')
             '''
             leg.AddEntry( hzjets, 'Z+Jets', 'f')
 
             '''
             max1 = hmudataT.GetMaximum()
-            max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
+            max2 = mc.GetMaximum() # mc.GetHistogram().GetMaximum()
+            hmudataT.GetXaxis().SetRangeUser( 40.0, 130. )
+            mc.GetXaxis().SetRangeUser( 40.0, 130. )
 
             hmudataT.SetMaximum( max (max1,max2) * 1.618 )
 
@@ -2589,17 +2667,20 @@ for ipt in xrange(0, len(binlabels) ) :
             sele = options.filestr
             if options.pre :
                 sele = options.filestr + '_preWTag'
-            cc.Print('WsubjetSF/Mudata/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
-            cc.Print('WsubjetSF/Mudata/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-            cc.Print('WsubjetSF/Mudata/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+            if ipt < 5 :
+                cc.Print(plotdir + '/MuData/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
+                cc.Print(plotdir + '/MuData/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                cc.Print(plotdir + '/MuData/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
             if ipt == 5 :
-                cc.Print('WsubjetSF/MuData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
-                cc.Print('WsubjetSF/MuData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                cc.Print('WsubjetSF/MuData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
+                cc.Print(plotdir + '/MuData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
+                cc.Print(plotdir + '/MuData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                cc.Print(plotdir + '/MuData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
             if ipt == 6 :
-                cc.Print('WsubjetSF/MuData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
-                cc.Print('WsubjetSF/MuData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                cc.Print('WsubjetSF/MuData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
+                hmudataT.SetMaximum( 300. )
+                mc.SetMaximum( 300. )
+                cc.Print(plotdir + '/MuData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
+                cc.Print(plotdir + '/MuData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                cc.Print(plotdir + '/MuData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
 
         if options.Eldata :
             ccc = ROOT.TCanvas('WmaSSel','WmaSSel',50,50,W,H)
@@ -2636,10 +2717,10 @@ for ipt in xrange(0, len(binlabels) ) :
             leg.AddEntry( httbarT, 't#bar{t}', 'f')
             if options.allMC :
                 leg.AddEntry( hwjetsT, 'W + jets', 'f')
-            leg.AddEntry( hstT, 'Single Top', 'f')
+                leg.AddEntry( hstT, 'Single Top', 'f')
 
             max1 = heldataT.GetMaximum()
-            max2 = mchist.GetMaximum() # mc.GetHistogram().GetMaximum()
+            max2 = mc.GetMaximum() # mc.GetHistogram().GetMaximum()
 
             heldataT.SetMaximum( max (max1,max2) * 1.618 )
 
@@ -2665,17 +2746,17 @@ for ipt in xrange(0, len(binlabels) ) :
             sele = options.filestr
             if options.pre :
                 sele = options.filestr + '_preWTag'
-            ccc.Print('WsubjetSF/ElData/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
-            ccc.Print('WsubjetSF/ElData/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-            ccc.Print('WsubjetSF/ElData/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
+            ccc.Print(plotdir + '/ElData/wMass_Bin'+ str(ipt) + '_' + sele + '.png', 'png' )
+            ccc.Print(plotdir + '/ElData/wMass_Bin'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+            ccc.Print(plotdir + '/ElData/wMass_Bin'+ str(ipt) + '_' + sele + '.root', 'root' )
             if ipt == 5 :
-                ccc.Print('WsubjetSF/ElData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
-                ccc.Print('WsubjetSF/ElData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                ccc.Print('WsubjetSF/ElData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
+                ccc.Print(plotdir + '/ElData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
+                ccc.Print(plotdir + '/ElData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                ccc.Print(plotdir + '/ElData/wMass_passTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
             if ipt == 6 :
-                ccc.Print('WsubjetSF/ElData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
-                ccc.Print('WsubjetSF/ElData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
-                ccc.Print('WsubjetSF/ElData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
+                ccc.Print(plotdir + '/ElData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.png', 'png' )
+                ccc.Print(plotdir + '/ElData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.pdf', 'pdf' )
+                ccc.Print(plotdir + '/ElData/wMass_failTau21Loose'+ str(ipt) + '_' + sele + '.root', 'root' )
 
         if ipt <=4:
             ee = ROOT.TCanvas('wid','wid')
@@ -2691,17 +2772,19 @@ for ipt in xrange(0, len(binlabels) ) :
             ee.Draw()
 
             if  options.Eldata : # working here 
-                ee.Print('WsubjetSF/ElData/JMR_W_' + str(options.filestr) + '.png', 'png' )
-                ee.Print('WsubjetSF/ElData/JMR_W_' + str(options.filestr) + '.pdf', 'pdf' )
-                ee.Print('WsubjetSF/ElData/JMR_W_' + str(options.filestr) + '.root', 'root' )
+                ee.Print(plotdir + '/ElData/JMR_W_' + str(options.filestr) + '.png', 'png' )
+                ee.Print(plotdir + '/ElData/JMR_W_' + str(options.filestr) + '.pdf', 'pdf' )
+                ee.Print(plotdir + '/ElData/JMR_W_' + str(options.filestr) + '.root', 'root' )
             elif options.Mudata : # working here 
-                ee.Print('WsubjetSF/MuData/JMR_W_' + str(options.filestr) + '.png', 'png' )
-                ee.Print('WsubjetSF/MuData/JMR_W_' + str(options.filestr) + '.pdf', 'pdf' )
-                ee.Print('WsubjetSF/MuData/JMR_W_' + str(options.filestr) + '.root', 'root' )
+                ee.Print(plotdir + '/MuData/JMR_W_' + str(options.filestr) + '.png', 'png' )
+                ee.Print(plotdir + '/MuData/JMR_W_' + str(options.filestr) + '.pdf', 'pdf' )
+                ee.Print(plotdir + '/MuData/JMR_W_' + str(options.filestr) + '.root', 'root' )
             elif not (options.Eldata and options.Mudata): # working here 
-                ee.Print('WsubjetSF/AllData/JMR_W_' + str(options.filestr) + '.png', 'png' )
-                ee.Print('WsubjetSF/AllData/JMR_W_' + str(options.filestr) + '.pdf', 'pdf' )
-                ee.Print('WsubjetSF/AllData/JMR_W_' + str(options.filestr) + '.root', 'root' )
+                ee.Print(plotdir + '/AllData/JMR_W_' + str(options.filestr) + '.png', 'png' )
+                ee.Print(plotdir + '/AllData/JMR_W_' + str(options.filestr) + '.pdf', 'pdf' )
+                ee.Print(plotdir + '/AllData/JMR_W_' + str(options.filestr) + '.root', 'root' )
+
+
         if options.PlotPtTypes : # FIX THIS : fill these histos in selector code
             ff = ROOT.TCanvas('P_t_Comparison','P_t_Comparison')
             ff.SetLogy()
@@ -2755,9 +2838,9 @@ for ipt in xrange(0, len(binlabels) ) :
 
             ff.Update()
             ff.Draw()
-            ff.Print('WsubjetSF/AllData/Pt_type1and2_' + options.filestr + '.png', 'png' )
-            ff.Print('WsubjetSF/AllData/Pt_type1and2_' + options.filestr + '.pdf', 'pdf' )
-            ff.Print('WsubjetSF/AllData/Pt_type1and2_' + options.filestr + '.root', 'root' )
+            ff.Print(plotdir + '/AllData/Pt_type1and2_' + options.filestr + '.png', 'png' )
+            ff.Print(plotdir + '/AllData/Pt_type1and2_' + options.filestr + '.pdf', 'pdf' )
+            ff.Print(plotdir + '/AllData/Pt_type1and2_' + options.filestr + '.root', 'root' )
 
         if ipt <= 3:
             gg = ROOT.TCanvas('peak','peak')
@@ -2778,17 +2861,17 @@ for ipt in xrange(0, len(binlabels) ) :
             gg.Update()
             gg.Draw() 
             if  options.Eldata : # working here 
-                gg.Print('WsubjetSF/ElData/JMS_W_' + options.filestr + '.png', 'png' )
-                gg.Print('WsubjetSF/ElData/JMS_W_' + options.filestr + '.pdf', 'pdf' )
-                gg.Print('WsubjetSF/ElData/JMS_W_' + options.filestr + '.root', 'root' )
+                gg.Print(plotdir + '/ElData/JMS_W_' + options.filestr + '.png', 'png' )
+                gg.Print(plotdir + '/ElData/JMS_W_' + options.filestr + '.pdf', 'pdf' )
+                gg.Print(plotdir + '/ElData/JMS_W_' + options.filestr + '.root', 'root' )
             elif options.Mudata : # working here 
-                gg.Print('WsubjetSF/MuData/JMS_W_' + options.filestr + '.png', 'png' )
-                gg.Print('WsubjetSF/MuData/JMS_W_' + options.filestr + '.pdf', 'pdf' )
-                gg.Print('WsubjetSF/MuData/JMS_W_' + options.filestr + '.root', 'root' )
+                gg.Print(plotdir + '/MuData/JMS_W_' + options.filestr + '.png', 'png' )
+                gg.Print(plotdir + '/MuData/JMS_W_' + options.filestr + '.pdf', 'pdf' )
+                gg.Print(plotdir + '/MuData/JMS_W_' + options.filestr + '.root', 'root' )
             elif not (options.Mudata and options.Eldata): # working here 
-                gg.Print('WsubjetSF/AllData/JMS_W_' + options.filestr + '.png', 'png' )
-                gg.Print('WsubjetSF/AllData/JMS_W_' + options.filestr + '.pdf', 'pdf' )
-                gg.Print('WsubjetSF/AllData/JMS_W_' + options.filestr + '.root', 'root' )
+                gg.Print(plotdir + '/AllData/JMS_W_' + options.filestr + '.png', 'png' )
+                gg.Print(plotdir + '/AllData/JMS_W_' + options.filestr + '.pdf', 'pdf' )
+                gg.Print(plotdir + '/AllData/JMS_W_' + options.filestr + '.root', 'root' )
 
 if not options.quickPlot :
     #   SF =  ( nData / nDatap ) / ( nMC / nMCp )
@@ -2930,41 +3013,30 @@ if not options.quickPlot :
 
 
 
-    '''
-
-        hst4_lepeta      = filei.Get("h_lepEta_MC")
-        hst4_lephtlep    = filei.Get("h_lepHtLep_MC")
-        hst4_lepht       = filei.Get("h_lepHt_MC")  
-        hst4_lepst       = filei.Get("h_lepSt_MC") 
-
-        hst4_ak8pt       = filei.Get("h_AK8Pt_MC")  
-        hst4_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
-        hst4_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
-
-
-    '''
-
 if options.quickPlot or not options.quickPlot: 
 
     httbarT_lepst = scaleTT(httbar_lepst)
-    hstT_lepst = scaleST(hst1_lepst, hst2_lepst, hst3_lepst, hst4_lepst) 
-    hwjetsT_lepst = scaleWjets(hwjets1_lepst , hwjets2_lepst, hwjets3_lepst, hwjets4_lepst, hwjets5_lepst, hwjets6_lepst, hwjets7_lepst)
-
     httbarT_lepst.SetFillColor(ROOT.kGreen + 2)
-    hstT_lepst.SetFillColor(ROOT.kCyan )
-    hwjetsT_lepst.SetFillColor(ROOT.kRed)
-    rb = 10
+    rb = 5
     httbarT_lepst.Rebin(rb)
-    hstT_lepst.Rebin(rb)
-    hwjetsT_lepst.Rebin(rb)
     hdata_lepst.Rebin(rb)
     heldata_lepst.Rebin(rb)
     hmudata_lepst.Rebin(rb)
 
-    mcpt = ROOT.THStack('Lept','; st of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
-    mcpt.Add( hwjetsT_lepst)
-    mcpt.Add( hstT_lepst)
-    mcpt.Add( httbarT_lepst)
+    if options.allMC :
+        hstT_lepst = scaleST(hst1_lepst, hst2_lepst, hst3_lepst, hst4_lepst) 
+        hwjetsT_lepst = scaleWjets(hwjets1_lepst , hwjets2_lepst, hwjets3_lepst, hwjets4_lepst, hwjets5_lepst, hwjets6_lepst, hwjets7_lepst)
+        hstT_lepst.SetFillColor(ROOT.kCyan )
+        hwjetsT_lepst.SetFillColor(ROOT.kRed)
+        hstT_lepst.Rebin(rb)
+        hwjetsT_lepst.Rebin(rb)
+
+
+    mcst = ROOT.THStack('Lept','; st of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
+    if options.allMC :
+        mcst.Add( hwjetsT_lepst)
+        mcst.Add( hstT_lepst)
+    mcst.Add( httbarT_lepst)
 
 
     ffea = ROOT.TCanvas('lepton st','lepton st')
@@ -2985,7 +3057,7 @@ if options.quickPlot or not options.quickPlot:
     hdata_lepst.GetXaxis().SetLimits(50.,500.)
     heldata_lepst.GetXaxis().SetLimits(50.,500.)
     hmudata_lepst.GetXaxis().SetLimits(50.,500.)
-    max2 = mcpt.GetMaximum()
+    max2 = mcst.GetMaximum()
     hdata_lepst.SetMaximum( max (max1,max2) * 1.618 )
     heldata_lepst.SetMaximum( max (max1,max2) * 1.618 )
     hmudata_lepst.SetMaximum( max (max1,max2) * 1.618 )
@@ -3008,7 +3080,7 @@ if options.quickPlot or not options.quickPlot:
     if not (options.Mudata or options.Eldata ) :
         hdata_lepst.Draw('e')
 
-    mcpt.Draw("histsame")
+    mcst.Draw("histsame")
     if options.Eldata :
         #heldata_lepst.Draw('e same')
         heldata_lepst.Draw('esamex0')
@@ -3037,44 +3109,48 @@ if options.quickPlot or not options.quickPlot:
 
 
     leg.AddEntry( httbarT_lepst, 't#bar{t}', 'f')
-    leg.AddEntry( hwjetsT_lepst, 'W + jets', 'f')
-    leg.AddEntry( hstT_lepst, 'Single Top', 'f')
+    if options.allMC :
+        leg.AddEntry( hwjetsT_lepst, 'W + jets', 'f')
+        leg.AddEntry( hstT_lepst, 'Single Top', 'f')
     leg.Draw()
 
     ffea.Update()
     ffea.Draw()
     if options.Mudata :
-        ffea.Print('WsubjetSF/MuData/st_lepton_' + options.filestr + '.png', 'png' )
-        ffea.Print('WsubjetSF/MuData/st_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffea.Print('WsubjetSF/MuData/st_lepton_' + options.filestr + '.root', 'root' )
+        ffea.Print(plotdir + '/MuData/st_lepton_' + options.filestr + '.png', 'png' )
+        ffea.Print(plotdir + '/MuData/st_lepton_' + options.filestr + '.pdf', 'pdf' )
+        ffea.Print(plotdir + '/MuData/st_lepton_' + options.filestr + '.root', 'root' )
     elif options.Eldata :
-        ffea.Print('WsubjetSF/ElData/st_lepton_' + options.filestr + '.png', 'png' )
-        ffea.Print('WsubjetSF/ElData/st_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffea.Print('WsubjetSF/ElData/st_lepton_' + options.filestr + '.root', 'root' )
+        ffea.Print(plotdir + '/ElData/st_lepton_' + options.filestr + '.png', 'png' )
+        ffea.Print(plotdir + '/ElData/st_lepton_' + options.filestr + '.pdf', 'pdf' )
+        ffea.Print(plotdir + '/ElData/st_lepton_' + options.filestr + '.root', 'root' )
     elif not (options.Mudata and options.Eldata):
-        ffea.Print('WsubjetSF/AllData/st_lepton_' + options.filestr + '.png', 'png' )
-        ffea.Print('WsubjetSF/AllData/st_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffea.Print('WsubjetSF/AllData/st_lepton_' + options.filestr + '.root', 'root' )
+        ffea.Print(plotdir + '/AllData/st_lepton_' + options.filestr + '.png', 'png' )
+        ffea.Print(plotdir + '/AllData/st_lepton_' + options.filestr + '.pdf', 'pdf' )
+        ffea.Print(plotdir + '/AllData/st_lepton_' + options.filestr + '.root', 'root' )
 
 
 
     httbarT_taus = scaleTT(httbar_ak8SJtau21)
-    hstT_taus = scaleST(hst1_ak8SJtau21, hst2_ak8SJtau21, hst3_ak8SJtau21, hst4_ak8SJtau21)
-    hwjetsT_taus = scaleWjets(hwjets1_ak8SJtau21, hwjets2_ak8SJtau21, hwjets3_ak8SJtau21, hwjets4_ak8SJtau21, hwjets5_ak8SJtau21, hwjets6_ak8SJtau21, hwjets7_ak8SJtau21)
     httbarT_taus.SetFillColor(ROOT.kGreen + 2)
-    hstT_taus.SetFillColor(ROOT.kCyan )
-    hwjetsT_taus.SetFillColor(ROOT.kRed )
-    rb = 10
+
+    rb = 5
     httbarT_taus.Rebin(rb)
-    hstT_taus.Rebin(rb)
-    hwjetsT_taus.Rebin(rb)
     hdata_ak8SJtau21.Rebin(rb)
     heldata_ak8SJtau21.Rebin(rb)
     hmudata_ak8SJtau21.Rebin(rb)
+    if options.allMC :
+        hstT_taus = scaleST(hst1_ak8SJtau21, hst2_ak8SJtau21, hst3_ak8SJtau21, hst4_ak8SJtau21)
+        hwjetsT_taus = scaleWjets(hwjets1_ak8SJtau21, hwjets2_ak8SJtau21, hwjets3_ak8SJtau21, hwjets4_ak8SJtau21, hwjets5_ak8SJtau21, hwjets6_ak8SJtau21, hwjets7_ak8SJtau21)
+        hstT_taus.SetFillColor(ROOT.kCyan )
+        hwjetsT_taus.SetFillColor(ROOT.kRed )
+        hstT_taus.Rebin(rb)
+        hwjetsT_taus.Rebin(rb)
 
     mctaus = ROOT.THStack('Leptaus',';Subjet #tau_21  ;Number of Events') #Mass_{SD subjet_{0} }
-    mctaus.Add( hwjetsT_taus)
-    mctaus.Add( hstT_taus)
+    if options.allMC :
+        mctaus.Add( hwjetsT_taus)
+        mctaus.Add( hstT_taus)
     mctaus.Add( httbarT_taus)
 
     if not options.Type2:
@@ -3120,16 +3196,13 @@ if options.quickPlot or not options.quickPlot:
 
         mctaus.Draw("histsame")
         if options.Eldata :
-            #heldata_leppt.Draw('e same')
             heldata_ak8SJtau21.Draw('esamex0')
             heldata_ak8SJtau21.Draw('axis same')
         if options.Mudata :
             hmudata_ak8SJtau21.Draw('esamex0')
-            #hmudata_leppt.Draw('e same')
             hmudata_ak8SJtau21.Draw('axis same')
         if not (options.Mudata or options.Eldata ) :
             hdata_ak8SJtau21.Draw('esamex0')
-            #hdata_leppt.Draw('e same')
             hdata_ak8SJtau21.Draw('axis same')
 
         CMS_lumi.CMS_lumi(ffezw, iPeriod, iPos)
@@ -3147,43 +3220,47 @@ if options.quickPlot or not options.quickPlot:
 
 
         leg.AddEntry( httbarT_taus, 't#bar{t}', 'f')
-        leg.AddEntry( hwjetsT_taus, 'W + jets', 'f')
-        leg.AddEntry( hstT_taus, 'Single Top', 'f')
+        if ptions.allMC:
+            leg.AddEntry( hwjetsT_taus, 'W + jets', 'f')
+            leg.AddEntry( hstT_taus, 'Single Top', 'f')
         leg.Draw()
 
         ffezw.Update()
         ffezw.Draw()
         if options.Eldata :
-            ffezw.Print('WsubjetSF/ElData/ak8SJtau21_' + options.filestr + '.png', 'png' )
-            ffezw.Print('WsubjetSF/ElData/ak8SJtau21_' + options.filestr + '.pdf', 'pdf' )
-            ffezw.Print('WsubjetSF/ElData/ak8SJtau21_' + options.filestr + '.root', 'root' )
+            ffezw.Print(plotdir + '/ElData/ak8SJtau21_' + options.filestr + '.png', 'png' )
+            ffezw.Print(plotdir + '/ElData/ak8SJtau21_' + options.filestr + '.pdf', 'pdf' )
+            ffezw.Print(plotdir + '/ElData/ak8SJtau21_' + options.filestr + '.root', 'root' )
         elif options.Mudata :
-            ffezw.Print('WsubjetSF/MuData/ak8SJtau21_' + options.filestr + '.png', 'png' )
-            ffezw.Print('WsubjetSF/MuData/ak8SJtau21_' + options.filestr + '.pdf', 'pdf' )
-            ffezw.Print('WsubjetSF/MuData/ak8SJtau21_' + options.filestr + '.root', 'root' )
+            ffezw.Print(plotdir + '/MuData/ak8SJtau21_' + options.filestr + '.png', 'png' )
+            ffezw.Print(plotdir + '/MuData/ak8SJtau21_' + options.filestr + '.pdf', 'pdf' )
+            ffezw.Print(plotdir + '/MuData/ak8SJtau21_' + options.filestr + '.root', 'root' )
         elif not (options.Mudata and options.Eldata):
-            ffezw.Print('WsubjetSF/AllData/ak8SJtau21_' + options.filestr + '.png', 'png' )
-            ffezw.Print('WsubjetSF/AllData/ak8SJtau21_' + options.filestr + '.pdf', 'pdf' )
-            ffezw.Print('WsubjetSF/AllData/ak8SJtau21_' + options.filestr + '.root', 'root' )
+            ffezw.Print(plotdir + '/AllData/ak8SJtau21_' + options.filestr + '.png', 'png' )
+            ffezw.Print(plotdir + '/AllData/ak8SJtau21_' + options.filestr + '.pdf', 'pdf' )
+            ffezw.Print(plotdir + '/AllData/ak8SJtau21_' + options.filestr + '.root', 'root' )
 
     httbarT_tau = scaleTT(httbar_ak8tau21)
-    hstT_tau = scaleST(hst1_ak8tau21, hst2_ak8tau21, hst3_ak8tau21, hst4_ak8tau21)
-    hwjetsT_tau = scaleWjets(hwjets1_ak8tau21, hwjets2_ak8tau21, hwjets3_ak8tau21, hwjets4_ak8tau21, hwjets5_ak8tau21, hwjets6_ak8tau21, hwjets7_ak8tau21)
     httbarT_tau.SetFillColor(ROOT.kGreen + 2)
-    hstT_tau.SetFillColor(ROOT.kCyan )
-    hwjetsT_tau.SetFillColor(ROOT.kRed )
-    rb = 10
+    rb = 5
     httbarT_tau.Rebin(rb)
-    hstT_tau.Rebin(rb)
-    hwjetsT_tau.Rebin(rb)
+
+    if options.allMC:
+        hstT_tau = scaleST(hst1_ak8tau21, hst2_ak8tau21, hst3_ak8tau21, hst4_ak8tau21)
+        hwjetsT_tau = scaleWjets(hwjets1_ak8tau21, hwjets2_ak8tau21, hwjets3_ak8tau21, hwjets4_ak8tau21, hwjets5_ak8tau21, hwjets6_ak8tau21, hwjets7_ak8tau21)
+        hstT_tau.SetFillColor(ROOT.kCyan )
+        hwjetsT_tau.SetFillColor(ROOT.kRed )
+        hstT_tau.Rebin(rb)
+        hwjetsT_tau.Rebin(rb)
     hdata_ak8tau21.Rebin(rb)
     heldata_ak8tau21.Rebin(rb)
     hmudata_ak8tau21.Rebin(rb)
 
     mctau = ROOT.THStack('Leptau','; #tau_21  ;Number of Events') #Mass_{SD subjet_{0} }
-    mctau.Add( hwjetsT_tau)
-    mctau.Add( hstT_tau)
-    mctau.Add( httbarT_tau)
+    mctau.Add( httbarT_tau )
+    if options.allMC :
+        mctau.Add( hstT_tau)
+        mctau.Add( hwjetsT_tau)
 
 
     ffez = ROOT.TCanvas('tau 21','tau 21')
@@ -3228,16 +3305,13 @@ if options.quickPlot or not options.quickPlot:
 
     mctau.Draw("histsame")
     if options.Eldata :
-        #heldata_leppt.Draw('e same')
         heldata_ak8tau21.Draw('esamex0')
         heldata_ak8tau21.Draw('axis same')
     if options.Mudata :
         hmudata_ak8tau21.Draw('esamex0')
-        #hmudata_leppt.Draw('e same')
         hmudata_ak8tau21.Draw('axis same')
     if not (options.Mudata or options.Eldata ) :
         hdata_ak8tau21.Draw('esamex0')
-        #hdata_leppt.Draw('e same')
         hdata_ak8tau21.Draw('axis same')
 
     CMS_lumi.CMS_lumi(ffez, iPeriod, iPos)
@@ -3255,44 +3329,69 @@ if options.quickPlot or not options.quickPlot:
 
 
     leg.AddEntry( httbarT_tau, 't#bar{t}', 'f')
-    leg.AddEntry( hwjetsT_tau, 'W + jets', 'f')
-    leg.AddEntry( hstT_tau, 'Single Top', 'f')
+    if options.allMC :
+        leg.AddEntry( hwjetsT_tau, 'W + jets', 'f')
+        leg.AddEntry( hstT_tau, 'Single Top', 'f')
     leg.Draw()
 
     ffez.Update()
     ffez.Draw()
     if options.Eldata :
-        ffez.Print('WsubjetSF/ElData/AK8tau21_' + options.filestr + '.png', 'png' )
-        ffez.Print('WsubjetSF/ElData/AK8tau21_' + options.filestr + '.pdf', 'pdf' )
-        ffez.Print('WsubjetSF/ElData/AK8tau21_' + options.filestr + '.root', 'root' )
+        ffez.Print(plotdir + '/ElData/AK8tau21_' + options.filestr + '.png', 'png' )
+        ffez.Print(plotdir + '/ElData/AK8tau21_' + options.filestr + '.pdf', 'pdf' )
+        ffez.Print(plotdir + '/ElData/AK8tau21_' + options.filestr + '.root', 'root' )
     elif options.Mudata :
-        ffez.Print('WsubjetSF/MuData/AK8tau21_' + options.filestr + '.png', 'png' )
-        ffez.Print('WsubjetSF/MuData/AK8tau21_' + options.filestr + '.pdf', 'pdf' )
-        ffez.Print('WsubjetSF/MuData/AK8tau21_' + options.filestr + '.root', 'root' )
+        ffez.Print(plotdir + '/MuData/AK8tau21_' + options.filestr + '.png', 'png' )
+        ffez.Print(plotdir + '/MuData/AK8tau21_' + options.filestr + '.pdf', 'pdf' )
+        ffez.Print(plotdir + '/MuData/AK8tau21_' + options.filestr + '.root', 'root' )
     elif not (options.Mudata and options.Eldata):
-        ffez.Print('WsubjetSF/AllData/AK8tau21_' + options.filestr + '.png', 'png' )
-        ffez.Print('WsubjetSF/AllData/AK8tau21_' + options.filestr + '.pdf', 'pdf' )
-        ffez.Print('WsubjetSF/AllData/AK8tau21_' + options.filestr + '.root', 'root' )
+        ffez.Print(plotdir + '/AllData/AK8tau21_' + options.filestr + '.png', 'png' )
+        ffez.Print(plotdir + '/AllData/AK8tau21_' + options.filestr + '.pdf', 'pdf' )
+        ffez.Print(plotdir + '/AllData/AK8tau21_' + options.filestr + '.root', 'root' )
 
-    httbarT_leppt = scaleTT(httbar_leppt)
-    hstT_leppt = scaleST(hst1_leppt, hst2_leppt, hst3_leppt, hst4_leppt) 
-    hwjetsT_leppt = scaleWjets(hwjets1_leppt , hwjets2_leppt, hwjets3_leppt, hwjets4_leppt, hwjets5_leppt, hwjets6_leppt, hwjets7_leppt)
+
+
+
+
+
+
+    # Plot the Lepton Pt before all selection except  # FINISH THEIS presleceyion lepton plots
+
+    httbarTp_leppt = scaleTT(httbarp_leppt)
+
+    print "TT SCALE FACTOR APPLIED to Lepton Pt WAS : " + str(1. )
+
+    if httbarT_leppt.Integral() > 0 : 
+        httbarT_leppt.Scale( 1. ) 
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt lepton pt histo is empty".format(int(ipt))
+        httbarT_leppt.Scale( 0.)
+
 
     httbarT_leppt.SetFillColor(ROOT.kGreen + 2)
-    hstT_leppt.SetFillColor(ROOT.kCyan )
-    hwjetsT_leppt.SetFillColor(ROOT.kRed)
-    rb = 10
-    httbarT_leppt.Rebin(rb)
-    hstT_leppt.Rebin(rb)
-    hwjetsT_leppt.Rebin(rb)
-    hdata_leppt.Rebin(rb)
-    heldata_leppt.Rebin(rb)
-    hmudata_leppt.Rebin(rb)
+    httbarT_leppt.GetXaxis().SetLimits(50.,600.)
+    rebinPt = 3
+    httbarT_leppt.Rebin( rebinPt )
+    hdata_leppt.Rebin( rebinPt )
+    heldata_leppt.Rebin( rebinPt )
+    hmudata_leppt.Rebin( rebinPt )
 
-    mcpt = ROOT.THStack('Lept','; Pt of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
-    mcpt.Add( hwjetsT_leppt)
-    mcpt.Add( hstT_leppt)
-    mcpt.Add( httbarT_leppt)
+    if options.allMC :
+        hstT_leppt = scaleST(hst1_leppt, hst2_leppt, hst3_leppt, hst4_leppt) 
+        hwjetsT_leppt = scaleWjets(hwjets1_leppt , hwjets2_leppt, hwjets3_leppt, hwjets4_leppt, hwjets5_leppt, hwjets6_leppt, hwjets7_leppt)
+        hstT_leppt.SetFillColor(ROOT.kCyan )
+        hwjetsT_leppt.SetFillColor(ROOT.kRed)
+        hstT_leppt.Rebin(  rebinPt )
+        hwjetsT_leppt.Rebin(  rebinPt )
+        hstT_leppt.GetXaxis().SetLimits(50.,600.)
+        hwjetsT_leppt.GetXaxis().SetLimits(50.,600.)
+
+    mcpts = ROOT.THStack('Lept','; Pt of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
+    if options.allMC :
+        mcpts.Add( hwjetsT_leppt)
+        mcpts.Add( hstT_leppt)
+    mcpts.Add( httbarT_leppt)
 
 
     ffe = ROOT.TCanvas('lepton pt','lepton pt')
@@ -3310,13 +3409,15 @@ if options.quickPlot or not options.quickPlot:
     hmudata_leppt.SetMarkerStyle(20)
     heldata_leppt.SetMarkerStyle(20)
     max1 = hdata_leppt.GetMaximum()
-    hdata_leppt.GetXaxis().SetLimits(50.,500.)
-    heldata_leppt.GetXaxis().SetLimits(50.,500.)
-    hmudata_leppt.GetXaxis().SetLimits(50.,500.)
-    max2 = mcpt.GetMaximum()
+    max2 = mcpts.GetMaximum()
+    hdata_leppt.GetXaxis().SetLimits(50.,600.)
+    heldata_leppt.GetXaxis().SetLimits(50.,600.)
+    hmudata_leppt.GetXaxis().SetLimits(50.,600.)
+
     hdata_leppt.SetMaximum( max (max1,max2) * 1.618 )
     heldata_leppt.SetMaximum( max (max1,max2) * 1.618 )
     hmudata_leppt.SetMaximum( max (max1,max2) * 1.618 )
+
     hdata_leppt.GetYaxis().SetTitleOffset(1.9)
     heldata_leppt.GetYaxis().SetTitleOffset(1.9)
     hmudata_leppt.GetYaxis().SetTitleOffset(1.9)
@@ -3329,26 +3430,38 @@ if options.quickPlot or not options.quickPlot:
     heldata_leppt.BufferEmpty(1)
     heldata_leppt.GetXaxis().SetTitleSize(0.057)
     heldata_leppt.GetYaxis().SetTitleSize(0.057)
+    hdata_leppt.BufferEmpty(1)
+    hdata_leppt.GetXaxis().SetTitleSize(0.057)
+    hdata_leppt.GetYaxis().SetTitleSize(0.057)
+    hmudata_leppt.BufferEmpty(1)
+    hmudata_leppt.GetXaxis().SetTitleSize(0.057)
+    hmudata_leppt.GetYaxis().SetTitleSize(0.057)      
+    binSizeMuDataPt = hmudata_leppt.GetBinWidth(0)
+    binSizeMCPt = httbarT_leppt.GetBinWidth(0)
+    #if ( binSizeMuDataPt != binSizeMCPt ) :  
+    print "Bin size: data {0:1.2f}, MC  {1:1.2f}- rebinpt is {2:1.0f}".format(binSizeMuDataPt, binSizeMCPt,  rebinPt )
+
     if options.Eldata :
         heldata_leppt.Draw('e')
     if options.Mudata :
         hmudata_leppt.Draw('e')
-    if not (options.Mudata or options.Eldata ) :
+    if not (options.Mudata and options.Eldata ) :
         hdata_leppt.Draw('e')
 
-    mcpt.Draw("histsame")
+    mcpts.Draw("histsame")
     if options.Eldata :
         #heldata_leppt.Draw('e same')
         heldata_leppt.Draw('esamex0')
         heldata_leppt.Draw('axis same')
     elif options.Mudata :
         hmudata_leppt.Draw('esamex0')
-        #hmudata_leppt.Draw('e same')
+        hmudata_leppt.Draw('e same')
         hmudata_leppt.Draw('axis same')
     elif not (options.Mudata and options.Eldata ) :
         hdata_leppt.Draw('esamex0')
         #hdata_leppt.Draw('e same')
         hdata_leppt.Draw('axis same')
+
 
     CMS_lumi.CMS_lumi(ffe, iPeriod, iPos)
 
@@ -3365,46 +3478,194 @@ if options.quickPlot or not options.quickPlot:
 
 
     leg.AddEntry( httbarT_leppt, 't#bar{t}', 'f')
-    leg.AddEntry( hwjetsT_leppt, 'W + jets', 'f')
-    leg.AddEntry( hstT_leppt, 'Single Top', 'f')
+    if options.allMC :
+        leg.AddEntry( hwjetsT_leppt, 'W + jets', 'f')
+        leg.AddEntry( hstT_leppt, 'Single Top', 'f')
     leg.Draw()
 
     ffe.Update()
     ffe.Draw()
     if options.Mudata :
-        ffe.Print('WsubjetSF/MuData/Pt_lepton_' + options.filestr + '.png', 'png' )
-        ffe.Print('WsubjetSF/MuData/Pt_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffe.Print('WsubjetSF/MuData/Pt_lepton_' + options.filestr + '.root', 'root' )
+        ffe.Print(plotdir + '/MuData/Pt_lepton_preSel_' + options.filestr + '.png', 'png' )
+        ffe.Print(plotdir + '/MuData/Pt_lepton_preSel_' + options.filestr + '.pdf', 'pdf' )
+        ffe.Print(plotdir + '/MuData/Pt_lepton_preSel_' + options.filestr + '.root', 'root' )
     elif options.Eldata :
-        ffe.Print('WsubjetSF/ElData/Pt_lepton_' + options.filestr + '.png', 'png' )
-        ffe.Print('WsubjetSF/ElData/Pt_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffe.Print('WsubjetSF/ElData/Pt_lepton_' + options.filestr + '.root', 'root' )
+        ffe.Print(plotdir + '/ElData/Pt_lepton_preSel_' + options.filestr + '.png', 'png' )
+        ffe.Print(plotdir + '/ElData/Pt_lepton_preSel_' + options.filestr + '.pdf', 'pdf' )
+        ffe.Print(plotdir + '/ElData/Pt_lepton_preSel_' + options.filestr + '.root', 'root' )
     elif not (options.Mudata and options.Eldata):
-        ffe.Print('WsubjetSF/AllData/Pt_lepton_' + options.filestr + '.png', 'png' )
-        ffe.Print('WsubjetSF/AllData/Pt_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffe.Print('WsubjetSF/AllData/Pt_lepton_' + options.filestr + '.root', 'root' )
+        ffe.Print(plotdir + '/AllData/Pt_lepton_preSel_' + options.filestr + '.png', 'png' )
+        ffe.Print(plotdir + '/AllData/Pt_lepton_preSel_' + options.filestr + '.pdf', 'pdf' )
+        ffe.Print(plotdir + '/AllData/Pt_lepton_preSel_' + options.filestr + '.root', 'root' )
 
+    # Plot the Lepton Pt after selection
+
+    httbarT_leppt = scaleTT(httbar_leppt)
+
+    print "TT SCALE FACTOR APPLIED to Lepton Pt WAS : " + str(1. )
+
+    if httbarT_leppt.Integral() > 0 : 
+        httbarT_leppt.Scale( 1. ) 
+        # t tbar - https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO used top mass as 172.5, uncertainties on twiki
+    else :
+        print "tt lepton pt histo is empty".format(int(ipt))
+        httbarT_leppt.Scale( 0.)
+
+
+    httbarT_leppt.SetFillColor(ROOT.kGreen + 2)
+    httbarT_leppt.GetXaxis().SetLimits(50.,600.)
+    rebinPt = 3
+    httbarT_leppt.Rebin( rebinPt )
+    hdata_leppt.Rebin( rebinPt )
+    heldata_leppt.Rebin( rebinPt )
+    hmudata_leppt.Rebin( rebinPt )
+
+    if options.allMC :
+        hstT_leppt = scaleST(hst1_leppt, hst2_leppt, hst3_leppt, hst4_leppt) 
+        hwjetsT_leppt = scaleWjets(hwjets1_leppt , hwjets2_leppt, hwjets3_leppt, hwjets4_leppt, hwjets5_leppt, hwjets6_leppt, hwjets7_leppt)
+        hstT_leppt.SetFillColor(ROOT.kCyan )
+        hwjetsT_leppt.SetFillColor(ROOT.kRed)
+        hstT_leppt.Rebin(  rebinPt )
+        hwjetsT_leppt.Rebin(  rebinPt )
+        hstT_leppt.GetXaxis().SetLimits(50.,600.)
+        hwjetsT_leppt.GetXaxis().SetLimits(50.,600.)
+
+    mcpts = ROOT.THStack('Lept','; Pt of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
+    if options.allMC :
+        mcpts.Add( hwjetsT_leppt)
+        mcpts.Add( hstT_leppt)
+    mcpts.Add( httbarT_leppt)
+
+
+    ffe = ROOT.TCanvas('lepton pt','lepton pt')
+    ffe.SetFillColor(0)
+    ffe.SetBorderMode(0)
+    ffe.SetFrameFillStyle(0)
+    ffe.SetFrameBorderMode(0)
+    ffe.SetLeftMargin( L/W )
+    ffe.SetRightMargin( R/W )
+    ffe.SetTopMargin( T/H )
+    ffe.SetBottomMargin( B/H )
+    ffe.SetTickx(0)
+    ffe.SetTicky(0)
+    hdata_leppt.SetMarkerStyle(20)
+    hmudata_leppt.SetMarkerStyle(20)
+    heldata_leppt.SetMarkerStyle(20)
+    max1 = hdata_leppt.GetMaximum()
+    max2 = mcpts.GetMaximum()
+    hdata_leppt.GetXaxis().SetLimits(50.,600.)
+    heldata_leppt.GetXaxis().SetLimits(50.,600.)
+    hmudata_leppt.GetXaxis().SetLimits(50.,600.)
+
+    hdata_leppt.SetMaximum( max (max1,max2) * 1.618 )
+    heldata_leppt.SetMaximum( max (max1,max2) * 1.618 )
+    hmudata_leppt.SetMaximum( max (max1,max2) * 1.618 )
+
+    hdata_leppt.GetYaxis().SetTitleOffset(1.9)
+    heldata_leppt.GetYaxis().SetTitleOffset(1.9)
+    hmudata_leppt.GetYaxis().SetTitleOffset(1.9)
+    heldata_leppt.SetXTitle("Pt of Lepton (GeV)")
+    heldata_leppt.SetYTitle("Events")
+    hmudata_leppt.SetXTitle("Pt of Lepton (GeV)")
+    hmudata_leppt.SetYTitle("Events")
+    hdata_leppt.SetXTitle("Pt of Lepton (GeV)")
+    hdata_leppt.SetYTitle("Events")
+    heldata_leppt.BufferEmpty(1)
+    heldata_leppt.GetXaxis().SetTitleSize(0.057)
+    heldata_leppt.GetYaxis().SetTitleSize(0.057)
+    hdata_leppt.BufferEmpty(1)
+    hdata_leppt.GetXaxis().SetTitleSize(0.057)
+    hdata_leppt.GetYaxis().SetTitleSize(0.057)
+    hmudata_leppt.BufferEmpty(1)
+    hmudata_leppt.GetXaxis().SetTitleSize(0.057)
+    hmudata_leppt.GetYaxis().SetTitleSize(0.057)      
+    binSizeMuDataPt = hmudata_leppt.GetBinWidth(0)
+    binSizeMCPt = httbarT_leppt.GetBinWidth(0)
+    #if ( binSizeMuDataPt != binSizeMCPt ) :  
+    print "Bin size: data {0:1.2f}, MC  {1:1.2f}- rebinpt is {2:1.0f}".format(binSizeMuDataPt, binSizeMCPt,  rebinPt )
+
+    if options.Eldata :
+        heldata_leppt.Draw('e')
+    if options.Mudata :
+        hmudata_leppt.Draw('e')
+    if not (options.Mudata and options.Eldata ) :
+        hdata_leppt.Draw('e')
+
+    mcpts.Draw("histsame")
+    if options.Eldata :
+        #heldata_leppt.Draw('e same')
+        heldata_leppt.Draw('esamex0')
+        heldata_leppt.Draw('axis same')
+    elif options.Mudata :
+        hmudata_leppt.Draw('esamex0')
+        hmudata_leppt.Draw('e same')
+        hmudata_leppt.Draw('axis same')
+    elif not (options.Mudata and options.Eldata ) :
+        hdata_leppt.Draw('esamex0')
+        #hdata_leppt.Draw('e same')
+        hdata_leppt.Draw('axis same')
+
+
+    CMS_lumi.CMS_lumi(ffe, iPeriod, iPos)
+
+    leg = ROOT.TLegend(0.7,0.7,0.9,0.9)
+    leg.SetFillColor(0)
+    leg.SetBorderSize(0)
+
+    if options.Eldata :
+        leg.AddEntry( heldata_leppt, 'Electron Data', 'p')
+    elif options.Mudata :
+        leg.AddEntry( hmudata_leppt, 'Muon Data', 'p')
+    elif not (options.Mudata and options.Eldata ) :
+        leg.AddEntry( hdata_leppt, 'Data', 'p')
+
+
+    leg.AddEntry( httbarT_leppt, 't#bar{t}', 'f')
+    if options.allMC :
+        leg.AddEntry( hwjetsT_leppt, 'W + jets', 'f')
+        leg.AddEntry( hstT_leppt, 'Single Top', 'f')
+    leg.Draw()
+
+    ffe.Update()
+    ffe.Draw()
+    if options.Mudata :
+        ffe.Print(plotdir + '/MuData/Pt_lepton_postSel_' + options.filestr + '.png', 'png' )
+        ffe.Print(plotdir + '/MuData/Pt_lepton_postSel_' + options.filestr + '.pdf', 'pdf' )
+        ffe.Print(plotdir + '/MuData/Pt_lepton_postSel_' + options.filestr + '.root', 'root' )
+    elif options.Eldata :
+        ffe.Print(plotdir + '/ElData/Pt_lepton_postSel_' + options.filestr + '.png', 'png' )
+        ffe.Print(plotdir + '/ElData/Pt_lepton_postSel_' + options.filestr + '.pdf', 'pdf' )
+        ffe.Print(plotdir + '/ElData/Pt_lepton_postSel_' + options.filestr + '.root', 'root' )
+    elif not (options.Mudata and options.Eldata):
+        ffe.Print(plotdir + '/AllData/Pt_lepton_postSel_' + options.filestr + '.png', 'png' )
+        ffe.Print(plotdir + '/AllData/Pt_lepton_postSel_' + options.filestr + '.pdf', 'pdf' )
+        ffe.Print(plotdir + '/AllData/Pt_lepton_' + options.filestr + '.root', 'root' )
+
+    #Plot the Ht of the lepton
 
 
     httbarT_lephtlep = scaleTT(httbar_lephtlep)
-    hstT_lephtlep = scaleST(hst1_lephtlep, hst2_lephtlep, hst3_lephtlep, hst4_lephtlep) 
-    hwjetsT_lephtlep = scaleWjets(hwjets1_lephtlep , hwjets2_lephtlep, hwjets3_lephtlep, hwjets4_lephtlep, hwjets5_lephtlep, hwjets6_lephtlep, hwjets7_lephtlep)
-
     httbarT_lephtlep.SetFillColor(ROOT.kGreen + 2)
-    hstT_lephtlep.SetFillColor(ROOT.kCyan )
-    hwjetsT_lephtlep.SetFillColor(ROOT.kRed)
-    rb = 10
+    rb = 5
     httbarT_lephtlep.Rebin(rb)
-    hstT_lephtlep.Rebin(rb)
-    hwjetsT_lephtlep.Rebin(rb)
     hdata_lephtlep.Rebin(rb)
     heldata_lephtlep.Rebin(rb)
     hmudata_lephtlep.Rebin(rb)
 
-    mcpt = ROOT.THStack('Lept','; Ht of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
-    mcpt.Add( hwjetsT_lephtlep)
-    mcpt.Add( hstT_lephtlep)
-    mcpt.Add( httbarT_lephtlep)
+    if options.allMC :
+        hstT_lephtlep = scaleST(hst1_lephtlep, hst2_lephtlep, hst3_lephtlep, hst4_lephtlep) 
+        hwjetsT_lephtlep = scaleWjets(hwjets1_lephtlep , hwjets2_lephtlep, hwjets3_lephtlep, hwjets4_lephtlep, hwjets5_lephtlep, hwjets6_lephtlep, hwjets7_lephtlep)
+        hstT_lephtlep.SetFillColor(ROOT.kCyan )
+        hwjetsT_lephtlep.SetFillColor(ROOT.kRed)
+        hstT_lephtlep.Rebin(rb)
+        hwjetsT_lephtlep.Rebin(rb)
+
+
+    mchtlep = ROOT.THStack('Lept','; Ht of Lepton ( GeV ) ;Number of Events') #Mass_{SD subjet_{0} }
+    if options.allMC :
+        mchtlep.Add( hwjetsT_lephtlep)
+        mchtlep.Add( hstT_lephtlep)
+    mchtlep.Add( httbarT_lephtlep)
     ffer = ROOT.TCanvas('lepton ht','lepton ht')
     ffer.SetFillColor(0)
     ffer.SetBorderMode(0)
@@ -3423,7 +3684,7 @@ if options.quickPlot or not options.quickPlot:
     hdata_lephtlep.GetXaxis().SetLimits(50.,500.)
     heldata_lephtlep.GetXaxis().SetLimits(50.,500.)
     hmudata_lephtlep.GetXaxis().SetLimits(50.,500.)
-    max2 = mcpt.GetMaximum()
+    max2 = mchtlep.GetMaximum()
     hdata_lephtlep.SetMaximum( max (max1,max2) * 1.618 )
     heldata_lephtlep.SetMaximum( max (max1,max2) * 1.618 )
     hmudata_lephtlep.SetMaximum( max (max1,max2) * 1.618 )
@@ -3446,7 +3707,7 @@ if options.quickPlot or not options.quickPlot:
     if not (options.Mudata or options.Eldata ) :
         hdata_lephtlep.Draw('e')
 
-    mcpt.Draw("histsame")
+    mchtlep.Draw("histsame")
     if options.Eldata :
         #heldata_lephtlep.Draw('e same')
         heldata_lephtlep.Draw('esamex0')
@@ -3475,24 +3736,25 @@ if options.quickPlot or not options.quickPlot:
 
 
     leg.AddEntry( httbarT_lephtlep, 't#bar{t}', 'f')
-    leg.AddEntry( hwjetsT_lephtlep, 'W + jets', 'f')
-    leg.AddEntry( hstT_lephtlep, 'Single Top', 'f')
+    if options.allMC :
+        leg.AddEntry( hwjetsT_lephtlep, 'W + jets', 'f')
+        leg.AddEntry( hstT_lephtlep, 'Single Top', 'f')
     leg.Draw()
 
     ffer.Update()
     ffer.Draw()
     if options.Mudata :
-        ffer.Print('WsubjetSF/MuData/ht_lepton_' + options.filestr + '.png', 'png' )
-        ffer.Print('WsubjetSF/MuData/ht_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffer.Print('WsubjetSF/MuData/ht_lepton_' + options.filestr + '.root', 'root' )
+        ffer.Print(plotdir + '/MuData/ht_lepton_' + options.filestr + '.png', 'png' )
+        ffer.Print(plotdir + '/MuData/ht_lepton_' + options.filestr + '.pdf', 'pdf' )
+        ffer.Print(plotdir + '/MuData/ht_lepton_' + options.filestr + '.root', 'root' )
     elif options.Eldata :
-        ffer.Print('WsubjetSF/ElData/ht_lepton_' + options.filestr + '.png', 'png' )
-        ffer.Print('WsubjetSF/ElData/ht_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffer.Print('WsubjetSF/ElData/ht_lepton_' + options.filestr + '.root', 'root' )
+        ffer.Print(plotdir + '/ElData/ht_lepton_' + options.filestr + '.png', 'png' )
+        ffer.Print(plotdir + '/ElData/ht_lepton_' + options.filestr + '.pdf', 'pdf' )
+        ffer.Print(plotdir + '/ElData/ht_lepton_' + options.filestr + '.root', 'root' )
     elif not (options.Mudata and options.Eldata):
-        ffer.Print('WsubjetSF/AllData/ht_lepton_' + options.filestr + '.png', 'png' )
-        ffer.Print('WsubjetSF/AllData/ht_lepton_' + options.filestr + '.pdf', 'pdf' )
-        ffer.Print('WsubjetSF/AllData/ht_lepton_' + options.filestr + '.root', 'root' )
+        ffer.Print(plotdir + '/AllData/ht_lepton_' + options.filestr + '.png', 'png' )
+        ffer.Print(plotdir + '/AllData/ht_lepton_' + options.filestr + '.pdf', 'pdf' )
+        ffer.Print(plotdir + '/AllData/ht_lepton_' + options.filestr + '.root', 'root' )
 
 fout.cd()
 fout.Write()
