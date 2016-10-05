@@ -26,6 +26,11 @@ def Wtag_Selector(argv) :
                       default = '',
                       help='File string') 
 
+    parser.add_option('--treeLocation', type='string', action='store',
+                      dest='treeLocation',
+                      default = 'Last80xTrees',#'80xTTrees',
+                      help='directory ??? where CRAB output ttrees created by NtupleReader are located /store/group/lpctlbsm/aparker/???') 
+
     parser.add_option('--writeTree', action='store_true',
                       default=False,
                       dest='writeTree',
@@ -46,19 +51,19 @@ def Wtag_Selector(argv) :
                       dest='is80x',
                       help='Are the ttrees produced using CMSSW 80X?')
 
-    parser.add_option('--TreeMaker', action='store_true',
+    parser.add_option('--b2gtree', action='store_true',
                       default=False,
-                      dest='TreeMaker',
-                      help='Are the ttrees produced using B2GTTbarTreeMaker.cc ?')
+                      dest='b2gtree',
+                      help='Are the ttrees produced using B2GTTbarb2gtree.cc ?')
 
     parser.add_option('--type', type='string', action='store',
                       dest='dtype',
                       default = '',
-                      help='type of files to combine: data , ttjets, wjets (1-7) , st (1-2) and pseudodata (all MC combined)') 
+                      help='type of files to combine: data , ttjets, wjets (1-7) , st (1-4) and pseudodata (all MC combined)') # fix add pseud 
 
     parser.add_option('--tau21Cut', type='float', action='store',
                       dest='tau21Cut',
-                      default = 0.6,
+                      default = 0.45,
                       help='Tau21 < tau21Cut')
 
     parser.add_option('--verbose', action='store_true',
@@ -90,6 +95,7 @@ def Wtag_Selector(argv) :
                       default=False,
                       dest='applyElSF',
                       help='Do you want apply the scale factors to the electrons ?')
+
     parser.add_option('--isMC', action='store_true',
                       default=False,
                       dest='isMC',
@@ -124,6 +130,7 @@ def Wtag_Selector(argv) :
         totalWeight = genCorr * recoCorr
         return totalWeight
         #} 
+
     if options.applyElSF :
         def getgsfTrackEffScaleFactor(eleta, elpt) : #{ https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaIDRecipesRun2#Electron_efficiencies_and_scale
             finSF = ROOT.TFile.Open( "./egammaEffitxt_SF2D.root","READ")
@@ -458,16 +465,16 @@ def Wtag_Selector(argv) :
         TreeSemiLept.Branch('SemiLeptEventNum'       ,  SemiLeptEventNum     ,  'SemiLeptEventNum/F'        )
 
 
-    if options.is80x and not options.TreeMaker:  
+    if options.is80x and not options.b2gtree:  
         if options.maxEvents > 0. :
-            if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
-            else : fout= ROOT.TFile('./output80xselector/histos_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
+            if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
+            else : fout= ROOT.TFile('./output80xselector/histos_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
         else : 
-            if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
-            else : fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
-        filein =  './%s/Puppi_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype)
+            if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
+            else : fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
+        filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype, options.treeLocation)
 
-    if options.is80x and options.TreeMaker:  
+    if options.is80x and options.b2gtree:  
         if options.maxEvents > 0. :
             if options.Type2 : fout= ROOT.TFile('./Joutput80xselector/Jhistos_type2_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
             if not options.Type2 : fout= ROOT.TFile('./Joutput80xselector/Jhistos_80x_'+str(options.maxEvents)+'_' +options.dtype + '_'+ options.filestr + '.root', "RECREATE")
@@ -478,63 +485,73 @@ def Wtag_Selector(argv) :
         if options.dtype == 'ttjets' :    filein = './J%s/b2gtree_TT_TuneCUETP8M1_13TeV-powheg-pythia8_RunIISpring16MiniAODv2-PUSpring16_reHLT_V2_99percentFinished_All.root'%(options.dtype)
 
 
-    binlimit = 400.
+    if options.verbose : print "Infile  :   {0}".format( filein )
+    if options.verbose : print "Outfile :   {0}".format( fout   )
+
+
+    binlimit = 600.
     numbins = 600
 
-    h_mWsubjet_b1  = ROOT.TH1F("h_mWsubjet_b1", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2  = ROOT.TH1F("h_mWsubjet_b2", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3  = ROOT.TH1F("h_mWsubjet_b3", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4  = ROOT.TH1F("h_mWsubjet_b4", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b5  = ROOT.TH1F("h_mWsubjet_b5", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1  = ROOT.TH1F("h_mWsubjet_b1", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b2  = ROOT.TH1F("h_mWsubjet_b2", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b3  = ROOT.TH1F("h_mWsubjet_b3", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b4  = ROOT.TH1F("h_mWsubjet_b4", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b5  = ROOT.TH1F("h_mWsubjet_b5", "; ;  ", numbins, 0.0 , binlimit)
 
-    h_mWsubjet_b1p  = ROOT.TH1F("h_mWsubjet_b1p", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2p  = ROOT.TH1F("h_mWsubjet_b2p", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3p  = ROOT.TH1F("h_mWsubjet_b3p", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4p  = ROOT.TH1F("h_mWsubjet_b4p", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b5p  = ROOT.TH1F("h_mWsubjet_b5p", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1p  = ROOT.TH1F("h_mWsubjet_b1p", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b2p  = ROOT.TH1F("h_mWsubjet_b2p", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b3p  = ROOT.TH1F("h_mWsubjet_b3p", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b4p  = ROOT.TH1F("h_mWsubjet_b4p", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b5p  = ROOT.TH1F("h_mWsubjet_b5p", "; ;  ", numbins, 0.0 , binlimit)
 
-    h_mWsubjet_b1e  = ROOT.TH1F("h_mWsubjet_b1e", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2e  = ROOT.TH1F("h_mWsubjet_b2e", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3e  = ROOT.TH1F("h_mWsubjet_b3e", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4e  = ROOT.TH1F("h_mWsubjet_b4e", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b5e  = ROOT.TH1F("h_mWsubjet_b5e", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1e  = ROOT.TH1F("h_mWsubjet_b1e", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b2e  = ROOT.TH1F("h_mWsubjet_b2e", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b3e  = ROOT.TH1F("h_mWsubjet_b3e", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b4e  = ROOT.TH1F("h_mWsubjet_b4e", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b5e  = ROOT.TH1F("h_mWsubjet_b5e", "; ;  ", numbins, 0.0 , binlimit)
 
-    h_mWsubjet_b1pe  = ROOT.TH1F("h_mWsubjet_b1pe", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2pe  = ROOT.TH1F("h_mWsubjet_b2pe", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3pe  = ROOT.TH1F("h_mWsubjet_b3pe", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4pe  = ROOT.TH1F("h_mWsubjet_b4pe", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b5pe  = ROOT.TH1F("h_mWsubjet_b5pe", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1pe  = ROOT.TH1F("h_mWsubjet_b1pe", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b2pe  = ROOT.TH1F("h_mWsubjet_b2pe", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b3pe  = ROOT.TH1F("h_mWsubjet_b3pe", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b4pe  = ROOT.TH1F("h_mWsubjet_b4pe", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b5pe  = ROOT.TH1F("h_mWsubjet_b5pe", "; ;  ", numbins, 0.0 , binlimit)
 
 
-    h_mWsubjet_b1m  = ROOT.TH1F("h_mWsubjet_b1m", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2m  = ROOT.TH1F("h_mWsubjet_b2m", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3m  = ROOT.TH1F("h_mWsubjet_b3m", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4m  = ROOT.TH1F("h_mWsubjet_b4m", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b5m  = ROOT.TH1F("h_mWsubjet_b5m", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1m  = ROOT.TH1F("h_mWsubjet_b1m", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b2m  = ROOT.TH1F("h_mWsubjet_b2m", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b3m  = ROOT.TH1F("h_mWsubjet_b3m", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b4m  = ROOT.TH1F("h_mWsubjet_b4m", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b5m  = ROOT.TH1F("h_mWsubjet_b5m", "; ;  ", numbins, 0.0 , binlimit)
 
-    h_mWsubjet_b1pm  = ROOT.TH1F("h_mWsubjet_b1pm", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b2pm  = ROOT.TH1F("h_mWsubjet_b2pm", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b3pm  = ROOT.TH1F("h_mWsubjet_b3pm", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b4pm  = ROOT.TH1F("h_mWsubjet_b4pm", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_b5pm  = ROOT.TH1F("h_mWsubjet_b5pm", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b1pm  = ROOT.TH1F("h_mWsubjet_b1pm", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b2pm  = ROOT.TH1F("h_mWsubjet_b2pm", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b3pm  = ROOT.TH1F("h_mWsubjet_b3pm", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b4pm  = ROOT.TH1F("h_mWsubjet_b4pm", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b5pm  = ROOT.TH1F("h_mWsubjet_b5pm", "; ;  ", numbins, 0.0 , binlimit)
 
-    h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_ElData = ROOT.TH1F("h_mWsubjet_ElData", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjet_MuData = ROOT.TH1F("h_mWsubjet_MuData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_ElData = ROOT.TH1F("h_mWsubjet_ElData", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_MuData = ROOT.TH1F("h_mWsubjet_MuData", "; ;  ", numbins, 0.0 , binlimit)
                         
-    h_mWsubjetPasstag_MC = ROOT.TH1F("h_mWsubjetPasstag_MC", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjetPasstag_Data = ROOT.TH1F("h_mWsubjetPasstag_Data", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjetPasstag_ElData = ROOT.TH1F("h_mWsubjetPasstag_ElData", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjetPasstag_MuData = ROOT.TH1F("h_mWsubjetPasstag_MuData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetPasstag_MC = ROOT.TH1F("h_mWsubjetPasstag_MC", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetPasstag_Data = ROOT.TH1F("h_mWsubjetPasstag_Data", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetPasstag_ElData = ROOT.TH1F("h_mWsubjetPasstag_ElData", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetPasstag_MuData = ROOT.TH1F("h_mWsubjetPasstag_MuData", "; ;  ", numbins, 0.0 , binlimit)
  
-    h_mWsubjetFailtag_MC = ROOT.TH1F("h_mWsubjetFailtag_MC", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjetFailtag_Data = ROOT.TH1F("h_mWsubjetFailtag_Data", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjetFailtag_ElData = ROOT.TH1F("h_mWsubjetFailtag_ElData", "; ;  ", numbins, 0, binlimit)
-    h_mWsubjetFailtag_MuData = ROOT.TH1F("h_mWsubjetFailtag_MuData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetFailtag_MC = ROOT.TH1F("h_mWsubjetFailtag_MC", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetFailtag_Data = ROOT.TH1F("h_mWsubjetFailtag_Data", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetFailtag_ElData = ROOT.TH1F("h_mWsubjetFailtag_ElData", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetFailtag_MuData = ROOT.TH1F("h_mWsubjetFailtag_MuData", "; ;  ", numbins, 0.0 , binlimit)
  
-    binlimit2 = 1000.
-    numbins2 = 1500
+    binlimit2 = binlimit
+    numbins2 = numbins
+
+    h_lepPt_MC     = ROOT.TH1F("h_lepPt_MC", "; ;  ", numbins2, 0., binlimit2)
+    h_lepEta_MC    = ROOT.TH1F("h_lepEta_MC", "; ;  ", numbins2, -3., 3.)
+    h_lepHt_MC     = ROOT.TH1F("h_lepHt_MC", "; ;  ", numbins2, 0., binlimit2)
+    h_lepHtLep_MC  = ROOT.TH1F("h_lepHtLep_MC", "; ;  ", numbins2, 0., binlimit2)
+    h_lepSt_MC     = ROOT.TH1F("h_lepSt_MC", "; ;  ", numbins2, 0., binlimit2)
 
     h_lepPt_Data     = ROOT.TH1F("h_lepPt_Data ", "; ;  ", numbins2, 0., binlimit2)
     h_lepEta_Data     = ROOT.TH1F("h_lepEta_Data ", "; ;  ", numbins2, -3., 3.)
@@ -554,12 +571,29 @@ def Wtag_Selector(argv) :
     h_lepHtLep_MuData   = ROOT.TH1F("h_lepHtLep_MuData ", "; ;  ", numbins2, 0., binlimit2)
     h_lepSt_MuData      = ROOT.TH1F("h_lepSt_MuData ", "; ;  ", numbins2, 0., binlimit2)
 
-    h_lepPt_MC     = ROOT.TH1F("h_lepPt_MC", "; ;  ", numbins2, 0., binlimit2)
-    h_lepEta_MC    = ROOT.TH1F("h_lepEta_MC", "; ;  ", numbins2, -3., 3.)
-    h_lepHt_MC     = ROOT.TH1F("h_lepHt_MC", "; ;  ", numbins2, 0., binlimit2)
-    h_lepHtLep_MC  = ROOT.TH1F("h_lepHtLep_MC", "; ;  ", numbins2, 0., binlimit2)
-    h_lepSt_MC     = ROOT.TH1F("h_lepSt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepPt_MC     = ROOT.TH1F("hp_lepPt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepEta_MC    = ROOT.TH1F("hp_lepEta_MC", "; ;  ", numbins2, -3., 3.)
+    hp_lepHt_MC     = ROOT.TH1F("hp_lepHt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepHtLep_MC  = ROOT.TH1F("hp_lepHtLep_MC", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepSt_MC     = ROOT.TH1F("hp_lepSt_MC", "; ;  ", numbins2, 0., binlimit2)
 
+    hp_lepPt_Data     = ROOT.TH1F("hp_lepPt_Data ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepEta_Data     = ROOT.TH1F("hp_lepEta_Data ", "; ;  ", numbins2, -3., 3.)
+    hp_lepHt_Data      = ROOT.TH1F("hp_lepHt_Data ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepHtLep_Data   = ROOT.TH1F("hp_lepHtLep_Data ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepSt_Data      = ROOT.TH1F("hp_lepSt_Data ", "; ;  ", numbins2, 0., binlimit2)
+
+    hp_lepPt_ElData     = ROOT.TH1F("hp_lepPt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepEta_ElData     = ROOT.TH1F("hp_lepEta_ElData ", "; ;  ", numbins2, -3., 3.)
+    hp_lepHt_ElData      = ROOT.TH1F("hp_lepHt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepHtLep_ElData   = ROOT.TH1F("hp_lepHtLep_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepSt_ElData      = ROOT.TH1F("hp_lepSt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+
+    hp_lepPt_MuData     = ROOT.TH1F("hp_lepPt_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepEta_MuData     = ROOT.TH1F("hp_lepEta_MuData ", "; ;  ", numbins2, -3., 3.)
+    hp_lepHt_MuData      = ROOT.TH1F("hp_lepHt_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepHtLep_MuData   = ROOT.TH1F("hp_lepHtLep_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    hp_lepSt_MuData      = ROOT.TH1F("hp_lepSt_MuData ", "; ;  ", numbins2, 0., binlimit2)
 
     h_AK8Tau21_Data           = ROOT.TH1F("h_AK8Tau21_Data", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_Data     = ROOT.TH1F("h_AK8subjetTau21_Data", "; ;  ", numbins2, 0.,1.)
@@ -583,7 +617,7 @@ def Wtag_Selector(argv) :
     h_AK8subjetPt_MC        = ROOT.TH1F("h_AK8subjetPt_MC", "; ;  ", numbins2, 0., binlimit2)
 
     # Counters for cut flow table
-    passcuts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    passcuts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     fillTree = False
     NpassPre = 0
     NpassPost = 0
@@ -594,11 +628,11 @@ def Wtag_Selector(argv) :
     fin = ROOT.TFile.Open( filein )
     if options.verbose :  print "Opened the File!  {}".format(filein)
 
-    if options.TreeMaker :
+    if options.b2gtree :
         t =  fin.Get("ana/TreeSemiLept") 
-    if not options.TreeMaker :
+    if not options.b2gtree :
         t =  fin.Get("TreeSemiLept") 
-    if options.TreeMaker :
+    if options.b2gtree :
 
         JetPtRaw                     = array.array('f', [0.] )      
         JetEtaRaw                    = array.array('f', [0.] )
@@ -1353,7 +1387,7 @@ def Wtag_Selector(argv) :
         #t.SetBranchStatus('Semion_relIsoWithEA      ',      )
 
 
-    if not options.TreeMaker :
+    if not options.b2gtree :
 
         SemiLeptTrig        = array.array('i', [0]  )
         SemiLeptWeight      = array.array('f', [0.] )
@@ -1456,6 +1490,9 @@ def Wtag_Selector(argv) :
         LeptonPtRel         = array.array('f', [-1.])
         LeptonDRMin         = array.array('f', [-1.])
         LeptonCharge        = array.array('f', [-1.])
+        LeptonHEEPEl        = array.array('f', [-1.])
+        LeptonCutIDLooseEl  = array.array('f', [-1.])
+        LeptonHighPtMu      = array.array('f', [-1.])
         LeptonLoose         = array.array('f', [-1.])
         LeptonTight         = array.array('f', [-1.]) 
         SemiLepMETpx        = array.array('f', [-1.])
@@ -1531,6 +1568,9 @@ def Wtag_Selector(argv) :
         t.SetBranchAddress('LeptonPtRel'         , LeptonPtRel         )
         t.SetBranchAddress('LeptonDRMin'         , LeptonDRMin         )
         t.SetBranchAddress('LeptonCharge'        , LeptonCharge        )
+        t.SetBranchAddress('LeptonHEEPEl'        , LeptonHEEPEl         )
+        t.SetBranchAddress('LeptonCutIDLooseEl'  , LeptonCutIDLooseEl   )
+        t.SetBranchAddress('LeptonHighPtMu'      , LeptonHighPtMu       ) 
         t.SetBranchAddress('LeptonLoose'         , LeptonLoose         )
         t.SetBranchAddress('LeptonTight'         , LeptonTight         )
         t.SetBranchAddress('SemiLepMETpt'        , SemiLepMETpt        )
@@ -1606,6 +1646,9 @@ def Wtag_Selector(argv) :
         t.SetBranchStatus ('LeptonPtRel'         , 1)
         t.SetBranchStatus ('LeptonDRMin'         , 1)
         t.SetBranchStatus ('LeptonCharge'        , 1)
+        t.SetBranchStatus ('LeptonHEEPEl'        , 1)
+        t.SetBranchStatus ('LeptonCutIDLooseEl'  , 1)
+        t.SetBranchStatus ('LeptonHighPtMu'      , 1)
         t.SetBranchStatus ('LeptonLoose'         , 1)
         t.SetBranchStatus ('LeptonTight'         , 1)
         t.SetBranchStatus ('SemiLepEventWeight'  , 1) 
@@ -1621,7 +1664,8 @@ def Wtag_Selector(argv) :
         eventsToRun = entries
     else :
         eventsToRun = options.maxEvents
-
+    if not options.b2gtree :
+        if options.verbose : print "Testing trees located at /store/group/lpctlbsm/aparker/{0} ".format(options.treeLocation)
     # Begin Event Loop
     for jentry in xrange( eventsToRun ):
         if jentry % 100000 == 0 or options.verbose :
@@ -1631,7 +1675,7 @@ def Wtag_Selector(argv) :
             break
         # Event Info
         
-        if options.TreeMaker :
+        if options.b2gtree :
             weightS = SemiLeptEventWeight[0]
             eventNum = SemiLeptEventNum[0]
 
@@ -1671,11 +1715,11 @@ def Wtag_Selector(argv) :
             ak4_HemiHasBtagMedium = LepHemiContainsAK4BtagMedium[0]
             ak4_HemiHasBtagTight = LepHemiContainsAK4BtagTight[0]
 
-        if not options.TreeMaker :
-            if options.verbose : print "checking not Treemaker"
+        if not options.b2gtree :
             weightS = SemiLepEventWeight[0]
             eventNum = SemiLeptEventNum[0]
-            #type1or2 = BoosttypE[0]
+            triggerRun = SemiLeptTrig[0]
+            type1or2 = BoosttypE[0]
             runNum = SemiLeptRunNum[0]
             lumiBlock = SemiLeptLumiBlock[0]
 
@@ -1683,8 +1727,8 @@ def Wtag_Selector(argv) :
             theLepton = ROOT.TLorentzVector()
             theLepton.SetPtEtaPhiE( LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0] ) # Assume massless
             if options.verbose : 
-                print "The lepton 4 vector is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}- iso is {4:3.3f}".format(LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0], LeptonIso[0])
-                print "The theLepton.Perp() is {0:3.3f} :".format(theLepton.Perp())
+                print "Lepton ( Pt = {0:3.2f}, Eta = {1:3.2f}, Phi = {2:3.2f}, Mass = {3:3.2f}), Iso = {4:0.3f}".format(LeptonPt[0], LeptonEta[0], LeptonPhi[0], LeptonEnergy[0], LeptonIso[0] )
+
             LepPt = theLepton.Perp()
             LepEta = theLepton.Eta()
             LepPhi = theLepton.Phi()
@@ -1694,21 +1738,26 @@ def Wtag_Selector(argv) :
             lepton_ptRel = LeptonPtRel[0]
             lepton_DRmin = LeptonDRMin[0] 
 
+            lepton_isTight = LeptonTight[0]
+            lepton_HEEP_el = LeptonHEEPEl[0] 
+            lepton_CutIDLoose_el = LeptonCutIDLooseEl[0] 
+            lepton_HighPt_mu = LeptonHighPtMu[0] 
+
             # MET Observables
             nuCandP4 = ROOT.TLorentzVector( )
             #nuCandP4.SetPtEtaPhiM( SemiLepMETpt[0], 0, SemiLepMETphi[0], SemiLepMETpt[0] )
             nuCandP4.SetPxPyPzE(SemiLepMETpx[0], SemiLepMETpy[0], 0.0, SemiLepMETpt[0])
             MET_pt = nuCandP4.Perp()
-            if options.verbose : print "The MET 4 vetor is (px, py, pz, pt) : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(SemiLepMETpx[0], SemiLepMETpy[0], 0.0, SemiLepMETpt[0])
-
+            if options.verbose : 
+                print "MET ( Px = {0:3.3f}, Py = {1:3.3f}, Pz = {2:3.3f}, Pt = {3:3.3f})".format(SemiLepMETpx[0], SemiLepMETpy[0], 0.0, SemiLepMETpt[0])
             # ak4 Observables            
             ak4CandP4puppi0 = ROOT.TLorentzVector()
             ak4CandP4puppi0.SetPtEtaPhiM( NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
             ak4_bdisc = AK4bDisc[0]
-            if options.verbose : print "The AK4 4 vetor is : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
+            if options.verbose : print "AK4 ( Pt = {0:3.3f}, Eta = {1:3.3f}, Phi = {2:3.3f}, Mass = {3:3.3f})".format(NearestAK4JetPt[0], NearestAK4JetEta[0], NearestAK4JetPhi[0], NearestAK4JetMass[0])
 
 
-        if options.TreeMaker :
+        if options.b2gtree :
             # ak8 Observables 
 
             FatJetP4 = ROOT.TLorentzVector()    # fix this, obs should be SD mass but its empty in new Jim trees
@@ -1754,7 +1803,7 @@ def Wtag_Selector(argv) :
                 W_eta = JetPuppiSDeta[0]
                 puppiCorr = getPUPPIweight( W_ptRaw , W_eta )
                 FatJetSD_m = W_mRaw * puppiCorr
-            '''  # fix this, change to work for options.TreeMaker
+            '''  # fix this, change to work for options.b2gtree
             #applying Thea's corrections for Type 1
             if options.applyTheaCorr and ( not options.Type2 ) and FatJetSD_pt > (options.Ak8PtCut - 20. ) and W_pt > 170. and type1or2 == 1  :
                 W_mRaw = FatJetSDsubjetWmassRaw[0]
@@ -1783,7 +1832,7 @@ def Wtag_Selector(argv) :
                 ElScaleFactor = getgsfTrackEffScaleFactor( LepEta, LepPt )
                 if options.verbose: print "Electron Scale factor is : {0:4.3f} ".format( ElScaleFactor )
 
-        if not options.TreeMaker :
+        if not options.b2gtree :
             # ak8 Observables 
 
             FatJetP4 = ROOT.TLorentzVector()    
@@ -1879,9 +1928,13 @@ def Wtag_Selector(argv) :
 
 
 
-        passEleMETcut  = LepType == 1 and MET_pt > 80. 
-        passEleEtacut  = LepType == 1 and ( 0. < abs(LepEta) < 1.442 or 1.56 < abs(LepEta) < 2.5 )
-        passElePtcut   = LepType == 1  and  LepPt > 120. 
+        passEleMETcut     = LepType == 1  and  MET_pt > 80. 
+        passEleEtacut     = LepType == 1  and ( 0. < abs(LepEta) < 1.442 or 1.56 < abs(LepEta) < 2.5 )
+        passElePtcut      = LepType == 1  and  LepPt > 120. 
+        passEleHEEPcut    = LepType == 1  and  lepton_HEEP_el > 0. # fix this add to cutflow and apply this cut
+        passEleCutIDcut   = LepType == 1  and  lepton_CutIDLoose_el > 0. # fix this add to cutflow and apply this cut
+        passEleTrigger    = LepType == 1  and  triggerRun > 1.       # fix this : apply this cut
+
         passEl         = (passEleMETcut and passElePtcut and passEleEtacut)
 
         if passElePtcut :
@@ -1890,30 +1943,49 @@ def Wtag_Selector(argv) :
             passcuts[1] +=1
         if passEleMETcut :
             passcuts[2] +=1
+        if passEleTrigger :
+            passcuts[28] +=1
         if passEl :
             passcuts[18] +=1
+   
 
-        if options.verbose and LepType == 2 : print "Pre-selection Muon : pt {0:3.3f} eta {1:3.3f} METpt {2:3.3f} Iso {3:3.3f} Leptype {4:3.3f}".format(LepPt, LepEta, MET_pt, LeptonIsol, LepType  ) 
+        if options.verbose and LepType == 2 : print "Pre-selection Muon : Pt {0:3.3f}, Eta {1:3.3f}, METpt {2:3.3f}, Iso {3:3.3f}, Leptype {4:1.0f}".format(LepPt, LepEta, MET_pt, LeptonIsol, LepType  ) 
 
         #Muon Selection
-        passMuPtcut     = LepType == 2 and LepPt > 53. 
-        passMuEtacut    = LepType == 2 and abs(LepEta) < 2.1 
-        passMuMETcut    = LepType == 2 and MET_pt > 40.
-        passMuIsocut    = LepType == 2 and LeptonIsol < 0.1
-        passMu          = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut )
+        passMuPtcut        = LepType == 2 and LepPt > 53. 
+        passMuEtacut       = LepType == 2 and abs(LepEta) < 2.1 
+        passMuMETcut       = LepType == 2 and MET_pt > 40.
+        passMuIsocut       = LepType == 2 and LeptonIsol < 0.1
+        passMuHighPtcut    = LepType == 2 and lepton_HighPt_mu > 0.
+        passMuTightcut     = LepType == 2 and lepton_isTight > 0. 
+        passMuTrigger      = LepType == 2 and triggerRun < 2.      
 
+        passMu          = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut and passMuHighPtcut and passMuTightcut and passMuTrigger) # fix this allow some loose , see AN-16-215 for details
+        if options.verbose : print "The muon passed the following cuts with values:"
         if passMuPtcut :
             passcuts[3]   +=1
-            if options.verbose : print "Muon p4 passing Muon pt >53 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
+            if options.verbose : print "Pt > 53  :              {0:3.3f} ".format(LepPt ) 
         if passMuEtacut :
             passcuts[19]  +=1
-            if options.verbose : print "Muon p4 passing Muon |eta|<2.1 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
+            if options.verbose : print "|eta|<2.1  :            {0:3.3f} ".format( LepEta ) 
         if passMuMETcut :
             passcuts[20]  +=1
-            if options.verbose : print "Muon p4 passing Muon MET>40 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
+            if options.verbose : print "MET Pt > 40  :          {0:3.3f}".format(MET_pt ) 
         if passMuIsocut :
             passcuts[4]   +=1  
-            if options.verbose : print "Muon p4 passing Muon Iso<0.1 cut : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
+            if options.verbose : print "MuonIso < 0.1  :        {0:3.3f} ".format(LeptonIsol) 
+        if passMuHighPtcut :
+            passcuts[26]   +=1  
+            if options.verbose : print "HighPtMuon  :           {0:1.0f} ".format(lepton_HighPt_mu) 
+        if passMuTightcut :
+            passcuts[27]   +=1  
+            if options.verbose : print "MuonisTight  :		{0:1.0f} ".format(lepton_isTight) 
+        if passMuTrigger :
+            passcuts[29]   +=1  
+            if triggerRun == 0 : trigIs = "HLT_Mu45_eta2p1_"
+            if triggerRun == 1 : trigIs = "HLT_Mu50_"
+            if options.verbose : print "Muon passing Trigger :  {0:s} ".format(trigIs) 
+                        
         if passMu :
             passcuts[21]  +=1
             if options.verbose : print "Muon p4 passing all Muon cuts : {0:3.3f}  {1:3.3f} {2:3.3f} {3:3.3f}".format(LepPt, LepEta, LepPhi, LepMass ) 
@@ -1938,8 +2010,7 @@ def Wtag_Selector(argv) :
         if options.verbose and passLepcut and passMu: 
             print "Muon:  pt {0:3.2f}, eta {1:3.2f}, MET_pt {2:3.2f}".format(LepPt, abs(LepEta),  MET_pt) 
 
-        # Lepton cuts applied
-        if not passLepcut : continue 
+        # AK8 Pt cut at 200 GeV applied
         if fatpt < 200. : continue
 
         TheWeight = weightS
@@ -1952,34 +2023,40 @@ def Wtag_Selector(argv) :
         HtLep = LepPt + MET_pt
         fout.cd()
 
+        # Filling lepton histograms before lepton cuts (after AK8 pt > 200)
         if (str(options.dtype) == 'data') :
-            TheWeight = 1.0 # Precautionary measure: This should already be set to 1 regardless
-            h_lepPt_Data.Fill(LepPt       , TheWeight)
-            h_lepEta_Data.Fill(LepEta     , TheWeight)
-            h_lepHtLep_Data.Fill(HtLep    , TheWeight)
+            hp_lepPt_Data.Fill(LepPt       , TheWeight)
+            hp_lepEta_Data.Fill(LepEta     , TheWeight)
+            hp_lepHtLep_Data.Fill(HtLep    , TheWeight)
             if LepType == 1 :
-                h_lepPt_ElData.Fill(LepPt       , TheWeight)
-                h_lepEta_ElData.Fill(LepEta     , TheWeight)
-                h_lepHtLep_ElData.Fill(HtLep    , TheWeight)
+                hp_lepPt_ElData.Fill(LepPt       , TheWeight)
+                hp_lepEta_ElData.Fill(LepEta     , TheWeight)
+                hp_lepHtLep_ElData.Fill(HtLep    , TheWeight)
             elif LepType == 2 :
-                h_lepPt_MuData.Fill(LepPt       , TheWeight)
-                h_lepEta_MuData.Fill(LepEta     , TheWeight)
-                h_lepHtLep_MuData.Fill(HtLep    , TheWeight)
+                hp_lepPt_MuData.Fill(LepPt       , TheWeight)
+                hp_lepEta_MuData.Fill(LepEta     , TheWeight)
+                hp_lepHtLep_MuData.Fill(HtLep    , TheWeight)
         if (str(options.dtype) != 'data') : # fix this should be != 'data'
-            h_lepPt_MC.Fill(LepPt       , TheWeight)
-            h_lepEta_MC.Fill(LepEta     , TheWeight)
-            h_lepHtLep_MC.Fill(HtLep    , TheWeight)
+            hp_lepPt_MC.Fill(LepPt       , TheWeight)
+            hp_lepEta_MC.Fill(LepEta     , TheWeight)
+            hp_lepHtLep_MC.Fill(HtLep    , TheWeight)
+
+        # Lepton cuts applied
+        if not passLepcut : continue 
 
         #AK4 Selection
         passBtagBdisc = ak4_bdisc > 0.8
         passBtagPt = ak4CandP4puppi0.Perp() > 30.
+        passBtagEta = abs(ak4CandP4puppi0.Eta()) < 2.4
         passBDrAK8 = drAK4AK8 > 0.8 
 
-        passAK4 = (passBtagBdisc and passBtagPt and passBDrAK8)
+        passAK4 = (passBtagBdisc and passBtagPt and passBtagEta and passBDrAK8)
         if passBtagBdisc :
             passcuts[12] += 1
         if passBtagPt :
             passcuts[13] += 1  
+        if passBtagEta :
+            passcuts[25] += 1 
         if passBDrAK8 :
             passcuts[23] += 1  
         if passAK4 :
@@ -1988,16 +2065,16 @@ def Wtag_Selector(argv) :
         # AK4 cuts applied
         if not passAK4 : continue
         Ht = 0.
-        if options.TreeMaker :
+        if options.b2gtree :
             for iak4,ak4jet in enumerate(AK4dRminPt) : 
                 if AK4dRminPt[iak4] > 30. :
                     Ht += AK4dRminPt[iak4] 
-        if  not options.TreeMaker :
+        if  not options.b2gtree :
             for iak4,ak4jet in enumerate(NearestAK4JetPt) : 
                 if NearestAK4JetPt[iak4] > 30. :
                     Ht += NearestAK4JetPt[iak4]   
 
-        if options.TreeMaker:
+        if options.b2gtree:
             if (options.dtype == 'data') :
                 h_lepSt_Data.Fill(ST[0] ,               TheWeight )  
                 h_lepHt_Data.Fill(Ht ,               TheWeight )
@@ -2022,7 +2099,7 @@ def Wtag_Selector(argv) :
                 h_lepHt_MC.Fill(Ht ,               TheWeight )
                 h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
                 h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
-        if not options.TreeMaker:
+        if not options.b2gtree:
             St = Ht + HtLep
             if (options.dtype == 'data') :
                 h_lepSt_Data.Fill(St ,               TheWeight )
@@ -2131,7 +2208,27 @@ def Wtag_Selector(argv) :
                 passPost = passWPosttau
 
             fout.cd()
-                #print "filling MC histo"
+
+            # filling Lepton histograms after all cuts
+            if (str(options.dtype) == 'data') :
+                h_lepPt_Data.Fill(LepPt       , TheWeight)
+                h_lepEta_Data.Fill(LepEta     , TheWeight)
+                h_lepHtLep_Data.Fill(HtLep    , TheWeight)
+                if LepType == 1 :
+                    h_lepPt_ElData.Fill(LepPt       , TheWeight)
+                    h_lepEta_ElData.Fill(LepEta     , TheWeight)
+                    h_lepHtLep_ElData.Fill(HtLep    , TheWeight)
+                elif LepType == 2 :
+                    h_lepPt_MuData.Fill(LepPt       , TheWeight)
+                    h_lepEta_MuData.Fill(LepEta     , TheWeight)
+                    h_lepHtLep_MuData.Fill(HtLep    , TheWeight)
+            if (str(options.dtype) != 'data') : # fix this should be != 'data'
+                h_lepPt_MC.Fill(LepPt       , TheWeight)
+                h_lepEta_MC.Fill(LepEta     , TheWeight)
+                h_lepHtLep_MC.Fill(HtLep    , TheWeight)
+
+
+            # Filling the W mass distributions for AK8 jets of all Pts before the tau21 cut
             if (str(options.dtype) != 'data'):
                 h_mWsubjet_MC.Fill(thatMass         , TheWeight )
             if (str(options.dtype) == 'data'):
@@ -2141,7 +2238,7 @@ def Wtag_Selector(argv) :
                     h_mWsubjet_ElData.Fill(thatMass , TheWeight ) 
                 if LepType == 2 :
                     h_mWsubjet_MuData.Fill(thatMass , TheWeight )
-            if passPost : # histos passing tau21 cut 
+            if passPost : # Filling W mass histos passing tau21 cut 
                 if (str(options.dtype) != 'data'):
                     h_mWsubjetPasstag_MC.Fill(thatMass         , TheWeight )
                 if (str(options.dtype) == 'data'):
@@ -2151,7 +2248,7 @@ def Wtag_Selector(argv) :
                         h_mWsubjetPasstag_ElData.Fill(thatMass , TheWeight ) 
                     if LepType == 2 :
                         h_mWsubjetPasstag_MuData.Fill(thatMass , TheWeight )
-            if not passPost : # histos failing tau21 cut 
+            if ( not passPost ) and ( tau21 != 1.0  ): # Filling W mass  histos failing tau21 cut  # fix this : W_tau21 for not options.type2
                 if (str(options.dtype) != 'data'):
                     h_mWsubjetFailtag_MC.Fill(thatMass         , TheWeight )
                 if (str(options.dtype) == 'data'):
@@ -2162,6 +2259,7 @@ def Wtag_Selector(argv) :
                     if LepType == 2 :
                         h_mWsubjetFailtag_MuData.Fill(thatMass , TheWeight )
 
+            # Filling the W mass distributions binned by Pt of the W jet candidate before the tau21 cut
             if ( 200.0 < W_pt < 300.0 ):
                 h_mWsubjet_b1p.Fill(thatMass              , TheWeight )
             if ( 300.0 < W_pt < 400.0 ) :                       
@@ -2172,7 +2270,7 @@ def Wtag_Selector(argv) :
                 h_mWsubjet_b4p.Fill(thatMass              , TheWeight )
             if ( 200. < W_pt < 800.0 ) : 
                 h_mWsubjet_b5p.Fill(thatMass              , TheWeight )
-            # Fill Electron data trees
+            # Fill Electron 
             if (str(options.dtype) == 'data') and LepType == 1 :
                 if ( 200.0 < W_pt < 300.0 ):
                     h_mWsubjet_b1pe.Fill(thatMass, TheWeight )
@@ -2184,7 +2282,7 @@ def Wtag_Selector(argv) :
                     h_mWsubjet_b4pe.Fill(thatMass, TheWeight )
                 if ( 200. < W_pt < 800.0 ) : 
                     h_mWsubjet_b5pe.Fill(thatMass, TheWeight )
-            # Fill Muon data trees
+            # Fill Muon 
             if (str(options.dtype) == 'data') and LepType == 2 :
                 if (  200.0 < W_pt < 300.0 ):
                     h_mWsubjet_b1pm.Fill(thatMass, TheWeight )
@@ -2207,7 +2305,7 @@ def Wtag_Selector(argv) :
                     h_mWsubjet_b4.Fill(thatMass, TheWeight )
                 if ( 200. < W_pt < 800.0 ) : 
                     h_mWsubjet_b5.Fill(thatMass, TheWeight )
-                # Fill Electron data trees
+                # Fill Electron 
                 if (str(options.dtype) == 'data') and LepType == 1 :
                     if ( W_pt > 200.0 and W_pt < 300.0 ):
                         h_mWsubjet_b1e.Fill(thatMass, TheWeight )
@@ -2219,7 +2317,7 @@ def Wtag_Selector(argv) :
                         h_mWsubjet_b4e.Fill(thatMass, TheWeight )
                     if ( 200. < W_pt < 800.0 ) : 
                         h_mWsubjet_b5e.Fill(thatMass, TheWeight )
-                # Fill Muon data trees
+                # Fill Muon 
                 if (str(options.dtype) == 'data') and LepType == 2 :
                     if ( W_pt > 200.0 and W_pt < 300.0 ):
                         h_mWsubjet_b1m.Fill(thatMass, TheWeight )
@@ -2237,6 +2335,7 @@ def Wtag_Selector(argv) :
     print "..................................................."
     print "                Electrons                          "
     print "..................................................."
+    print "Trigger:                   {0}".format(passcuts[28] )
     print "Pt cut:                    {0}".format(passcuts[0]  )
     print "Eta cut:                   {0}".format(passcuts[1]  ) 
     print "MET cut :                  {0}".format(passcuts[2]  ) 
@@ -2244,10 +2343,13 @@ def Wtag_Selector(argv) :
     print "..................................................."
     print "                   Muons                           "
     print "..................................................."
+    print "Trigger:                   {0}".format(passcuts[29] )
     print "Pt cut:                    {0}".format(passcuts[3]  )
     print "Eta cut:                   {0}".format(passcuts[19] ) 
     print "MET cut :                  {0}".format(passcuts[20] ) 
     print "Iso cut :                  {0}".format(passcuts[4]  ) 
+    print "HighPt cut :               {0}".format(passcuts[26] ) 
+    print "isTight cut :              {0}".format(passcuts[27] )
     print "ALL Muon cuts :            {0}".format(passcuts[21] )
     print "..................................................."
     print "                  Lepton                           "
@@ -2259,6 +2361,7 @@ def Wtag_Selector(argv) :
     print "                   AK4                             "
     print "..................................................."
     print "Pt cut:                    {0}".format(passcuts[13]  )
+    print "Eta cut:                   {0}".format(passcuts[25]  )
     print "CSVv2 Bdisc cut:           {0}".format(passcuts[12]  )
     print "DR(AK4, AK8) cut:          {0}".format(passcuts[23]  )
     print "ALL AK4 cuts:              {0}".format(passcuts[24]  )
