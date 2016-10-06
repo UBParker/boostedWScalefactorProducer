@@ -28,7 +28,7 @@ def Wtag_Selector(argv) :
 
     parser.add_option('--treeLocation', type='string', action='store',
                       dest='treeLocation',
-                      default = 'Last80xTrees',#'80xTTrees',
+                      default = '80xTTrees', # 'Last80xTrees',#'80xTTrees',
                       help='directory ??? where CRAB output ttrees created by NtupleReader are located /store/group/lpctlbsm/aparker/???') 
 
     parser.add_option('--writeTree', action='store_true',
@@ -473,6 +473,9 @@ def Wtag_Selector(argv) :
             if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
             else : fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
         filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype, options.treeLocation)
+        if "wjets" in options.dtype : # fix this : only valid when running on lpc
+            filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%('wjets', options.dtype, options.treeLocation)
+
 
     if options.is80x and options.b2gtree:  
         if options.maxEvents > 0. :
@@ -490,59 +493,59 @@ def Wtag_Selector(argv) :
 
 
     binlimit = 600.
-    numbins = 600
+    numbins = 300
 
-    h_mWsubjet_b1  = ROOT.TH1F("h_mWsubjet_b1", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b2  = ROOT.TH1F("h_mWsubjet_b2", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b3  = ROOT.TH1F("h_mWsubjet_b3", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b4  = ROOT.TH1F("h_mWsubjet_b4", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b5  = ROOT.TH1F("h_mWsubjet_b5", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b1  = ROOT.TH1F("h_mWsubjet_b1", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2  = ROOT.TH1F("h_mWsubjet_b2", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3  = ROOT.TH1F("h_mWsubjet_b3", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4  = ROOT.TH1F("h_mWsubjet_b4", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b5  = ROOT.TH1F("h_mWsubjet_b5", "; ;  ", numbins, 0, binlimit)
 
-    h_mWsubjet_b1p  = ROOT.TH1F("h_mWsubjet_b1p", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b2p  = ROOT.TH1F("h_mWsubjet_b2p", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b3p  = ROOT.TH1F("h_mWsubjet_b3p", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b4p  = ROOT.TH1F("h_mWsubjet_b4p", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b5p  = ROOT.TH1F("h_mWsubjet_b5p", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b1p  = ROOT.TH1F("h_mWsubjet_b1p", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2p  = ROOT.TH1F("h_mWsubjet_b2p", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3p  = ROOT.TH1F("h_mWsubjet_b3p", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4p  = ROOT.TH1F("h_mWsubjet_b4p", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b5p  = ROOT.TH1F("h_mWsubjet_b5p", "; ;  ", numbins, 0, binlimit)
 
-    h_mWsubjet_b1e  = ROOT.TH1F("h_mWsubjet_b1e", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b2e  = ROOT.TH1F("h_mWsubjet_b2e", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b3e  = ROOT.TH1F("h_mWsubjet_b3e", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b4e  = ROOT.TH1F("h_mWsubjet_b4e", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b5e  = ROOT.TH1F("h_mWsubjet_b5e", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b1e  = ROOT.TH1F("h_mWsubjet_b1e", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2e  = ROOT.TH1F("h_mWsubjet_b2e", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3e  = ROOT.TH1F("h_mWsubjet_b3e", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4e  = ROOT.TH1F("h_mWsubjet_b4e", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b5e  = ROOT.TH1F("h_mWsubjet_b5e", "; ;  ", numbins, 0, binlimit)
 
-    h_mWsubjet_b1pe  = ROOT.TH1F("h_mWsubjet_b1pe", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b2pe  = ROOT.TH1F("h_mWsubjet_b2pe", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b3pe  = ROOT.TH1F("h_mWsubjet_b3pe", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b4pe  = ROOT.TH1F("h_mWsubjet_b4pe", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b5pe  = ROOT.TH1F("h_mWsubjet_b5pe", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b1pe  = ROOT.TH1F("h_mWsubjet_b1pe", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2pe  = ROOT.TH1F("h_mWsubjet_b2pe", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3pe  = ROOT.TH1F("h_mWsubjet_b3pe", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4pe  = ROOT.TH1F("h_mWsubjet_b4pe", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b5pe  = ROOT.TH1F("h_mWsubjet_b5pe", "; ;  ", numbins, 0, binlimit)
 
 
-    h_mWsubjet_b1m  = ROOT.TH1F("h_mWsubjet_b1m", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b2m  = ROOT.TH1F("h_mWsubjet_b2m", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b3m  = ROOT.TH1F("h_mWsubjet_b3m", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b4m  = ROOT.TH1F("h_mWsubjet_b4m", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b5m  = ROOT.TH1F("h_mWsubjet_b5m", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b1m  = ROOT.TH1F("h_mWsubjet_b1m", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2m  = ROOT.TH1F("h_mWsubjet_b2m", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3m  = ROOT.TH1F("h_mWsubjet_b3m", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4m  = ROOT.TH1F("h_mWsubjet_b4m", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b5m  = ROOT.TH1F("h_mWsubjet_b5m", "; ;  ", numbins, 0, binlimit)
 
-    h_mWsubjet_b1pm  = ROOT.TH1F("h_mWsubjet_b1pm", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b2pm  = ROOT.TH1F("h_mWsubjet_b2pm", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b3pm  = ROOT.TH1F("h_mWsubjet_b3pm", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b4pm  = ROOT.TH1F("h_mWsubjet_b4pm", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_b5pm  = ROOT.TH1F("h_mWsubjet_b5pm", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_b1pm  = ROOT.TH1F("h_mWsubjet_b1pm", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b2pm  = ROOT.TH1F("h_mWsubjet_b2pm", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b3pm  = ROOT.TH1F("h_mWsubjet_b3pm", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b4pm  = ROOT.TH1F("h_mWsubjet_b4pm", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_b5pm  = ROOT.TH1F("h_mWsubjet_b5pm", "; ;  ", numbins, 0, binlimit)
 
-    h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_ElData = ROOT.TH1F("h_mWsubjet_ElData", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjet_MuData = ROOT.TH1F("h_mWsubjet_MuData", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjet_MC = ROOT.TH1F("h_mWsubjet_MC", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_Data = ROOT.TH1F("h_mWsubjet_Data", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_ElData = ROOT.TH1F("h_mWsubjet_ElData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjet_MuData = ROOT.TH1F("h_mWsubjet_MuData", "; ;  ", numbins, 0, binlimit)
                         
-    h_mWsubjetPasstag_MC = ROOT.TH1F("h_mWsubjetPasstag_MC", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjetPasstag_Data = ROOT.TH1F("h_mWsubjetPasstag_Data", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjetPasstag_ElData = ROOT.TH1F("h_mWsubjetPasstag_ElData", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjetPasstag_MuData = ROOT.TH1F("h_mWsubjetPasstag_MuData", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetPasstag_MC = ROOT.TH1F("h_mWsubjetPasstag_MC", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetPasstag_Data = ROOT.TH1F("h_mWsubjetPasstag_Data", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetPasstag_ElData = ROOT.TH1F("h_mWsubjetPasstag_ElData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetPasstag_MuData = ROOT.TH1F("h_mWsubjetPasstag_MuData", "; ;  ", numbins, 0, binlimit)
  
-    h_mWsubjetFailtag_MC = ROOT.TH1F("h_mWsubjetFailtag_MC", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjetFailtag_Data = ROOT.TH1F("h_mWsubjetFailtag_Data", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjetFailtag_ElData = ROOT.TH1F("h_mWsubjetFailtag_ElData", "; ;  ", numbins, 0.0 , binlimit)
-    h_mWsubjetFailtag_MuData = ROOT.TH1F("h_mWsubjetFailtag_MuData", "; ;  ", numbins, 0.0 , binlimit)
+    h_mWsubjetFailtag_MC = ROOT.TH1F("h_mWsubjetFailtag_MC", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetFailtag_Data = ROOT.TH1F("h_mWsubjetFailtag_Data", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetFailtag_ElData = ROOT.TH1F("h_mWsubjetFailtag_ElData", "; ;  ", numbins, 0, binlimit)
+    h_mWsubjetFailtag_MuData = ROOT.TH1F("h_mWsubjetFailtag_MuData", "; ;  ", numbins, 0, binlimit)
  
     binlimit2 = binlimit
     numbins2 = numbins
@@ -595,6 +598,30 @@ def Wtag_Selector(argv) :
     hp_lepHtLep_MuData   = ROOT.TH1F("hp_lepHtLep_MuData ", "; ;  ", numbins2, 0., binlimit2)
     hp_lepSt_MuData      = ROOT.TH1F("hp_lepSt_MuData ", "; ;  ", numbins2, 0., binlimit2)
 
+    hpo_lepPt_MC     = ROOT.TH1F("hpo_lepPt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepEta_MC    = ROOT.TH1F("hpo_lepEta_MC", "; ;  ", numbins2, -3., 3.)
+    hpo_lepHt_MC     = ROOT.TH1F("hpo_lepHt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepHtLep_MC  = ROOT.TH1F("hpo_lepHtLep_MC", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepSt_MC     = ROOT.TH1F("hpo_lepSt_MC", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_lepPt_Data     = ROOT.TH1F("hpo_lepPt_Data ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepEta_Data     = ROOT.TH1F("hpo_lepEta_Data ", "; ;  ", numbins2, -3., 3.)
+    hpo_lepHt_Data      = ROOT.TH1F("hpo_lepHt_Data ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepHtLep_Data   = ROOT.TH1F("hpo_lepHtLep_Data ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepSt_Data      = ROOT.TH1F("hpo_lepSt_Data ", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_lepPt_ElData     = ROOT.TH1F("hpo_lepPt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepEta_ElData     = ROOT.TH1F("hpo_lepEta_ElData ", "; ;  ", numbins2, -3., 3.)
+    hpo_lepHt_ElData      = ROOT.TH1F("hpo_lepHt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepHtLep_ElData   = ROOT.TH1F("hpo_lepHtLep_ElData ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepSt_ElData      = ROOT.TH1F("hpo_lepSt_ElData ", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_lepPt_MuData     = ROOT.TH1F("hpo_lepPt_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepEta_MuData     = ROOT.TH1F("hpo_lepEta_MuData ", "; ;  ", numbins2, -3., 3.)
+    hpo_lepHt_MuData      = ROOT.TH1F("hpo_lepHt_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepHtLep_MuData   = ROOT.TH1F("hpo_lepHtLep_MuData ", "; ;  ", numbins2, 0., binlimit2)
+    hpo_lepSt_MuData      = ROOT.TH1F("hpo_lepSt_MuData ", "; ;  ", numbins2, 0., binlimit2)
+
     h_AK8Tau21_Data           = ROOT.TH1F("h_AK8Tau21_Data", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_Data     = ROOT.TH1F("h_AK8subjetTau21_Data", "; ;  ", numbins2, 0.,1.)
     h_AK8Pt_Data              = ROOT.TH1F("h_AK8Pt_Data", "; ;  ", numbins2, 0., binlimit2)
@@ -610,11 +637,50 @@ def Wtag_Selector(argv) :
     h_AK8Pt_MuData              = ROOT.TH1F("h_AK8Pt_MuData", "; ;  ", numbins2, 0., binlimit2)
     h_AK8subjetPt_MuData        = ROOT.TH1F("h_AK8subjetPt_MuData", "; ;  ", numbins2, 0., binlimit2)
 
-
     h_AK8Tau21_MC           = ROOT.TH1F("h_AK8Tau21_MC", "; ;  ", numbins2, 0., 1.)
     h_AK8subjetTau21_MC     = ROOT.TH1F("h_AK8subjetTau21_MC", "; ;  ", numbins2,0., 1.)
     h_AK8Pt_MC              = ROOT.TH1F("h_AK8Pt_MC", "; ;  ", numbins2, 0., binlimit2)
     h_AK8subjetPt_MC        = ROOT.TH1F("h_AK8subjetPt_MC", "; ;  ", numbins2, 0., binlimit2)
+
+    hp_AK8Tau21_Data           = ROOT.TH1F("hp_AK8Tau21_Data", "; ;  ", numbins2, 0., 1.)
+    hp_AK8subjetTau21_Data     = ROOT.TH1F("hp_AK8subjetTau21_Data", "; ;  ", numbins2, 0.,1.)
+    hp_AK8Pt_Data              = ROOT.TH1F("hp_AK8Pt_Data", "; ;  ", numbins2, 0., binlimit2)
+    hp_AK8subjetPt_Data        = ROOT.TH1F("hp_AK8subjetPt_Data", "; ;  ", numbins2, 0., binlimit2)
+
+    hp_AK8Tau21_ElData           = ROOT.TH1F("hp_AK8Tau21_ElData", "; ;  ", numbins2, 0., 1.)
+    hp_AK8subjetTau21_ElData     = ROOT.TH1F("hp_AK8subjetTau21_ElData", "; ;  ", numbins2, 0., 1.)
+    hp_AK8Pt_ElData              = ROOT.TH1F("hp_AK8Pt_ElData", "; ;  ", numbins2, 0., binlimit2)
+    hp_AK8subjetPt_ElData        = ROOT.TH1F("hp_AK8subjetPt_ElData", "; ;  ", numbins2, 0., binlimit2)
+
+    hp_AK8Tau21_MuData           = ROOT.TH1F("hp_AK8Tau21_MuData", "; ;  ", numbins2, 0., 1.)
+    hp_AK8subjetTau21_MuData     = ROOT.TH1F("hp_AK8subjetTau21_MuData", "; ;  ", numbins2, 0., 1.)
+    hp_AK8Pt_MuData              = ROOT.TH1F("hp_AK8Pt_MuData", "; ;  ", numbins2, 0., binlimit2)
+    hp_AK8subjetPt_MuData        = ROOT.TH1F("hp_AK8subjetPt_MuData", "; ;  ", numbins2, 0., binlimit2)
+
+    hp_AK8Tau21_MC           = ROOT.TH1F("hp_AK8Tau21_MC", "; ;  ", numbins2, 0., 1.)
+    hp_AK8subjetTau21_MC     = ROOT.TH1F("hp_AK8subjetTau21_MC", "; ;  ", numbins2,0., 1.)
+    hp_AK8Pt_MC              = ROOT.TH1F("hp_AK8Pt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hp_AK8subjetPt_MC        = ROOT.TH1F("hp_AK8subjetPt_MC", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_AK8Tau21_Data           = ROOT.TH1F("hpo_AK8Tau21_Data", "; ;  ", numbins2, 0., 1.)
+    hpo_AK8subjetTau21_Data     = ROOT.TH1F("hpo_AK8subjetTau21_Data", "; ;  ", numbins2, 0.,1.)
+    hpo_AK8Pt_Data              = ROOT.TH1F("hpo_AK8Pt_Data", "; ;  ", numbins2, 0., binlimit2)
+    hpo_AK8subjetPt_Data        = ROOT.TH1F("hpo_AK8subjetPt_Data", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_AK8Tau21_ElData           = ROOT.TH1F("hpo_AK8Tau21_ElData", "; ;  ", numbins2, 0., 1.)
+    hpo_AK8subjetTau21_ElData     = ROOT.TH1F("hpo_AK8subjetTau21_ElData", "; ;  ", numbins2, 0., 1.)
+    hpo_AK8Pt_ElData              = ROOT.TH1F("hpo_AK8Pt_ElData", "; ;  ", numbins2, 0., binlimit2)
+    hpo_AK8subjetPt_ElData        = ROOT.TH1F("hpo_AK8subjetPt_ElData", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_AK8Tau21_MuData           = ROOT.TH1F("hpo_AK8Tau21_MuData", "; ;  ", numbins2, 0., 1.)
+    hpo_AK8subjetTau21_MuData     = ROOT.TH1F("hpo_AK8subjetTau21_MuData", "; ;  ", numbins2, 0., 1.)
+    hpo_AK8Pt_MuData              = ROOT.TH1F("hpo_AK8Pt_MuData", "; ;  ", numbins2, 0., binlimit2)
+    hpo_AK8subjetPt_MuData        = ROOT.TH1F("hpo_AK8subjetPt_MuData", "; ;  ", numbins2, 0., binlimit2)
+
+    hpo_AK8Tau21_MC           = ROOT.TH1F("hpo_AK8Tau21_MC", "; ;  ", numbins2, 0., 1.)
+    hpo_AK8subjetTau21_MC     = ROOT.TH1F("hpo_AK8subjetTau21_MC", "; ;  ", numbins2,0., 1.)
+    hpo_AK8Pt_MC              = ROOT.TH1F("hpo_AK8Pt_MC", "; ;  ", numbins2, 0., binlimit2)
+    hpo_AK8subjetPt_MC        = ROOT.TH1F("hpo_AK8subjetPt_MC", "; ;  ", numbins2, 0., binlimit2)
 
     # Counters for cut flow table
     passcuts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -1739,6 +1805,7 @@ def Wtag_Selector(argv) :
             lepton_DRmin = LeptonDRMin[0] 
 
             lepton_isTight = LeptonTight[0]
+            lepton_isLoose = LeptonLoose[0]
             lepton_HEEP_el = LeptonHEEPEl[0] 
             lepton_CutIDLoose_el = LeptonCutIDLooseEl[0] 
             lepton_HighPt_mu = LeptonHighPtMu[0] 
@@ -1956,11 +2023,19 @@ def Wtag_Selector(argv) :
         passMuEtacut       = LepType == 2 and abs(LepEta) < 2.1 
         passMuMETcut       = LepType == 2 and MET_pt > 40.
         passMuIsocut       = LepType == 2 and LeptonIsol < 0.1
-        passMuHighPtcut    = LepType == 2 and lepton_HighPt_mu > 0.
         passMuTightcut     = LepType == 2 and lepton_isTight > 0. 
         passMuTrigger      = LepType == 2 and triggerRun < 2.      
 
-        passMu          = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut and passMuHighPtcut and passMuTightcut and passMuTrigger) # fix this allow some loose , see AN-16-215 for details
+        passMu          = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut and passMuTightcut and passMuTrigger)
+
+        if options.treeLocation == '80xTTrees' : 
+            passMuHighPtcut    = LepType == 2 and lepton_HighPt_mu > 0.
+            passMuLoosecut     = LepType == 2 and (lepton_isLoose > 0. and LepPt > 20. and abs(LepEta) < 2.4 and lepton_HighPt_mu > 0. )  
+   
+            passMu             = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut and passMuHighPtcut and (passMuTightcut or passMuLoosecut ) and passMuTrigger) 
+
+        if options.treeLocation == 'Last80xTrees' : 
+               passMu          = (passMuPtcut and passMuMETcut and passMuEtacut and passMuIsocut and passMuTightcut and passMuTrigger) 
         if options.verbose : print "The muon passed the following cuts with values:"
         if passMuPtcut :
             passcuts[3]   +=1
@@ -1974,12 +2049,13 @@ def Wtag_Selector(argv) :
         if passMuIsocut :
             passcuts[4]   +=1  
             if options.verbose : print "MuonIso < 0.1  :        {0:3.3f} ".format(LeptonIsol) 
-        if passMuHighPtcut :
-            passcuts[26]   +=1  
-            if options.verbose : print "HighPtMuon  :           {0:1.0f} ".format(lepton_HighPt_mu) 
+        if options.treeLocation == '80xTTrees' : 
+            if passMuHighPtcut :
+                passcuts[26]   +=1  
+                if options.verbose : print "HighPtMuon  :           {0:1.0f} ".format(lepton_HighPt_mu) 
         if passMuTightcut :
             passcuts[27]   +=1  
-            if options.verbose : print "MuonisTight  :		{0:1.0f} ".format(lepton_isTight) 
+            if options.verbose : print "MuonisTight  :              {0:1.0f} ".format(lepton_isTight) 
         if passMuTrigger :
             passcuts[29]   +=1  
             if triggerRun == 0 : trigIs = "HLT_Mu45_eta2p1_"
@@ -2021,9 +2097,98 @@ def Wtag_Selector(argv) :
             if options.verbose : print "An electron SF of {0:2.3f} was applied ".format(ElScaleFactor)
  
         HtLep = LepPt + MET_pt
+        Ht = 0.
+        if options.b2gtree :
+            for iak4,ak4jet in enumerate(AK4dRminPt) : 
+                if AK4dRminPt[iak4] > 30. :
+                    Ht += AK4dRminPt[iak4] 
+        if  not options.b2gtree :
+            for iak4,ak4jet in enumerate(NearestAK4JetPt) : 
+                if NearestAK4JetPt[iak4] > 30. :
+                    Ht += NearestAK4JetPt[iak4]   
+
         fout.cd()
 
         # Filling lepton histograms before lepton cuts (after AK8 pt > 200)
+        if (str(options.dtype) == 'data') :
+            hpo_lepPt_Data.Fill(LepPt       , TheWeight)
+            hpo_lepEta_Data.Fill(LepEta     , TheWeight)
+            hpo_lepHtLep_Data.Fill(HtLep    , TheWeight)
+            if LepType == 1 :
+                hpo_lepPt_ElData.Fill(LepPt       , TheWeight)
+                hpo_lepEta_ElData.Fill(LepEta     , TheWeight)
+                hpo_lepHtLep_ElData.Fill(HtLep    , TheWeight)
+            elif LepType == 2 :
+                hpo_lepPt_MuData.Fill(LepPt       , TheWeight)
+                hpo_lepEta_MuData.Fill(LepEta     , TheWeight)
+                hpo_lepHtLep_MuData.Fill(HtLep    , TheWeight)
+        if (str(options.dtype) != 'data') : # fix this should be != 'data'
+            hpo_lepPt_MC.Fill(LepPt       , TheWeight)
+            hpo_lepEta_MC.Fill(LepEta     , TheWeight)
+            hpo_lepHtLep_MC.Fill(HtLep    , TheWeight)
+
+        # filling jet variable plots before lepton and AK4 selection  and after AK8 Pt > 200.
+        if options.b2gtree:
+            if (options.dtype == 'data') :
+                hpo_lepSt_Data.Fill(ST[0] ,               TheWeight )  
+                hpo_lepHt_Data.Fill(Ht ,               TheWeight )
+                hpo_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                hpo_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                if LepisMu <= 0. : # 
+                    hpo_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    hpo_lepSt_ElData.Fill(ST[0] ,     TheWeight )
+                    hpo_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                    hpo_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                    #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
+                    #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                if LepisMu < 0. :
+                    hpo_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    hpo_lepSt_MuData.Fill(ST[0] ,     TheWeight )
+                    hpo_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                    hpo_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                    #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
+                    #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+            if (options.dtype != 'data') :
+                hpo_lepSt_MC.Fill(ST[0] ,               TheWeight )  
+                hpo_lepHt_MC.Fill(Ht ,               TheWeight )
+                hpo_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                hpo_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
+        if not options.b2gtree:
+            St = Ht + HtLep
+            if (options.dtype == 'data') :
+                hpo_lepSt_Data.Fill(St ,               TheWeight )
+                hpo_lepHt_Data.Fill(Ht ,               TheWeight )
+                hpo_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                hpo_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                #hpo_AK8subjetTau21_Data.Fill(W_tau21,  TheWeight )
+                #hpo_AK8subjetPt_Data.Fill(W_pt, TheWeight )
+                if LepType == 1 :
+                    hpo_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    hpo_lepSt_ElData.Fill(St ,     TheWeight )
+                    hpo_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                    hpo_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                    #hpo_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
+                    #hpo_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                if LepType == 2 :
+                    hpo_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    hpo_lepSt_MuData.Fill(St ,     TheWeight )
+                    hpo_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                    hpo_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                    #hpo_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
+                    #hpo_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+            if (options.dtype != 'data') :
+                hpo_lepSt_MC.Fill(St ,               TheWeight )  
+                hpo_lepHt_MC.Fill(Ht ,               TheWeight )
+                hpo_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                hpo_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )  
+
+
+
+        # Lepton cuts applied
+        if not passLepcut : continue 
+
+
+        # Filling lepton histograms after lepton cuts (after AK8 pt > 200)
         if (str(options.dtype) == 'data') :
             hp_lepPt_Data.Fill(LepPt       , TheWeight)
             hp_lepEta_Data.Fill(LepEta     , TheWeight)
@@ -2041,8 +2206,7 @@ def Wtag_Selector(argv) :
             hp_lepEta_MC.Fill(LepEta     , TheWeight)
             hp_lepHtLep_MC.Fill(HtLep    , TheWeight)
 
-        # Lepton cuts applied
-        if not passLepcut : continue 
+
 
         #AK4 Selection
         passBtagBdisc = ak4_bdisc > 0.8
@@ -2050,7 +2214,7 @@ def Wtag_Selector(argv) :
         passBtagEta = abs(ak4CandP4puppi0.Eta()) < 2.4
         passBDrAK8 = drAK4AK8 > 0.8 
 
-        passAK4 = (passBtagBdisc and passBtagPt and passBtagEta and passBDrAK8)
+        passAK4 = (passBtagBdisc and passBtagPt and passBtagEta ) #and passBDrAK8)
         if passBtagBdisc :
             passcuts[12] += 1
         if passBtagPt :
@@ -2062,71 +2226,65 @@ def Wtag_Selector(argv) :
         if passAK4 :
             passcuts[24] += 1
 
+
         # AK4 cuts applied
         if not passAK4 : continue
-        Ht = 0.
-        if options.b2gtree :
-            for iak4,ak4jet in enumerate(AK4dRminPt) : 
-                if AK4dRminPt[iak4] > 30. :
-                    Ht += AK4dRminPt[iak4] 
-        if  not options.b2gtree :
-            for iak4,ak4jet in enumerate(NearestAK4JetPt) : 
-                if NearestAK4JetPt[iak4] > 30. :
-                    Ht += NearestAK4JetPt[iak4]   
 
+        # filling jet variable plots after lepton and AK4 selection  and AK8 Pt > 200. but before other AK8 cuts
         if options.b2gtree:
             if (options.dtype == 'data') :
-                h_lepSt_Data.Fill(ST[0] ,               TheWeight )  
-                h_lepHt_Data.Fill(Ht ,               TheWeight )
-                h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
-                h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                hp_lepSt_Data.Fill(ST[0] ,               TheWeight )  
+                hp_lepHt_Data.Fill(Ht ,               TheWeight )
+                hp_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                hp_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
                 if LepisMu <= 0. : # 
-                    h_lepHt_ElData.Fill(Ht ,     TheWeight )
-                    h_lepSt_ElData.Fill(ST[0] ,     TheWeight )
-                    h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
-                    h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                    hp_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    hp_lepSt_ElData.Fill(ST[0] ,     TheWeight )
+                    hp_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                    hp_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
                     #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
                     #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
                 if LepisMu < 0. :
-                    h_lepHt_MuData.Fill(Ht ,     TheWeight )
-                    h_lepSt_MuData.Fill(ST[0] ,     TheWeight )
-                    h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
-                    h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                    hp_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    hp_lepSt_MuData.Fill(ST[0] ,     TheWeight )
+                    hp_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                    hp_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
                     #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
                     #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
             if (options.dtype != 'data') :
-                h_lepSt_MC.Fill(ST[0] ,               TheWeight )  
-                h_lepHt_MC.Fill(Ht ,               TheWeight )
-                h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
-                h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
+                hp_lepSt_MC.Fill(ST[0] ,               TheWeight )  
+                hp_lepHt_MC.Fill(Ht ,               TheWeight )
+                hp_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                hp_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
         if not options.b2gtree:
             St = Ht + HtLep
             if (options.dtype == 'data') :
-                h_lepSt_Data.Fill(St ,               TheWeight )
-                h_lepHt_Data.Fill(Ht ,               TheWeight )
-                h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
-                h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                hp_lepSt_Data.Fill(St ,               TheWeight )
+                hp_lepHt_Data.Fill(Ht ,               TheWeight )
+                hp_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                hp_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
                 #h_AK8subjetTau21_Data.Fill(W_tau21,  TheWeight )
                 #h_AK8subjetPt_Data.Fill(W_pt, TheWeight )
                 if LepType == 1 :
-                    h_lepHt_ElData.Fill(Ht ,     TheWeight )
-                    h_lepSt_ElData.Fill(St ,     TheWeight )
-                    h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
-                    h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                    hp_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    hp_lepSt_ElData.Fill(St ,     TheWeight )
+                    hp_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                    hp_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
                     #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
                     #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
                 if LepType == 2 :
-                    h_lepHt_MuData.Fill(Ht ,     TheWeight )
-                    h_lepSt_MuData.Fill(St ,     TheWeight )
-                    h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
-                    h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                    hp_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    hp_lepSt_MuData.Fill(St ,     TheWeight )
+                    hp_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                    hp_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
                     #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
                     #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
             if (options.dtype != 'data') :
-                h_lepSt_MC.Fill(St ,               TheWeight )  
-                h_lepHt_MC.Fill(Ht ,               TheWeight )
-                h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
-                h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )  
+                hp_lepSt_MC.Fill(St ,               TheWeight )  
+                hp_lepHt_MC.Fill(Ht ,               TheWeight )
+                hp_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                hp_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )  
+
         #AK8 Selection
 
         if options.Type2 :                                                                    # Type 2 AK8 selection
@@ -2209,23 +2367,6 @@ def Wtag_Selector(argv) :
 
             fout.cd()
 
-            # filling Lepton histograms after all cuts
-            if (str(options.dtype) == 'data') :
-                h_lepPt_Data.Fill(LepPt       , TheWeight)
-                h_lepEta_Data.Fill(LepEta     , TheWeight)
-                h_lepHtLep_Data.Fill(HtLep    , TheWeight)
-                if LepType == 1 :
-                    h_lepPt_ElData.Fill(LepPt       , TheWeight)
-                    h_lepEta_ElData.Fill(LepEta     , TheWeight)
-                    h_lepHtLep_ElData.Fill(HtLep    , TheWeight)
-                elif LepType == 2 :
-                    h_lepPt_MuData.Fill(LepPt       , TheWeight)
-                    h_lepEta_MuData.Fill(LepEta     , TheWeight)
-                    h_lepHtLep_MuData.Fill(HtLep    , TheWeight)
-            if (str(options.dtype) != 'data') : # fix this should be != 'data'
-                h_lepPt_MC.Fill(LepPt       , TheWeight)
-                h_lepEta_MC.Fill(LepEta     , TheWeight)
-                h_lepHtLep_MC.Fill(HtLep    , TheWeight)
 
 
             # Filling the W mass distributions for AK8 jets of all Pts before the tau21 cut
@@ -2248,7 +2389,79 @@ def Wtag_Selector(argv) :
                         h_mWsubjetPasstag_ElData.Fill(thatMass , TheWeight ) 
                     if LepType == 2 :
                         h_mWsubjetPasstag_MuData.Fill(thatMass , TheWeight )
-            if ( not passPost ) and ( tau21 != 1.0  ): # Filling W mass  histos failing tau21 cut  # fix this : W_tau21 for not options.type2
+                # filling Lepton histograms after final selection
+                if (str(options.dtype) == 'data') :
+                    h_lepPt_Data.Fill(LepPt       , TheWeight)
+                    h_lepEta_Data.Fill(LepEta     , TheWeight)
+                    h_lepHtLep_Data.Fill(HtLep    , TheWeight)
+                    if LepType == 1 :
+                        h_lepPt_ElData.Fill(LepPt       , TheWeight)
+                        h_lepEta_ElData.Fill(LepEta     , TheWeight)
+                        h_lepHtLep_ElData.Fill(HtLep    , TheWeight)
+                    elif LepType == 2 :
+                        h_lepPt_MuData.Fill(LepPt       , TheWeight)
+                        h_lepEta_MuData.Fill(LepEta     , TheWeight)
+                        h_lepHtLep_MuData.Fill(HtLep    , TheWeight)
+                if (str(options.dtype) != 'data') : # fix this should be != 'data'
+                    h_lepPt_MC.Fill(LepPt       , TheWeight)
+                    h_lepEta_MC.Fill(LepEta     , TheWeight)
+                    h_lepHtLep_MC.Fill(HtLep    , TheWeight)
+                # filling Jet histograms after final selection
+                if options.b2gtree:
+                    if (options.dtype == 'data') :
+                        h_lepSt_Data.Fill(ST[0] ,               TheWeight )  
+                        h_lepHt_Data.Fill(Ht ,               TheWeight )
+                        h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                        h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                        if LepisMu <= 0. : # 
+                            h_lepHt_ElData.Fill(Ht ,     TheWeight )
+                            h_lepSt_ElData.Fill(ST[0] ,     TheWeight )
+                            h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                            h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                            #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
+                            #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                        if LepisMu < 0. :
+                            h_lepHt_MuData.Fill(Ht ,     TheWeight )
+                            h_lepSt_MuData.Fill(ST[0] ,     TheWeight )
+                            h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                            h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                            #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
+                            #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+                    if (options.dtype != 'data') :
+                        h_lepSt_MC.Fill(ST[0] ,               TheWeight )  
+                        h_lepHt_MC.Fill(Ht ,               TheWeight )
+                        h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                        h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
+                if not options.b2gtree:
+                    St = Ht + HtLep
+                    if (options.dtype == 'data') :
+                        h_lepSt_Data.Fill(St ,               TheWeight )
+                        h_lepHt_Data.Fill(Ht ,               TheWeight )
+                        h_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
+                        h_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                        #h_AK8subjetTau21_Data.Fill(W_tau21,  TheWeight )
+                        #h_AK8subjetPt_Data.Fill(W_pt, TheWeight )
+                        if LepType == 1 :
+                            h_lepHt_ElData.Fill(Ht ,     TheWeight )
+                            h_lepSt_ElData.Fill(St ,     TheWeight )
+                            h_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
+                            h_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
+                            #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
+                            #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                        if LepType == 2 :
+                            h_lepHt_MuData.Fill(Ht ,     TheWeight )
+                            h_lepSt_MuData.Fill(St ,     TheWeight )
+                            h_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
+                            h_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
+                            #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
+                            #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+                    if (options.dtype != 'data') :
+                        h_lepSt_MC.Fill(St ,               TheWeight )  
+                        h_lepHt_MC.Fill(Ht ,               TheWeight )
+                        h_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
+                        h_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight ) 
+
+            if  ( not passPost ) and ( tau21 != 1.0 ): # Filling W mass  histos failing tau21 cut # fix this W_tau21 for type1
                 if (str(options.dtype) != 'data'):
                     h_mWsubjetFailtag_MC.Fill(thatMass         , TheWeight )
                 if (str(options.dtype) == 'data'):
