@@ -9,6 +9,7 @@
 ##         \/            \/        /_____/                   \/                    \/ 
 import sys
 import math
+import time
 import array as array
 from optparse import OptionParser
 
@@ -110,6 +111,7 @@ def Wtag_Selector(argv) :
 
     import ROOT
     ROOT.gStyle.SetOptStat(0000000000)
+    startTime = time.time()
 
 
     def getPUPPIweight(puppipt, puppieta) : #{
@@ -473,8 +475,8 @@ def Wtag_Selector(argv) :
             if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
             else : fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
         filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype, options.treeLocation)
-        if "wjets" in options.dtype : # fix this : only valid when running on lpc
-            filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%('wjets', options.dtype, options.treeLocation)
+        #if "wjets" in options.dtype : # fix this : only valid when running on lpc
+        #    filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%('wjets', options.dtype, options.treeLocation)
 
 
     if options.is80x and options.b2gtree:  
@@ -493,7 +495,7 @@ def Wtag_Selector(argv) :
 
 
     binlimit = 600.
-    numbins = 300
+    numbins = 2400
 
     h_mWsubjet_b1  = ROOT.TH1F("h_mWsubjet_b1", "; ;  ", numbins, 0, binlimit)
     h_mWsubjet_b2  = ROOT.TH1F("h_mWsubjet_b2", "; ;  ", numbins, 0, binlimit)
@@ -2615,8 +2617,18 @@ def Wtag_Selector(argv) :
 
         print "total passing final selection : " + str(NpassPost )
 
-    fout.cd()
 
+    ts = (time.time() -startTime)
+    unitIs = 'Seconds'
+    if ts > 60. :
+        ts = ts/60.
+        unitIs = 'Minutes'
+        if ts > 60. :
+            ts = ts/60.
+            unitIs = 'Hours' 
+ 
+    print ('The script took {0}  {1}!'.format(    ( time.time() - startTime)/ 60.  , unitIs    ))
+    fout.cd()
     fout.Write()
     fout.Close()
 
