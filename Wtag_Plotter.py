@@ -133,7 +133,7 @@ if (not options.b2gtrees) and (not options.Type2):
 if ( not options.b2gtrees) and  options.Type2 :
     plotdir = 'B2GTTBARtree_WjetSF'
 # define the scaling operations
-#import Wtag_def as wd                   fix: find out how to import sys.arv fro this script to Wtag_def.py
+#import Wtag_def as wd                   fix: find out how to import sys.arv from this script to Wtag_def.py
 lumi = 12300.
 
 def scaleST(hstT1_, hstT2_, hstT3_, hstT4_, ipt__):
@@ -161,7 +161,6 @@ def scaleST(hstT1_, hstT2_, hstT3_, hstT4_, ipt__):
         hst34_.Scale( 0.)
     hstT_ = hstT1_.Clone()
     hstT_.SetDirectory(0)
-    hstT_.Sumw2()
     hstT_.Add(hstT2_)
     hstT_.Add(hst34_)
     return hstT_
@@ -180,7 +179,7 @@ def scaleTT(httbarT_, ipt__):
         print  "tt {0} empty".format(httbarT_)
         return None
 
-def ScalettMC(httbar__, heldata__, hmudata__ , hstT__ , hwjetsT__ ) :
+def ScalettMC(httbar__, heldata__, hmudata__ , hstT__ , hwjetsT__, intMin, intMax ) :
     # Find the tt scale factor
     sf = 0.
     scalefactortt = 0.
@@ -196,9 +195,13 @@ def ScalettMC(httbar__, heldata__, hmudata__ , hstT__ , hwjetsT__ ) :
     if options.allMC:
         hMC__.Add(hstT__)
         hMC__.Add(hwjetsT__)
+
+    intMinbin = hMC__.FindBin(intMin)
+    intMaxbin = hMC__.FindBin(intMax)
+
     if (hdata__.Integral() > 0.) and (hMC__.Integral() > 0.) and options.ttSF: 
-        diff = float(hdata__.Integral())- float(  hMC__.Integral()  )
-        sf = abs(    diff/ float(  httbar__.Integral()       )    +1.    )     
+        diff = float(hdata__.Integral(intMinbin, intMaxbin))- float(  hMC__.Integral(intMinbin, intMaxbin)  )
+        sf = abs(    diff/ float(  httbar__.Integral(intMinbin, intMaxbin)     +1.  )        )     
     if not options.ttSF: 
         sf = 1.
 
@@ -208,7 +211,7 @@ def ScalettMC(httbar__, heldata__, hmudata__ , hstT__ , hwjetsT__ ) :
     if httbar__.Integral() > 0 : 
         httbar__.Scale( scalefactortt ) 
     else :
-        print "tt bin {0} empty".format(int(ipt))
+        print "tt bin  empty when using scalettMC() "
         httbar__.Scale( 0.)
 
     return httbar__ 
@@ -256,7 +259,6 @@ def scaleWjets(hwjetsT1_, hwjetsT2_, hwjetsT3_, hwjetsT4_, hwjetsT5_, hwjetsT6_,
 
     hwjetsT_ = hwjetsT1_.Clone()
     hwjetsT_.SetDirectory(0)
-    hwjetsT_.Sumw2()
     hwjetsT_.Add(hwjetsT2_)
     hwjetsT_.Add(hwjetsT3_)
     hwjetsT_.Add(hwjetsT4_)
@@ -265,22 +267,30 @@ def scaleWjets(hwjetsT1_, hwjetsT2_, hwjetsT3_, hwjetsT4_, hwjetsT5_, hwjetsT6_,
     hwjetsT_.Add(hwjetsT7_)
     return hwjetsT_
 
-def ScaleStackPlot(name, xtitle, scaleFactor, TheRebinNum, xlow, xhigh, ttbarHist, st1Hist,  st2Hist, st3Hist, st4Hist, wjets1Hist , wjets2Hist, wjets3Hist, wjets4Hist, wjets5Hist, wjets6Hist, wjets7Hist, dataHist, mudataHist, eldataHist  ) :
+def ScaleStackPlot(name, xtitle, scaleFactor, TheRebinNum, xlow, xhigh, ttbarHist, st1Hist,  st2Hist, st3Hist, st4Hist, wjets1Hist , wjets2Hist, wjets3Hist, wjets4Hist, wjets5Hist, wjets6Hist, wjets7Hist, dataHist, mudataHist, eldataHist, intMin, intMax ) :
 
+    #scale by luminosity and cross section
     SttbarHist = scaleTT(ttbarHist, ipt)
-    if SttbarHist == None :
+    if SttbarHist == None : 
+        print "The ttbar histogram for plot of name {} and title {} is empty or not properly read.".format(name, xtitle)
         return None
-    print "TT SCALE FACTOR APPLIED to {0} WAS : ".format( name ) + str(scaleFactor )
+    #scale ttjets MC to match data
+    if st1Hist != None :
+	    hstT = st1Hist.Clone()
+	    hstT.Add( st2Hist )
+	    hstT.Add( st3Hist )
+	    hstT.Add( st4Hist )
 
-    if SttbarHist.Integral() > 0 : 
-        SttbarHist.Scale(scaleFactor ) 
-    else :
-        print "tt {0} histo is empty".format(name )
-        SttbarHist.Scale( 0.)
+	    hwjetsT = wjets1Hist.Clone()
+	    hwjetsT.Add( wjets2Hist )
+	    hwjetsT.Add( wjets3Hist )
+	    hwjetsT.Add( wjets4Hist )
+	    hwjetsT.Add( wjets5Hist )
+	    hwjetsT.Add( wjets6Hist )
+	    hwjetsT.Add( wjets7Hist )
 
+	    SttbarHist = ScalettMC( SttbarHist ,  dataHist, mudataHist , hstT , hwjetsT , intMin, intMax)
 
-    SttbarHist.SetFillColor(ROOT.kGreen + 2)
-    SttbarHist.GetXaxis().SetLimits(xlow,xhigh)
     rebinnum = TheRebinNum
     SttbarHist.Rebin( rebinnum )
     dataHist.Rebin( rebinnum )
@@ -290,19 +300,18 @@ def ScaleStackPlot(name, xtitle, scaleFactor, TheRebinNum, xlow, xhigh, ttbarHis
     if options.allMC :
         SstHist = scaleST(st1Hist, st2Hist, st3Hist, st4Hist, ipt) 
         SwjetsHist = scaleWjets(wjets1Hist , wjets2Hist, wjets3Hist, wjets4Hist, wjets5Hist, wjets6Hist, wjets7Hist, ipt)
-        SstHist.SetFillColor(ROOT.kCyan )
-        SwjetsHist.SetFillColor(ROOT.kRed)
         SstHist.Rebin(  rebinnum )
         SwjetsHist.Rebin(  rebinnum )
-        SstHist.GetXaxis().SetLimits(xlow,xhigh)
-        SwjetsHist.GetXaxis().SetLimits(xlow,xhigh)
+
 
     mcStack = ROOT.THStack( name ,';  ;Number of Events') #Mass_{SD subjet_{0} }
     if options.allMC :
+        SstHist.SetFillColor(ROOT.kCyan )
+        SwjetsHist.SetFillColor(ROOT.kRed)
         mcStack.Add( SwjetsHist)
         mcStack.Add( SstHist)
+    SttbarHist.SetFillColor(ROOT.kGreen + 2)
     mcStack.Add( SttbarHist)
-
 
     theCanvas = ROOT.TCanvas(name, name)
     theCanvas.SetFillColor(0)
@@ -318,13 +327,19 @@ def ScaleStackPlot(name, xtitle, scaleFactor, TheRebinNum, xlow, xhigh, ttbarHis
     dataHist.SetMarkerStyle(20)
     mudataHist.SetMarkerStyle(20)
     eldataHist.SetMarkerStyle(20)
-    max1 = dataHist.GetMaximum()
-    max2 = mcStack.GetMaximum()
+    
     dataHist.GetXaxis().SetLimits(xlow,xhigh)
     eldataHist.GetXaxis().SetLimits(xlow,xhigh)
     mudataHist.GetXaxis().SetLimits(xlow,xhigh)
-
-    dataHist.SetMaximum( max (max1,max2) * 1.618 )
+    
+    SttbarHist.GetXaxis().SetLimits(xlow,xhigh)
+    if options.allMC :
+        SstHist.GetXaxis().SetLimits(xlow,xhigh)
+        SwjetsHist.GetXaxis().SetLimits(xlow,xhigh)
+    
+    max1 = mudataHist.GetMaximum()
+    max2 = mcStack.GetMaximum()
+    dataHist.SetMaximum(   max (max1,max2) * 1.618 )
     eldataHist.SetMaximum( max (max1,max2) * 1.618 )
     mudataHist.SetMaximum( max (max1,max2) * 1.618 )
 
@@ -348,7 +363,6 @@ def ScaleStackPlot(name, xtitle, scaleFactor, TheRebinNum, xlow, xhigh, ttbarHis
     mudataHist.GetYaxis().SetTitleSize(0.057)      
     binSizeMuDataPt = mudataHist.GetBinWidth(0)
     binSizeMCPt = SttbarHist.GetBinWidth(0)
-    #if ( binSizeMuDataPt != binSizeMCPt ) :  
     print "Bin size: data {0:1.2f}, MC  {1:1.2f}- rebinnum is {2:1.0f}".format(binSizeMuDataPt, binSizeMCPt,  rebinnum )
 
     if options.Eldata :
@@ -359,6 +373,10 @@ def ScaleStackPlot(name, xtitle, scaleFactor, TheRebinNum, xlow, xhigh, ttbarHis
         dataHist.Draw('e')
 
     mcStack.Draw("histsame")
+    mcStack.GetXaxis().SetLimits(xlow,xhigh)
+    mcStack.SetMaximum( max (max1,max2) * 1.618 )
+
+
     if options.Eldata :
         #eldataHist.Draw('e same')
         eldataHist.Draw('esamex0')
@@ -629,35 +647,39 @@ for ifin, fin in enumerate(filesin) :
         hdata_lepht       = filei.Get("h_lepHt_Data")  
         hdata_lepst       = filei.Get("h_lepSt_Data") 
 
-        hdatap_leppt       = filei.Get("hp_lepPt_Data")
-        hdatap_lepeta      = filei.Get("hp_lepEta_Data")
-        hdatap_lephtlep    = filei.Get("hp_lepHtLep_Data")
-        hdatap_lepht       = filei.Get("hp_lepHt_Data")  
-        hdatap_lepst       = filei.Get("hp_lepSt_Data") 
+        hdatap_leppt       = filei.Get("hlep_lepPt_Data")
+        hdatap_lepeta      = filei.Get("hlep_lepEta_Data")
+        hdatap_lephtlep    = filei.Get("hlep_lepHtLep_Data")
+        hdatap_lepht       = filei.Get("hlep_lepHt_Data")  
+        hdatap_lepst       = filei.Get("hlep_lepSt_Data") 
 
-        hdatapo_leppt       = filei.Get("hpo_lepPt_Data")
-        hdatapo_lepeta      = filei.Get("hpo_lepEta_Data")
-        hdatapo_lephtlep    = filei.Get("hpo_lepHtLep_Data")
-        hdatapo_lepht       = filei.Get("hpo_lepHt_Data")  
-        hdatapo_lepst       = filei.Get("hpo_lepSt_Data") 
+        hdatapo_leppt       = filei.Get("hpAll_lepPt_Data")
+        hdatapo_lepeta      = filei.Get("hpAll_lepEta_Data")
+        hdatapo_lephtlep    = filei.Get("hpAll_lepHtLep_Data")
+        hdatapo_lepht       = filei.Get("hpAll_lepHt_Data")  
+        hdatapo_lepst       = filei.Get("hpAll_lepSt_Data") 
 
         hdata_ak8tau21    = filei.Get("h_AK8Tau21_Data") 
         hdata_ak8pt       = filei.Get("h_AK8Pt_Data")  
         hdata_ak8SJtau21  = filei.Get("h_AK8subjetTau21_Data")
         hdata_ak8SJpt     = filei.Get("h_AK8subjetPt_Data") 
 
-        hdatap_ak8tau21    = filei.Get("hp_AK8Tau21_Data") 
-        hdatap_ak8pt       = filei.Get("hp_AK8Pt_Data")  
-        hdatap_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_Data")
-        hdatap_ak8SJpt     = filei.Get("hp_AK8subjetPt_Data")
+        hdatap_ak8tau21    = filei.Get("hlep_AK8Tau21_Data") 
+        hdatap_ak8pt       = filei.Get("hlep_AK8Pt_Data")  
+        hdatap_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_Data")
+        hdatap_ak8SJpt     = filei.Get("hlep_AK8subjetPt_Data")
 
-        hdatapo_ak8tau21    = filei.Get("hpo_AK8Tau21_Data") 
-        hdatapo_ak8pt       = filei.Get("hpo_AK8Pt_Data")  
-        hdatapo_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_Data")
-        hdatapo_ak8SJpt     = filei.Get("hpo_AK8subjetPt_Data")
+        hdatapo_ak8tau21    = filei.Get("hpAll_AK8Tau21_Data") 
+        hdatapo_ak8pt       = filei.Get("hpAll_AK8Pt_Data")  
+        hdatapo_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_Data")
+        hdatapo_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_Data")
  
         hdata_Pass        = filei.Get("h_mWsubjetPasstag_Data")
         hdata_Fail        = filei.Get("h_mWsubjetFailtag_Data")
+        hdatap_Pass        = filei.Get("hlep_mWsubjetPasstag_Data")
+        hdatap_Fail        = filei.Get("hlep_mWsubjetFailtag_Data")
+        hdatapo_Pass        = filei.Get("hpAll_mWsubjetPasstag_Data")
+        hdatapo_Fail        = filei.Get("hpAll_mWsubjetFailtag_Data")
 
         hdata_leppt.SetDirectory(0)
         hdata_lepeta.SetDirectory(0)
@@ -669,14 +691,33 @@ for ifin, fin in enumerate(filesin) :
         hdatap_lephtlep.SetDirectory(0)
         hdatap_lepht.SetDirectory(0)
         hdatap_lepst.SetDirectory(0) 
+        hdatapo_leppt.SetDirectory(0)
+        hdatapo_lepeta.SetDirectory(0)
+        hdatapo_lephtlep.SetDirectory(0)
+        hdatapo_lepht.SetDirectory(0)
+        hdatapo_lepst.SetDirectory(0)
 
         hdata_ak8tau21.SetDirectory(0)
         hdata_ak8pt.SetDirectory(0) 
         hdata_ak8SJtau21.SetDirectory(0)
         hdata_ak8SJpt.SetDirectory(0)
- 
+        hdatap_ak8tau21.SetDirectory(0)
+        hdatap_ak8pt.SetDirectory(0) 
+        hdatap_ak8SJtau21.SetDirectory(0)
+        hdatap_ak8SJpt.SetDirectory(0)
+        hdatapo_ak8tau21.SetDirectory(0)
+        hdatapo_ak8pt.SetDirectory(0) 
+        hdatapo_ak8SJtau21.SetDirectory(0)
+        hdatapo_ak8SJpt.SetDirectory(0) 
+
+
         hdata_Pass.SetDirectory(0)
         hdata_Fail.SetDirectory(0)
+        hdatap_Pass.SetDirectory(0)
+        hdatap_Fail.SetDirectory(0)
+        hdatapo_Pass.SetDirectory(0)
+        hdatapo_Fail.SetDirectory(0)
+
 
         # post-selection lepton plots
         heldata_leppt       = filei.Get("h_lepPt_ElData")
@@ -685,36 +726,40 @@ for ifin, fin in enumerate(filesin) :
         heldata_lepht       = filei.Get("h_lepHt_ElData")  
         heldata_lepst       = filei.Get("h_lepSt_ElData") 
         # pre-selection lepton plots
-        heldatap_leppt       = filei.Get("hp_lepPt_ElData")
-        heldatap_lepeta      = filei.Get("hp_lepEta_ElData")
-        heldatap_lephtlep    = filei.Get("hp_lepHtLep_ElData")
-        heldatap_lepht       = filei.Get("hp_lepHt_ElData")  
-        heldatap_lepst       = filei.Get("hp_lepSt_ElData")  
+        heldatap_leppt       = filei.Get("hlep_lepPt_ElData")
+        heldatap_lepeta      = filei.Get("hlep_lepEta_ElData")
+        heldatap_lephtlep    = filei.Get("hlep_lepHtLep_ElData")
+        heldatap_lepht       = filei.Get("hlep_lepHt_ElData")  
+        heldatap_lepst       = filei.Get("hlep_lepSt_ElData")  
 
-        heldatapo_leppt       = filei.Get("hpo_lepPt_ElData")
-        heldatapo_lepeta      = filei.Get("hpo_lepEta_ElData")
-        heldatapo_lephtlep    = filei.Get("hpo_lepHtLep_ElData")
-        heldatapo_lepht       = filei.Get("hpo_lepHt_ElData")  
-        heldatapo_lepst       = filei.Get("hpo_lepSt_ElData")  
+        heldatapo_leppt       = filei.Get("hpAll_lepPt_ElData")
+        heldatapo_lepeta      = filei.Get("hpAll_lepEta_ElData")
+        heldatapo_lephtlep    = filei.Get("hpAll_lepHtLep_ElData")
+        heldatapo_lepht       = filei.Get("hpAll_lepHt_ElData")  
+        heldatapo_lepst       = filei.Get("hpAll_lepSt_ElData")  
 
         heldata_ak8tau21    = filei.Get("h_AK8Tau21_ElData") 
         heldata_ak8pt       = filei.Get("h_AK8Pt_ElData")  
         heldata_ak8SJtau21  = filei.Get("h_AK8subjetTau21_ElData")
         heldata_ak8SJpt     = filei.Get("h_AK8subjetPt_ElData") 
 
-        heldatap_ak8tau21    = filei.Get("hp_AK8Tau21_ElData") 
-        heldatap_ak8pt       = filei.Get("hp_AK8Pt_ElData")  
-        heldatap_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_ElData")
-        heldatap_ak8SJpt     = filei.Get("hp_AK8subjetPt_ElData") 
+        heldatap_ak8tau21    = filei.Get("hlep_AK8Tau21_ElData") 
+        heldatap_ak8pt       = filei.Get("hlep_AK8Pt_ElData")  
+        heldatap_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_ElData")
+        heldatap_ak8SJpt     = filei.Get("hlep_AK8subjetPt_ElData") 
 
-        heldatapo_ak8tau21    = filei.Get("hpo_AK8Tau21_ElData") 
-        heldatapo_ak8pt       = filei.Get("hpo_AK8Pt_ElData")  
-        heldatapo_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_ElData")
-        heldatapo_ak8SJpt     = filei.Get("hpo_AK8subjetPt_ElData") 
+        heldatapo_ak8tau21    = filei.Get("hpAll_AK8Tau21_ElData") 
+        heldatapo_ak8pt       = filei.Get("hpAll_AK8Pt_ElData")  
+        heldatapo_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_ElData")
+        heldatapo_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_ElData") 
 
  
         heldata_Pass        = filei.Get("h_mWsubjetPasstag_ElData")
         heldata_Fail        = filei.Get("h_mWsubjetFailtag_ElData")
+        heldatap_Pass        = filei.Get("hlep_mWsubjetPasstag_ElData")
+        heldatap_Fail        = filei.Get("hlep_mWsubjetFailtag_ElData")
+        heldatapo_Pass        = filei.Get("hpAll_mWsubjetPasstag_ElData")
+        heldatapo_Fail        = filei.Get("hpAll_mWsubjetFailtag_ElData")
 
         heldata_leppt.SetDirectory(0)
         heldata_lepeta.SetDirectory(0)
@@ -725,43 +770,71 @@ for ifin, fin in enumerate(filesin) :
         heldata_ak8pt.SetDirectory(0) 
         heldata_ak8SJtau21.SetDirectory(0)
         heldata_ak8SJpt.SetDirectory(0)
- 
+
+        heldatap_leppt.SetDirectory(0)
+        heldatap_lepeta.SetDirectory(0)
+        heldatap_lephtlep.SetDirectory(0)
+        heldatap_lepht.SetDirectory(0)
+        heldatap_lepst.SetDirectory(0) 
+        heldatap_ak8tau21.SetDirectory(0)
+        heldatap_ak8pt.SetDirectory(0) 
+        heldatap_ak8SJtau21.SetDirectory(0)
+        heldatap_ak8SJpt.SetDirectory(0)
+
+        heldatapo_leppt.SetDirectory(0)
+        heldatapo_lepeta.SetDirectory(0)
+        heldatapo_lephtlep.SetDirectory(0)
+        heldatapo_lepht.SetDirectory(0)
+        heldatapo_lepst.SetDirectory(0) 
+        heldatapo_ak8tau21.SetDirectory(0)
+        heldatapo_ak8pt.SetDirectory(0) 
+        heldatapo_ak8SJtau21.SetDirectory(0)
+        heldatapo_ak8SJpt.SetDirectory(0) 
+
         heldata_Pass.SetDirectory(0)
         heldata_Fail.SetDirectory(0)
+        heldatap_Pass.SetDirectory(0)
+        heldatap_Fail.SetDirectory(0)
+        heldatapo_Pass.SetDirectory(0)
+        heldatapo_Fail.SetDirectory(0)
 
         hmudata_leppt       = filei.Get("h_lepPt_MuData")
         hmudata_lepeta      = filei.Get("h_lepEta_MuData")
         hmudata_lephtlep    = filei.Get("h_lepHtLep_MuData")
         hmudata_lepht       = filei.Get("h_lepHt_MuData")  
         hmudata_lepst       = filei.Get("h_lepSt_MuData") 
-        hmudatap_leppt       = filei.Get("hp_lepPt_MuData")
-        hmudatap_lepeta      = filei.Get("hp_lepEta_MuData")
-        hmudatap_lephtlep    = filei.Get("hp_lepHtLep_MuData")
-        hmudatap_lepht       = filei.Get("hp_lepHt_MuData")  
-        hmudatap_lepst       = filei.Get("hp_lepSt_MuData") 
-        hmudatapo_leppt       = filei.Get("hpo_lepPt_MuData")
-        hmudatapo_lepeta      = filei.Get("hpo_lepEta_MuData")
-        hmudatapo_lephtlep    = filei.Get("hpo_lepHtLep_MuData")
-        hmudatapo_lepht       = filei.Get("hpo_lepHt_MuData")  
-        hmudatapo_lepst       = filei.Get("hpo_lepSt_MuData")
+        hmudatap_leppt       = filei.Get("hlep_lepPt_MuData")
+        hmudatap_lepeta      = filei.Get("hlep_lepEta_MuData")
+        hmudatap_lephtlep    = filei.Get("hlep_lepHtLep_MuData")
+        hmudatap_lepht       = filei.Get("hlep_lepHt_MuData")  
+        hmudatap_lepst       = filei.Get("hlep_lepSt_MuData") 
+        hmudatapo_leppt       = filei.Get("hpAll_lepPt_MuData")
+        hmudatapo_lepeta      = filei.Get("hpAll_lepEta_MuData")
+        hmudatapo_lephtlep    = filei.Get("hpAll_lepHtLep_MuData")
+        hmudatapo_lepht       = filei.Get("hpAll_lepHt_MuData")  
+        hmudatapo_lepst       = filei.Get("hpAll_lepSt_MuData")
 
         hmudata_ak8tau21    = filei.Get("h_AK8Tau21_MuData") 
         hmudata_ak8pt       = filei.Get("h_AK8Pt_MuData")  
         hmudata_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MuData")
         hmudata_ak8SJpt     = filei.Get("h_AK8subjetPt_MuData") 
 
-        hmudatap_ak8tau21    = filei.Get("hp_AK8Tau21_MuData") 
-        hmudatap_ak8pt       = filei.Get("hp_AK8Pt_MuData")  
-        hmudatap_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MuData")
-        hmudatap_ak8SJpt     = filei.Get("hp_AK8subjetPt_MuData") 
+        hmudatap_ak8tau21    = filei.Get("hlep_AK8Tau21_MuData") 
+        hmudatap_ak8pt       = filei.Get("hlep_AK8Pt_MuData")  
+        hmudatap_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MuData")
+        hmudatap_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MuData") 
 
-        hmudatapo_ak8tau21    = filei.Get("hpo_AK8Tau21_MuData") 
-        hmudatapo_ak8pt       = filei.Get("hpo_AK8Pt_MuData")  
-        hmudatapo_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MuData")
-        hmudatapo_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MuData") 
+        hmudatapo_ak8tau21    = filei.Get("hpAll_AK8Tau21_MuData") 
+        hmudatapo_ak8pt       = filei.Get("hpAll_AK8Pt_MuData")  
+        hmudatapo_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MuData")
+        hmudatapo_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MuData") 
  
         hmudata_Pass        = filei.Get("h_mWsubjetPasstag_MuData")
         hmudata_Fail        = filei.Get("h_mWsubjetFailtag_MuData")
+        hmudatap_Pass        = filei.Get("hlep_mWsubjetPasstag_MuData")
+        hmudatap_Fail        = filei.Get("hlep_mWsubjetFailtag_MuData")
+        hmudatapo_Pass        = filei.Get("hpAll_mWsubjetPasstag_MuData")
+        hmudatapo_Fail        = filei.Get("hpAll_mWsubjetFailtag_MuData")
 
         hmudata_leppt.SetDirectory(0)
         hmudata_lepeta.SetDirectory(0)
@@ -773,15 +846,31 @@ for ifin, fin in enumerate(filesin) :
         hmudatap_lephtlep.SetDirectory(0)
         hmudatap_lepht.SetDirectory(0)
         hmudatap_lepst.SetDirectory(0)
+        hmudatapo_leppt.SetDirectory(0)
+        hmudatapo_lepeta.SetDirectory(0)
+        hmudatapo_lephtlep.SetDirectory(0)
+        hmudatapo_lepht.SetDirectory(0)
+        hmudatapo_lepst.SetDirectory(0)
  
         hmudata_ak8tau21.SetDirectory(0)
         hmudata_ak8pt.SetDirectory(0) 
         hmudata_ak8SJtau21.SetDirectory(0)
         hmudata_ak8SJpt.SetDirectory(0)
+        hmudatap_ak8tau21.SetDirectory(0)
+        hmudatap_ak8pt.SetDirectory(0) 
+        hmudatap_ak8SJtau21.SetDirectory(0)
+        hmudatap_ak8SJpt.SetDirectory(0)
+        hmudatapo_ak8tau21.SetDirectory(0)
+        hmudatapo_ak8pt.SetDirectory(0) 
+        hmudatapo_ak8SJtau21.SetDirectory(0)
+        hmudatapo_ak8SJpt.SetDirectory(0)
  
         hmudata_Pass.SetDirectory(0)
         hmudata_Fail.SetDirectory(0)
-
+        hmudatap_Pass.SetDirectory(0)
+        hmudatap_Fail.SetDirectory(0)
+        hmudatapo_Pass.SetDirectory(0)
+        hmudatapo_Fail.SetDirectory(0)
 
         fileIs.Close()
 
@@ -822,50 +911,73 @@ for ifin, fin in enumerate(filesin) :
         httbar_lephtlep    = filei.Get("h_lepHtLep_MC")
         httbar_lepht       = filei.Get("h_lepHt_MC")  
         httbar_lepst       = filei.Get("h_lepSt_MC") 
-
-        httbarp_leppt       = filei.Get("hp_lepPt_MC")
-        httbarp_lepeta      = filei.Get("hp_lepEta_MC")
-        httbarp_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        httbarp_lepht       = filei.Get("hp_lepHt_MC")  
-        httbarp_lepst       = filei.Get("hp_lepSt_MC") 
-
-        httbarpo_leppt       = filei.Get("hpo_lepPt_MC")
-        httbarpo_lepeta      = filei.Get("hpo_lepEta_MC")
-        httbarpo_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        httbarpo_lepht       = filei.Get("hpo_lepHt_MC")  
-        httbarpo_lepst       = filei.Get("hpo_lepSt_MC") 
-
-        httbar_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
-        httbar_ak8pt       = filei.Get("h_AK8Pt_MC")  
-        httbar_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
-        httbar_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
-
-        httbarp_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        httbarp_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        httbarp_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        httbarp_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
-
-        httbarpo_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        httbarpo_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        httbarpo_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        httbarpo_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
-
- 
-        httbar_Pass        = filei.Get("h_mWsubjetPasstag_MC")
-        httbar_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        httbarp_leppt       = filei.Get("hlep_lepPt_MC")
+        httbarp_lepeta      = filei.Get("hlep_lepEta_MC")
+        httbarp_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        httbarp_lepht       = filei.Get("hlep_lepHt_MC")  
+        httbarp_lepst       = filei.Get("hlep_lepSt_MC") 
+        httbarpo_leppt       = filei.Get("hpAll_lepPt_MC")
+        httbarpo_lepeta      = filei.Get("hpAll_lepEta_MC")
+        httbarpo_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        httbarpo_lepht       = filei.Get("hpAll_lepHt_MC")  
+        httbarpo_lepst       = filei.Get("hpAll_lepSt_MC") 
 
         httbar_leppt.SetDirectory(0)
         httbar_lepeta.SetDirectory(0)
         httbar_lephtlep.SetDirectory(0)
         httbar_lepht.SetDirectory(0)
         httbar_lepst.SetDirectory(0) 
+        httbarp_leppt.SetDirectory(0)
+        httbarp_lepeta.SetDirectory(0)
+        httbarp_lephtlep.SetDirectory(0)
+        httbarp_lepht.SetDirectory(0)
+        httbarp_lepst.SetDirectory(0)
+        httbarpo_leppt.SetDirectory(0)
+        httbarpo_lepeta.SetDirectory(0)
+        httbarpo_lephtlep.SetDirectory(0)
+        httbarpo_lepht.SetDirectory(0)
+        httbarpo_lepst.SetDirectory(0)
+
+        httbar_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
+        httbar_ak8pt       = filei.Get("h_AK8Pt_MC")  
+        httbar_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
+        httbar_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
+        httbarp_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        httbarp_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        httbarp_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        httbarp_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
+        httbarpo_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        httbarpo_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        httbarpo_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        httbarpo_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
+ 
         httbar_ak8tau21.SetDirectory(0)
         httbar_ak8pt.SetDirectory(0) 
         httbar_ak8SJtau21.SetDirectory(0)
         httbar_ak8SJpt.SetDirectory(0)
- 
+        httbarp_ak8tau21.SetDirectory(0)
+        httbarp_ak8pt.SetDirectory(0) 
+        httbarp_ak8SJtau21.SetDirectory(0)
+        httbarp_ak8SJpt.SetDirectory(0)
+        httbarpo_ak8tau21.SetDirectory(0)
+        httbarpo_ak8pt.SetDirectory(0) 
+        httbarpo_ak8SJtau21.SetDirectory(0)
+        httbarpo_ak8SJpt.SetDirectory(0)
+
+        httbar_Pass        = filei.Get("h_mWsubjetPasstag_MC")
+        httbar_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        httbarp_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        httbarp_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        httbarpo_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        httbarpo_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
+
         httbar_Pass.SetDirectory(0)
         httbar_Fail.SetDirectory(0)
+        httbarp_Pass.SetDirectory(0)
+        httbarp_Fail.SetDirectory(0)
+        httbarpo_Pass.SetDirectory(0)
+        httbarpo_Fail.SetDirectory(0)
+
 
         fileIs.Close()
 
@@ -908,35 +1020,39 @@ for ifin, fin in enumerate(filesin) :
         hst1_lephtlep    = filei.Get("h_lepHtLep_MC")
         hst1_lepht       = filei.Get("h_lepHt_MC")  
         hst1_lepst       = filei.Get("h_lepSt_MC") 
-        hst1p_leppt       = filei.Get("hp_lepPt_MC")
-        hst1p_lepeta      = filei.Get("hp_lepEta_MC")
-        hst1p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hst1p_lepht       = filei.Get("hp_lepHt_MC")  
-        hst1p_lepst       = filei.Get("hp_lepSt_MC") 
-        hst1po_leppt       = filei.Get("hpo_lepPt_MC")
-        hst1po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hst1po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hst1po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hst1po_lepst       = filei.Get("hpo_lepSt_MC") 
+        hst1p_leppt       = filei.Get("hlep_lepPt_MC")
+        hst1p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hst1p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hst1p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hst1p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hst1po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hst1po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hst1po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hst1po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hst1po_lepst       = filei.Get("hpAll_lepSt_MC") 
 
         hst1_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hst1_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hst1_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hst1_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
 
-        hst1p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hst1p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hst1p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hst1p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hst1p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hst1p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hst1p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hst1p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hst1po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hst1po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hst1po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hst1po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hst1po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hst1po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hst1po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hst1po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
 
  
         hst1_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hst1_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hst1p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hst1p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hst1po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hst1po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hst1_leppt.SetDirectory(0)
         hst1_lepeta.SetDirectory(0)
@@ -948,14 +1064,32 @@ for ifin, fin in enumerate(filesin) :
         hst1p_lephtlep.SetDirectory(0)
         hst1p_lepht.SetDirectory(0)
         hst1p_lepst.SetDirectory(0) 
+        hst1po_leppt.SetDirectory(0)
+        hst1po_lepeta.SetDirectory(0)
+        hst1po_lephtlep.SetDirectory(0)
+        hst1po_lepht.SetDirectory(0)
+        hst1po_lepst.SetDirectory(0) 
 
         hst1_ak8tau21.SetDirectory(0)
         hst1_ak8pt.SetDirectory(0) 
         hst1_ak8SJtau21.SetDirectory(0)
         hst1_ak8SJpt.SetDirectory(0)
+        hst1p_ak8tau21.SetDirectory(0)
+        hst1p_ak8pt.SetDirectory(0) 
+        hst1p_ak8SJtau21.SetDirectory(0)
+        hst1p_ak8SJpt.SetDirectory(0)
+        hst1po_ak8tau21.SetDirectory(0)
+        hst1po_ak8pt.SetDirectory(0) 
+        hst1po_ak8SJtau21.SetDirectory(0)
+        hst1po_ak8SJpt.SetDirectory(0)
  
         hst1_Pass.SetDirectory(0)
         hst1_Fail.SetDirectory(0)
+        hst1p_Pass.SetDirectory(0)
+        hst1p_Fail.SetDirectory(0)
+        hst1po_Pass.SetDirectory(0)
+        hst1po_Fail.SetDirectory(0)
+
 
         fileIs.Close()
     if str(dtypes[ifin]) == 'st2' :
@@ -993,34 +1127,38 @@ for ifin, fin in enumerate(filesin) :
         hst2_lephtlep    = filei.Get("h_lepHtLep_MC")
         hst2_lepht       = filei.Get("h_lepHt_MC")  
         hst2_lepst       = filei.Get("h_lepSt_MC") 
-        hst2p_leppt       = filei.Get("hp_lepPt_MC")
-        hst2p_lepeta      = filei.Get("hp_lepEta_MC")
-        hst2p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hst2p_lepht       = filei.Get("hp_lepHt_MC")  
-        hst2p_lepst       = filei.Get("hp_lepSt_MC") 
-        hst2po_leppt       = filei.Get("hpo_lepPt_MC")
-        hst2po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hst2po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hst2po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hst2po_lepst       = filei.Get("hpo_lepSt_MC") 
+        hst2p_leppt       = filei.Get("hlep_lepPt_MC")
+        hst2p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hst2p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hst2p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hst2p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hst2po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hst2po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hst2po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hst2po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hst2po_lepst       = filei.Get("hpAll_lepSt_MC") 
 
         hst2_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hst2_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hst2_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hst2_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hst2p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hst2p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hst2p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hst2p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hst2p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hst2p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hst2p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hst2p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hst2po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hst2po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hst2po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hst2po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hst2po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hst2po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hst2po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hst2po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
 
         hst2_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hst2_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hst2p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hst2p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hst2po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hst2po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hst2_leppt.SetDirectory(0)
         hst2_lepeta.SetDirectory(0)
@@ -1032,14 +1170,31 @@ for ifin, fin in enumerate(filesin) :
         hst2p_lephtlep.SetDirectory(0)
         hst2p_lepht.SetDirectory(0)
         hst2p_lepst.SetDirectory(0) 
+        hst2po_leppt.SetDirectory(0)
+        hst2po_lepeta.SetDirectory(0)
+        hst2po_lephtlep.SetDirectory(0)
+        hst2po_lepht.SetDirectory(0)
+        hst2po_lepst.SetDirectory(0) 
 
         hst2_ak8tau21.SetDirectory(0)
         hst2_ak8pt.SetDirectory(0) 
         hst2_ak8SJtau21.SetDirectory(0)
         hst2_ak8SJpt.SetDirectory(0)
+        hst2p_ak8tau21.SetDirectory(0)
+        hst2p_ak8pt.SetDirectory(0) 
+        hst2p_ak8SJtau21.SetDirectory(0)
+        hst2p_ak8SJpt.SetDirectory(0)
+        hst2po_ak8tau21.SetDirectory(0)
+        hst2po_ak8pt.SetDirectory(0) 
+        hst2po_ak8SJtau21.SetDirectory(0)
+        hst2po_ak8SJpt.SetDirectory(0)
  
         hst2_Pass.SetDirectory(0)
         hst2_Fail.SetDirectory(0)
+        hst2p_Pass.SetDirectory(0)
+        hst2p_Fail.SetDirectory(0)
+        hst2po_Pass.SetDirectory(0)
+        hst2po_Fail.SetDirectory(0)
 
 
         fileIs.Close()
@@ -1082,34 +1237,38 @@ for ifin, fin in enumerate(filesin) :
         hst3_lephtlep    = filei.Get("h_lepHtLep_MC")
         hst3_lepht       = filei.Get("h_lepHt_MC")  
         hst3_lepst       = filei.Get("h_lepSt_MC") 
-        hst3p_leppt       = filei.Get("hp_lepPt_MC")
-        hst3p_lepeta      = filei.Get("hp_lepEta_MC")
-        hst3p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hst3p_lepht       = filei.Get("hp_lepHt_MC")  
-        hst3p_lepst       = filei.Get("hp_lepSt_MC") 
-        hst3po_leppt       = filei.Get("hpo_lepPt_MC")
-        hst3po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hst3po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hst3po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hst3po_lepst       = filei.Get("hpo_lepSt_MC") 
+        hst3p_leppt       = filei.Get("hlep_lepPt_MC")
+        hst3p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hst3p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hst3p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hst3p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hst3po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hst3po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hst3po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hst3po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hst3po_lepst       = filei.Get("hpAll_lepSt_MC") 
 
         hst3_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hst3_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hst3_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hst3_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
 
-        hst3p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hst3p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hst3p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hst3p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hst3p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hst3p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hst3p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hst3p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hst3po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hst3po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hst3po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hst3po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hst3po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hst3po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hst3po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hst3po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
         hst3_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hst3_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hst3p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hst3p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hst3po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hst3po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hst3_leppt.SetDirectory(0)
         hst3_lepeta.SetDirectory(0)
@@ -1120,15 +1279,33 @@ for ifin, fin in enumerate(filesin) :
         hst3p_lepeta.SetDirectory(0)
         hst3p_lephtlep.SetDirectory(0)
         hst3p_lepht.SetDirectory(0)
-        hst3p_lepst.SetDirectory(0)
+        hst3p_lepst.SetDirectory(0) 
+        hst3po_leppt.SetDirectory(0)
+        hst3po_lepeta.SetDirectory(0)
+        hst3po_lephtlep.SetDirectory(0)
+        hst3po_lepht.SetDirectory(0)
+        hst3po_lepst.SetDirectory(0) 
 
         hst3_ak8tau21.SetDirectory(0)
         hst3_ak8pt.SetDirectory(0) 
         hst3_ak8SJtau21.SetDirectory(0)
         hst3_ak8SJpt.SetDirectory(0)
+        hst3p_ak8tau21.SetDirectory(0)
+        hst3p_ak8pt.SetDirectory(0) 
+        hst3p_ak8SJtau21.SetDirectory(0)
+        hst3p_ak8SJpt.SetDirectory(0)
+        hst3po_ak8tau21.SetDirectory(0)
+        hst3po_ak8pt.SetDirectory(0) 
+        hst3po_ak8SJtau21.SetDirectory(0)
+        hst3po_ak8SJpt.SetDirectory(0)
  
         hst3_Pass.SetDirectory(0)
         hst3_Fail.SetDirectory(0)
+        hst3p_Pass.SetDirectory(0)
+        hst3p_Fail.SetDirectory(0)
+        hst3po_Pass.SetDirectory(0)
+        hst3po_Fail.SetDirectory(0)
+
 
         fileIs.Close()
 
@@ -1172,34 +1349,38 @@ for ifin, fin in enumerate(filesin) :
         hst4_lephtlep    = filei.Get("h_lepHtLep_MC")
         hst4_lepht       = filei.Get("h_lepHt_MC")  
         hst4_lepst       = filei.Get("h_lepSt_MC") 
-        hst4p_leppt       = filei.Get("hp_lepPt_MC")
-        hst4p_lepeta      = filei.Get("hp_lepEta_MC")
-        hst4p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hst4p_lepht       = filei.Get("hp_lepHt_MC")  
-        hst4p_lepst       = filei.Get("hp_lepSt_MC") 
-        hst4po_leppt       = filei.Get("hpo_lepPt_MC")
-        hst4po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hst4po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hst4po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hst4po_lepst       = filei.Get("hpo_lepSt_MC") 
+        hst4p_leppt       = filei.Get("hlep_lepPt_MC")
+        hst4p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hst4p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hst4p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hst4p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hst4po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hst4po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hst4po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hst4po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hst4po_lepst       = filei.Get("hpAll_lepSt_MC") 
 
         hst4_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hst4_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hst4_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hst4_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hst4p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hst4p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hst4p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hst4p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hst4p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hst4p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hst4p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hst4p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hst4po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hst4po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hst4po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hst4po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hst4po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hst4po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hst4po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hst4po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
 
         hst4_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hst4_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hst4p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hst4p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hst4po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hst4po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hst4_leppt.SetDirectory(0)
         hst4_lepeta.SetDirectory(0)
@@ -1211,14 +1392,31 @@ for ifin, fin in enumerate(filesin) :
         hst4p_lephtlep.SetDirectory(0)
         hst4p_lepht.SetDirectory(0)
         hst4p_lepst.SetDirectory(0) 
+        hst4po_leppt.SetDirectory(0)
+        hst4po_lepeta.SetDirectory(0)
+        hst4po_lephtlep.SetDirectory(0)
+        hst4po_lepht.SetDirectory(0)
+        hst4po_lepst.SetDirectory(0) 
 
         hst4_ak8tau21.SetDirectory(0)
         hst4_ak8pt.SetDirectory(0) 
         hst4_ak8SJtau21.SetDirectory(0)
         hst4_ak8SJpt.SetDirectory(0)
+        hst4p_ak8tau21.SetDirectory(0)
+        hst4p_ak8pt.SetDirectory(0) 
+        hst4p_ak8SJtau21.SetDirectory(0)
+        hst4p_ak8SJpt.SetDirectory(0)
+        hst4po_ak8tau21.SetDirectory(0)
+        hst4po_ak8pt.SetDirectory(0) 
+        hst4po_ak8SJtau21.SetDirectory(0)
+        hst4po_ak8SJpt.SetDirectory(0)
  
         hst4_Pass.SetDirectory(0)
         hst4_Fail.SetDirectory(0)
+        hst4p_Pass.SetDirectory(0)
+        hst4p_Fail.SetDirectory(0)
+        hst4po_Pass.SetDirectory(0)
+        hst4po_Fail.SetDirectory(0)
 
 
         fileIs.Close()
@@ -1256,34 +1454,38 @@ for ifin, fin in enumerate(filesin) :
         hwjets1_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets1_lepht       = filei.Get("h_lepHt_MC")  
         hwjets1_lepst       = filei.Get("h_lepSt_MC") 
-        hwjets1p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets1p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets1p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets1p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets1p_lepst       = filei.Get("hp_lepSt_MC") 
-        hwjets1po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets1po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets1po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets1po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets1po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets1p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets1p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets1p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets1p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets1p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hwjets1po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets1po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets1po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets1po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets1po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets1_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets1_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets1_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets1_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
 
-        hwjets1p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets1p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets1p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets1p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets1p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets1p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets1p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets1p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets1po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets1po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets1po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets1po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets1po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets1po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets1po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets1po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
         hwjets1_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets1_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets1p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets1p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets1po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets1po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets1_leppt.SetDirectory(0)
         hwjets1_lepeta.SetDirectory(0)
@@ -1295,17 +1497,33 @@ for ifin, fin in enumerate(filesin) :
         hwjets1p_lephtlep.SetDirectory(0)
         hwjets1p_lepht.SetDirectory(0)
         hwjets1p_lepst.SetDirectory(0) 
+        hwjets1po_leppt.SetDirectory(0)
+        hwjets1po_lepeta.SetDirectory(0)
+        hwjets1po_lephtlep.SetDirectory(0)
+        hwjets1po_lepht.SetDirectory(0)
+        hwjets1po_lepst.SetDirectory(0) 
 
         hwjets1_ak8tau21.SetDirectory(0)
         hwjets1_ak8pt.SetDirectory(0) 
         hwjets1_ak8SJtau21.SetDirectory(0)
         hwjets1_ak8SJpt.SetDirectory(0)
+        hwjets1p_ak8tau21.SetDirectory(0)
+        hwjets1p_ak8pt.SetDirectory(0) 
+        hwjets1p_ak8SJtau21.SetDirectory(0)
+        hwjets1p_ak8SJpt.SetDirectory(0)
+        hwjets1po_ak8tau21.SetDirectory(0)
+        hwjets1po_ak8pt.SetDirectory(0) 
+        hwjets1po_ak8SJtau21.SetDirectory(0)
+        hwjets1po_ak8SJpt.SetDirectory(0)
  
         hwjets1_Pass.SetDirectory(0)
         hwjets1_Fail.SetDirectory(0)
-
-
+        hwjets1p_Pass.SetDirectory(0)
+        hwjets1p_Fail.SetDirectory(0)
+        hwjets1po_Pass.SetDirectory(0)
+        hwjets1po_Fail.SetDirectory(0)
         fileIs.Close()
+
     if str(dtypes[ifin]) == 'wjets2' :
         hwjets2 = (filei.Get("h_mWsubjet_MC"))
         hwjets2.SetDirectory(0)
@@ -1346,35 +1564,39 @@ for ifin, fin in enumerate(filesin) :
         hwjets2_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets2_lepht       = filei.Get("h_lepHt_MC")  
         hwjets2_lepst       = filei.Get("h_lepSt_MC") 
-        hwjets2p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets2p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets2p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets2p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets2p_lepst       = filei.Get("hp_lepSt_MC")
-        hwjets2po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets2po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets2po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets2po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets2po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets2p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets2p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets2p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets2p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets2p_lepst       = filei.Get("hlep_lepSt_MC")
+        hwjets2po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets2po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets2po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets2po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets2po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets2_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets2_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets2_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets2_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hwjets2p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets2p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets2p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets2p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets2p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets2p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets2p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets2p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets2po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets2po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets2po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets2po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets2po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets2po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets2po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets2po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
 
         hwjets2_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets2_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets2p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets2p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets2po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets2po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets2_leppt.SetDirectory(0)
         hwjets2_lepeta.SetDirectory(0)
@@ -1386,17 +1608,34 @@ for ifin, fin in enumerate(filesin) :
         hwjets2p_lephtlep.SetDirectory(0)
         hwjets2p_lepht.SetDirectory(0)
         hwjets2p_lepst.SetDirectory(0) 
+        hwjets2po_leppt.SetDirectory(0)
+        hwjets2po_lepeta.SetDirectory(0)
+        hwjets2po_lephtlep.SetDirectory(0)
+        hwjets2po_lepht.SetDirectory(0)
+        hwjets2po_lepst.SetDirectory(0) 
 
         hwjets2_ak8tau21.SetDirectory(0)
         hwjets2_ak8pt.SetDirectory(0) 
         hwjets2_ak8SJtau21.SetDirectory(0)
         hwjets2_ak8SJpt.SetDirectory(0)
+        hwjets2p_ak8tau21.SetDirectory(0)
+        hwjets2p_ak8pt.SetDirectory(0) 
+        hwjets2p_ak8SJtau21.SetDirectory(0)
+        hwjets2p_ak8SJpt.SetDirectory(0)
+        hwjets2po_ak8tau21.SetDirectory(0)
+        hwjets2po_ak8pt.SetDirectory(0) 
+        hwjets2po_ak8SJtau21.SetDirectory(0)
+        hwjets2po_ak8SJpt.SetDirectory(0)
  
         hwjets2_Pass.SetDirectory(0)
         hwjets2_Fail.SetDirectory(0)
-
+        hwjets2p_Pass.SetDirectory(0)
+        hwjets2p_Fail.SetDirectory(0)
+        hwjets2po_Pass.SetDirectory(0)
+        hwjets2po_Fail.SetDirectory(0)
 
         fileIs.Close()
+
     if str(dtypes[ifin]) == 'wjets3' :
         hwjets3 = (filei.Get("h_mWsubjet_MC"))
         hwjets3.SetDirectory(0)
@@ -1436,34 +1675,38 @@ for ifin, fin in enumerate(filesin) :
         hwjets3_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets3_lepht       = filei.Get("h_lepHt_MC")  
         hwjets3_lepst       = filei.Get("h_lepSt_MC") 
-        hwjets3p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets3p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets3p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets3p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets3p_lepst       = filei.Get("hp_lepSt_MC") 
-        hwjets3po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets3po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets3po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets3po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets3po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets3p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets3p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets3p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets3p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets3p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hwjets3po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets3po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets3po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets3po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets3po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets3_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets3_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets3_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets3_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hwjets3p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets3p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets3p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets3p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets3p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets3p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets3p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets3p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets3po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets3po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets3po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets3po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets3po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets3po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets3po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets3po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
         hwjets3_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets3_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets3p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets3p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets3po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets3po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets3_leppt.SetDirectory(0)
         hwjets3_lepeta.SetDirectory(0)
@@ -1475,16 +1718,34 @@ for ifin, fin in enumerate(filesin) :
         hwjets3p_lephtlep.SetDirectory(0)
         hwjets3p_lepht.SetDirectory(0)
         hwjets3p_lepst.SetDirectory(0) 
+        hwjets3po_leppt.SetDirectory(0)
+        hwjets3po_lepeta.SetDirectory(0)
+        hwjets3po_lephtlep.SetDirectory(0)
+        hwjets3po_lepht.SetDirectory(0)
+        hwjets3po_lepst.SetDirectory(0) 
 
         hwjets3_ak8tau21.SetDirectory(0)
         hwjets3_ak8pt.SetDirectory(0) 
         hwjets3_ak8SJtau21.SetDirectory(0)
         hwjets3_ak8SJpt.SetDirectory(0)
+        hwjets3p_ak8tau21.SetDirectory(0)
+        hwjets3p_ak8pt.SetDirectory(0) 
+        hwjets3p_ak8SJtau21.SetDirectory(0)
+        hwjets3p_ak8SJpt.SetDirectory(0)
+        hwjets3po_ak8tau21.SetDirectory(0)
+        hwjets3po_ak8pt.SetDirectory(0) 
+        hwjets3po_ak8SJtau21.SetDirectory(0)
+        hwjets3po_ak8SJpt.SetDirectory(0)
  
         hwjets3_Pass.SetDirectory(0)
         hwjets3_Fail.SetDirectory(0)
-
+        hwjets3p_Pass.SetDirectory(0)
+        hwjets3p_Fail.SetDirectory(0)
+        hwjets3po_Pass.SetDirectory(0)
+        hwjets3po_Fail.SetDirectory(0)
         fileIs.Close()
+
+
     if str(dtypes[ifin]) == 'wjets4' :
         hwjets4 = (filei.Get("h_mWsubjet_MC"))
         hwjets4.SetDirectory(0)
@@ -1524,34 +1785,38 @@ for ifin, fin in enumerate(filesin) :
         hwjets4_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets4_lepht       = filei.Get("h_lepHt_MC")  
         hwjets4_lepst       = filei.Get("h_lepSt_MC") 
-        hwjets4p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets4p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets4p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets4p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets4p_lepst       = filei.Get("hp_lepSt_MC") 
-        hwjets4po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets4po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets4po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets4po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets4po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets4p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets4p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets4p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets4p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets4p_lepst       = filei.Get("hlep_lepSt_MC") 
+        hwjets4po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets4po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets4po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets4po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets4po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets4_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets4_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets4_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets4_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hwjets4p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets4p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets4p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets4p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets4p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets4p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets4p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets4p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets4po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets4po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets4po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets4po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets4po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets4po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets4po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets4po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
         hwjets4_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets4_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets4p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets4p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets4po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets4po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets4_leppt.SetDirectory(0)
         hwjets4_lepeta.SetDirectory(0)
@@ -1563,14 +1828,32 @@ for ifin, fin in enumerate(filesin) :
         hwjets4p_lephtlep.SetDirectory(0)
         hwjets4p_lepht.SetDirectory(0)
         hwjets4p_lepst.SetDirectory(0) 
+        hwjets4po_leppt.SetDirectory(0)
+        hwjets4po_lepeta.SetDirectory(0)
+        hwjets4po_lephtlep.SetDirectory(0)
+        hwjets4po_lepht.SetDirectory(0)
+        hwjets4po_lepst.SetDirectory(0) 
 
         hwjets4_ak8tau21.SetDirectory(0)
         hwjets4_ak8pt.SetDirectory(0) 
         hwjets4_ak8SJtau21.SetDirectory(0)
         hwjets4_ak8SJpt.SetDirectory(0)
+        hwjets4p_ak8tau21.SetDirectory(0)
+        hwjets4p_ak8pt.SetDirectory(0) 
+        hwjets4p_ak8SJtau21.SetDirectory(0)
+        hwjets4p_ak8SJpt.SetDirectory(0)
+        hwjets4po_ak8tau21.SetDirectory(0)
+        hwjets4po_ak8pt.SetDirectory(0) 
+        hwjets4po_ak8SJtau21.SetDirectory(0)
+        hwjets4po_ak8SJpt.SetDirectory(0)
  
         hwjets4_Pass.SetDirectory(0)
         hwjets4_Fail.SetDirectory(0)
+        hwjets4p_Pass.SetDirectory(0)
+        hwjets4p_Fail.SetDirectory(0)
+        hwjets4po_Pass.SetDirectory(0)
+        hwjets4po_Fail.SetDirectory(0)
+
 
         fileIs.Close()
     if str(dtypes[ifin]) == 'wjets5' :
@@ -1611,35 +1894,39 @@ for ifin, fin in enumerate(filesin) :
         hwjets5_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets5_lepht       = filei.Get("h_lepHt_MC")  
         hwjets5_lepst      = filei.Get("h_lepSt_MC") 
-        hwjets5p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets5p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets5p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets5p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets5p_lepst      = filei.Get("hp_lepSt_MC") 
-        hwjets5po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets5po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets5po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets5po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets5po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets5p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets5p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets5p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets5p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets5p_lepst      = filei.Get("hlep_lepSt_MC") 
+        hwjets5po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets5po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets5po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets5po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets5po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets5_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets5_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets5_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets5_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hwjets5p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets5p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets5p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets5p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets5p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets5p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets5p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets5p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets5po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets5po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets5po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets5po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets5po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets5po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets5po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets5po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
 
         hwjets5_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets5_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets5p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets5p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets5po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets5po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets5_leppt.SetDirectory(0)
         hwjets5_lepeta.SetDirectory(0)
@@ -1651,14 +1938,32 @@ for ifin, fin in enumerate(filesin) :
         hwjets5p_lephtlep.SetDirectory(0)
         hwjets5p_lepht.SetDirectory(0)
         hwjets5p_lepst.SetDirectory(0) 
+        hwjets5po_leppt.SetDirectory(0)
+        hwjets5po_lepeta.SetDirectory(0)
+        hwjets5po_lephtlep.SetDirectory(0)
+        hwjets5po_lepht.SetDirectory(0)
+        hwjets5po_lepst.SetDirectory(0) 
 
         hwjets5_ak8tau21.SetDirectory(0)
         hwjets5_ak8pt.SetDirectory(0) 
         hwjets5_ak8SJtau21.SetDirectory(0)
         hwjets5_ak8SJpt.SetDirectory(0)
+        hwjets5p_ak8tau21.SetDirectory(0)
+        hwjets5p_ak8pt.SetDirectory(0) 
+        hwjets5p_ak8SJtau21.SetDirectory(0)
+        hwjets5p_ak8SJpt.SetDirectory(0)
+        hwjets5po_ak8tau21.SetDirectory(0)
+        hwjets5po_ak8pt.SetDirectory(0) 
+        hwjets5po_ak8SJtau21.SetDirectory(0)
+        hwjets5po_ak8SJpt.SetDirectory(0)
  
         hwjets5_Pass.SetDirectory(0)
         hwjets5_Fail.SetDirectory(0)
+        hwjets5p_Pass.SetDirectory(0)
+        hwjets5p_Fail.SetDirectory(0)
+        hwjets5po_Pass.SetDirectory(0)
+        hwjets5po_Fail.SetDirectory(0)
+
 
         fileIs.Close()
     if str(dtypes[ifin]) == 'wjets6' :
@@ -1701,34 +2006,38 @@ for ifin, fin in enumerate(filesin) :
         hwjets6_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets6_lepht       = filei.Get("h_lepHt_MC")  
         hwjets6_lepst       = filei.Get("h_lepSt_MC") 
-        hwjets6p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets6p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets6p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets6p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets6p_lepst       = filei.Get("hp_lepSt_MC")
-        hwjets6po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets6po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets6po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets6po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets6po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets6p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets6p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets6p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets6p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets6p_lepst       = filei.Get("hlep_lepSt_MC")
+        hwjets6po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets6po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets6po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets6po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets6po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets6_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets6_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets6_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets6_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hwjets6p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets6p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets6p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets6p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets6p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets6p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets6p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets6p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets6po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets6po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets6po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets6po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets6po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets6po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets6po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets6po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
         hwjets6_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets6_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets6p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets6p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets6po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets6po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets6_leppt.SetDirectory(0)
         hwjets6_lepeta.SetDirectory(0)
@@ -1740,17 +2049,33 @@ for ifin, fin in enumerate(filesin) :
         hwjets6p_lephtlep.SetDirectory(0)
         hwjets6p_lepht.SetDirectory(0)
         hwjets6p_lepst.SetDirectory(0) 
+        hwjets6po_leppt.SetDirectory(0)
+        hwjets6po_lepeta.SetDirectory(0)
+        hwjets6po_lephtlep.SetDirectory(0)
+        hwjets6po_lepht.SetDirectory(0)
+        hwjets6po_lepst.SetDirectory(0) 
 
         hwjets6_ak8tau21.SetDirectory(0)
         hwjets6_ak8pt.SetDirectory(0) 
         hwjets6_ak8SJtau21.SetDirectory(0)
         hwjets6_ak8SJpt.SetDirectory(0)
+        hwjets6p_ak8tau21.SetDirectory(0)
+        hwjets6p_ak8pt.SetDirectory(0) 
+        hwjets6p_ak8SJtau21.SetDirectory(0)
+        hwjets6p_ak8SJpt.SetDirectory(0)
+        hwjets6po_ak8tau21.SetDirectory(0)
+        hwjets6po_ak8pt.SetDirectory(0) 
+        hwjets6po_ak8SJtau21.SetDirectory(0)
+        hwjets6po_ak8SJpt.SetDirectory(0)
  
         hwjets6_Pass.SetDirectory(0)
         hwjets6_Fail.SetDirectory(0)
-
-
+        hwjets6p_Pass.SetDirectory(0)
+        hwjets6p_Fail.SetDirectory(0)
+        hwjets6po_Pass.SetDirectory(0)
+        hwjets6po_Fail.SetDirectory(0)
         fileIs.Close()
+
     if str(dtypes[ifin]) == 'wjets7' :
         hwjets7 = (filei.Get("h_mWsubjet_MC"))
         hwjets7.SetDirectory(0)
@@ -1785,35 +2110,39 @@ for ifin, fin in enumerate(filesin) :
         hwjets7_lephtlep    = filei.Get("h_lepHtLep_MC")
         hwjets7_lepht       = filei.Get("h_lepHt_MC")  
         hwjets7_lepst      = filei.Get("h_lepSt_MC") 
-        hwjets7p_leppt       = filei.Get("hp_lepPt_MC")
-        hwjets7p_lepeta      = filei.Get("hp_lepEta_MC")
-        hwjets7p_lephtlep    = filei.Get("hp_lepHtLep_MC")
-        hwjets7p_lepht       = filei.Get("hp_lepHt_MC")  
-        hwjets7p_lepst      = filei.Get("hp_lepSt_MC") 
-        hwjets7po_leppt       = filei.Get("hpo_lepPt_MC")
-        hwjets7po_lepeta      = filei.Get("hpo_lepEta_MC")
-        hwjets7po_lephtlep    = filei.Get("hpo_lepHtLep_MC")
-        hwjets7po_lepht       = filei.Get("hpo_lepHt_MC")  
-        hwjets7po_lepst       = filei.Get("hpo_lepSt_MC")
+        hwjets7p_leppt       = filei.Get("hlep_lepPt_MC")
+        hwjets7p_lepeta      = filei.Get("hlep_lepEta_MC")
+        hwjets7p_lephtlep    = filei.Get("hlep_lepHtLep_MC")
+        hwjets7p_lepht       = filei.Get("hlep_lepHt_MC")  
+        hwjets7p_lepst      = filei.Get("hlep_lepSt_MC") 
+        hwjets7po_leppt       = filei.Get("hpAll_lepPt_MC")
+        hwjets7po_lepeta      = filei.Get("hpAll_lepEta_MC")
+        hwjets7po_lephtlep    = filei.Get("hpAll_lepHtLep_MC")
+        hwjets7po_lepht       = filei.Get("hpAll_lepHt_MC")  
+        hwjets7po_lepst       = filei.Get("hpAll_lepSt_MC")
 
         hwjets7_ak8tau21    = filei.Get("h_AK8Tau21_MC") 
         hwjets7_ak8pt       = filei.Get("h_AK8Pt_MC")  
         hwjets7_ak8SJtau21  = filei.Get("h_AK8subjetTau21_MC")
         hwjets7_ak8SJpt     = filei.Get("h_AK8subjetPt_MC") 
  
-        hwjets7p_ak8tau21    = filei.Get("hp_AK8Tau21_MC") 
-        hwjets7p_ak8pt       = filei.Get("hp_AK8Pt_MC")  
-        hwjets7p_ak8SJtau21  = filei.Get("hp_AK8subjetTau21_MC")
-        hwjets7p_ak8SJpt     = filei.Get("hp_AK8subjetPt_MC") 
+        hwjets7p_ak8tau21    = filei.Get("hlep_AK8Tau21_MC") 
+        hwjets7p_ak8pt       = filei.Get("hlep_AK8Pt_MC")  
+        hwjets7p_ak8SJtau21  = filei.Get("hlep_AK8subjetTau21_MC")
+        hwjets7p_ak8SJpt     = filei.Get("hlep_AK8subjetPt_MC") 
 
-        hwjets7po_ak8tau21    = filei.Get("hpo_AK8Tau21_MC") 
-        hwjets7po_ak8pt       = filei.Get("hpo_AK8Pt_MC")  
-        hwjets7po_ak8SJtau21  = filei.Get("hpo_AK8subjetTau21_MC")
-        hwjets7po_ak8SJpt     = filei.Get("hpo_AK8subjetPt_MC") 
+        hwjets7po_ak8tau21    = filei.Get("hpAll_AK8Tau21_MC") 
+        hwjets7po_ak8pt       = filei.Get("hpAll_AK8Pt_MC")  
+        hwjets7po_ak8SJtau21  = filei.Get("hpAll_AK8subjetTau21_MC")
+        hwjets7po_ak8SJpt     = filei.Get("hpAll_AK8subjetPt_MC") 
  
 
         hwjets7_Pass        = filei.Get("h_mWsubjetPasstag_MC")
         hwjets7_Fail        = filei.Get("h_mWsubjetFailtag_MC")
+        hwjets7p_Pass        = filei.Get("hlep_mWsubjetPasstag_MC")
+        hwjets7p_Fail        = filei.Get("hlep_mWsubjetFailtag_MC")
+        hwjets7po_Pass        = filei.Get("hpAll_mWsubjetPasstag_MC")
+        hwjets7po_Fail        = filei.Get("hpAll_mWsubjetFailtag_MC")
 
         hwjets7_leppt.SetDirectory(0)
         hwjets7_lepeta.SetDirectory(0)
@@ -1825,14 +2154,31 @@ for ifin, fin in enumerate(filesin) :
         hwjets7p_lephtlep.SetDirectory(0)
         hwjets7p_lepht.SetDirectory(0)
         hwjets7p_lepst.SetDirectory(0) 
+        hwjets7po_leppt.SetDirectory(0)
+        hwjets7po_lepeta.SetDirectory(0)
+        hwjets7po_lephtlep.SetDirectory(0)
+        hwjets7po_lepht.SetDirectory(0)
+        hwjets7po_lepst.SetDirectory(0) 
 
         hwjets7_ak8tau21.SetDirectory(0)
         hwjets7_ak8pt.SetDirectory(0) 
         hwjets7_ak8SJtau21.SetDirectory(0)
         hwjets7_ak8SJpt.SetDirectory(0)
+        hwjets7p_ak8tau21.SetDirectory(0)
+        hwjets7p_ak8pt.SetDirectory(0) 
+        hwjets7p_ak8SJtau21.SetDirectory(0)
+        hwjets7p_ak8SJpt.SetDirectory(0)
+        hwjets7po_ak8tau21.SetDirectory(0)
+        hwjets7po_ak8pt.SetDirectory(0) 
+        hwjets7po_ak8SJtau21.SetDirectory(0)
+        hwjets7po_ak8SJpt.SetDirectory(0)
  
         hwjets7_Pass.SetDirectory(0)
         hwjets7_Fail.SetDirectory(0)
+        hwjets7p_Pass.SetDirectory(0)
+        hwjets7p_Fail.SetDirectory(0)
+        hwjets7po_Pass.SetDirectory(0)
+        hwjets7po_Fail.SetDirectory(0)
 
 
         fileIs.Close()
@@ -1917,7 +2263,7 @@ binlabels = [ "200 < P_{T} < 300  ",
               " #tau_{21} > 0.6 "]
 
 # Rebin Values for Pt binned W candidate Mass histograms
-rebinBybin = [ 1, 1, 1, 1, 1, 1, 1]
+rebinBybin = [ 10, 10, 10, 10, 10, 10, 10]
 
 for ipt in xrange(0, len(binlabels) ) :
     if ipt <= 3: pt = ptBs[int(ipt)]
@@ -2138,17 +2484,20 @@ for ipt in xrange(0, len(binlabels) ) :
 
     httbarT = scaleTT(httbarT, ipt)
 
+    intMinis = 55.
+    intMaxis = 105.
+
     if options.allMC :
         hstT = scaleST(hstT1, hstT2, hstT3, hstT4, ipt)
         hwjetsT = scaleWjets(hwjetsT1, hwjetsT2, hwjetsT3, hwjetsT4, hwjetsT5, hwjetsT6, hwjetsT7, ipt)
-        httbarT = ScalettMC(httbarT, heldataT, hmudataT , hstT , hwjetsT )
+        httbarT = ScalettMC(httbarT, heldataT, hmudataT , hstT , hwjetsT ,intMinis, intMaxis)
     if ipt <=4 :
 
         httbarTp = scaleTT(httbarTp, ipt)
         if options.allMC :
             hstTp = scaleST(hstTp1, hstTp2, hstTp3, hstTp4, ipt)
             hwjetsTp = scaleWjets(hwjetsTp1, hwjetsTp2, hwjetsTp3, hwjetsTp4, hwjetsTp5, hwjetsTp6, hwjetsTp7, ipt)
-            httbarTp = ScalettMC(httbarTp, heldataTp, hmudataTp , hstTp , hwjetsTp )
+            httbarTp = ScalettMC(httbarTp, heldataTp, hmudataTp , hstTp , hwjetsTp, intMinis, intMaxis )
         
 
     # Rebin
@@ -2221,7 +2570,7 @@ for ipt in xrange(0, len(binlabels) ) :
     #  65.   115.      2
     #  55.   115.      3 
 
-    minAvg = 40.
+    minAvg = 55.
     maxAvg = 115.
     fittingLimits = [   [minAvg, minAvg, minAvg, minAvg, minAvg, minAvg, minAvg ]     ,   [maxAvg, maxAvg, maxAvg, maxAvg, maxAvg, maxAvg, maxAvg ]   ]
 
@@ -2294,7 +2643,7 @@ for ipt in xrange(0, len(binlabels) ) :
 
     print 'Electron data: amp_data {0:6.3}, eamp_data {1:6.3}, mean_data {2:6.3},emean_data {3:6.3}, width_data {4:6.3}, ewidth_data {5:6.3}  '.format(Eamp_data , Eeamp_data , Emean_data, Eemean_data,  Ewidth_data, Eewidth_data   ) 
 
-    if options.pre and ipt <=3:
+    if options.pre :
         Datameans[ipt] = mean_data
         Datasigmas[ipt] = width_data
         MuDatameans[ipt] = mmean_data
@@ -2306,7 +2655,7 @@ for ipt in xrange(0, len(binlabels) ) :
 
 
     fitter_mc = ROOT.TF1("fitter_mc", "gaus", minn , maxx )
-    if ipt <=3:
+    if ipt <=6:
         mc_meanval = MCmeans[ipt]
         mc_sigmaval = MCsigmas[ipt]
 
@@ -2566,18 +2915,18 @@ for ipt in xrange(0, len(binlabels) ) :
             sele = options.filestr
             if options.pre :
                 sele = options.filestr + '_preWTag'
-            if ipt < 5 :
+            if (ipt < 5  and not options.Type2):
                 c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
                 c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
                 c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
             if ipt == 5 :
-                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
-                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
-                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
+                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
+                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
+                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
             if ipt == 6 :
-                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
-                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
-                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
+                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
+                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
+                c.Print(plotdir + '/AllData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
 
         if options.Mudata:
 
@@ -2625,7 +2974,7 @@ for ipt in xrange(0, len(binlabels) ) :
             hmudataT.GetXaxis().SetRangeUser( 40.0, 130. )
             mc.GetXaxis().SetRangeUser( 40.0, 130. )
 
-            hmudataT.SetMaximum( max (max1,max2) * 1.618 )
+            #hmudataT.SetMaximum( max (max1,max2) * 1.618 )
 
             hmudataT.SetXTitle("Subjet Soft Drop Mass (GeV)")
             hmudataT.SetYTitle("Events")
@@ -2649,20 +2998,22 @@ for ipt in xrange(0, len(binlabels) ) :
             sele = options.filestr
             if options.pre :
                 sele = options.filestr + '_preWTag'
-            if ipt < 5 :
+            if ipt < 5 and not options.Type2 :
                 cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + sele + '.png', 'png' ) 
                 cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
                 cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
             if ipt == 5 :
-                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
-                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
-                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
-            if ipt == 6 :
-                hmudataT.SetMaximum( 300. )
-                mc.SetMaximum( 300. )
-                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
-                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
-                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
+                #hmudataT.SetMaximum(10000   )
+                #mc.SetMaximum( 10000  )
+                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
+                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
+                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
+            if ipt == 6 and not options.pre:
+                hmudataT.SetMaximum( 520. )
+                mc.SetMaximum( 520. )
+                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
+                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
+                cc.Print(plotdir + '/MuData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
         
 
 
@@ -2728,21 +3079,21 @@ for ipt in xrange(0, len(binlabels) ) :
             ccc.Update()
             ccc.Draw()
             sele = options.filestr
-            if options.pre :
+            if options.pre and not options.Type2 :
                 sele = options.filestr + '_preWTag'
             ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
             ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
             ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_Bin'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
             if ipt == 5 :
-                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
-                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
-                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_passTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
+                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
+                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
+                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_passTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
             if ipt == 6 :
-                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
-                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
-                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_failTau21Loose'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
+                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.png', 'png' )
+                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.pdf', 'pdf' )
+                ccc.Print(plotdir + '/ElData/'+ options.treeLocation +'/wMass_failTau21'+ str(ipt) + '_' +str(rebinBybin[ipt]) + '_' + '_' + sele + '.root', 'root' )
 
-        if ipt <=4:
+        if ipt <=4 and not options.Type2:
             ee = ROOT.TCanvas('wid','wid')
             hwidth.Draw('e')
 
@@ -2826,7 +3177,7 @@ for ipt in xrange(0, len(binlabels) ) :
             ff.Print(plotdir + '/AllData/'+ options.treeLocation +'Pt_type1and2_' + options.filestr + '.pdf', 'pdf' )
             ff.Print(plotdir + '/AllData/'+ options.treeLocation +'Pt_type1and2_' + options.filestr + '.root', 'root' )
 
-        if ipt <= 3:
+        if ipt <= 3 and not options.Type2:
             gg = ROOT.TCanvas('peak','peak')
             hpeak.Draw('e')
 
@@ -2930,8 +3281,12 @@ if not options.quickPlot :
             ptToFill = float(pt)
             if pt > 800. :
                 ptToFill = 799.
-            if (nDatapre[ipt] > 0. and nMCpre[ipt] > 0. and pt >= 301.) :
-                SF =  ( float(datapost) / float(datapre) ) / ( float(nMCpost[ipt]) / float(nMCpre[ipt]) )
+            bot = -1.
+            if float(nMCpre[ipt]) > 0.001 :
+                bot = ( float(nMCpost[ipt]) / float(nMCpre[ipt]) )
+            if (nDatapre[ipt] > 0.001 and nMCpre[ipt] > 0.001 and pt >= 201. and float(datapre) > 0.001 and  bot > 0.001) :
+                print "bot {} datapre {} datapost {}".format(bot, datapre, datapost)
+                SF =  ( float(datapost) / float(datapre) ) / bot
                 SF_sd = SF * math.sqrt(   (- float(datapost) + float(datapre) ) / ( float(datapost) * float(datapre) )  + (-float(nMCpost[ipt]) + float(nMCpre[ipt])) / (float(nMCpost[ipt]) * float(nMCpre[ipt]))  )
                 print "............................................"
                 print "             SCALE FACTOR                   "
@@ -3017,31 +3372,38 @@ if (options.quickPlot or not options.quickPlot) and not options.pre:
 
     if options.allMC :
 
+        rebinNumis = 20
+
+
         # Plot St after final selection
 
-        Plot_StLep = ScaleStackPlot("St_lep", "St = Ht + Htlep (GeV)", 1.0 , 3, 0. , 600., httbar_lepst, hst1_lepst, hst2_lepst, hst3_lepst, hst4_lepst, hwjets1_lepst , hwjets2_lepst, hwjets3_lepst, hwjets4_lepst, hwjets5_lepst, hwjets6_lepst, hwjets7_lepst, hdata_lepst , hmudata_lepst , heldata_lepst )
-
         # Plot the subjet tau 21 distribution
-        #Plot_AK8SJTau21_mid = ScaleStackPlot("AK8SJTau21_mid", "#tau_{21}", 1.0, 5, 50., 600., httbarp_ak8SJtau21 , hst1p_ak8tau21, hst2p_ak8tau21, hst3p_ak8tau21, hst4p_ak8tau21, hwjets1p_ak8tau21, hwjets2p_ak8tau21, hwjets3p_ak8tau21, hwjets4p_ak8tau21, hwjets5p_ak8tau21, hwjets6p_ak8tau21, hwjets7p_ak8tau21, hdatap_ak8tau21, hmudatap_ak8tau21 , heldatap_ak8tau21  )
+        #Plot_AK8SJTau21_mid = ScaleStackPlot("AK8SJTau21_mid", "#tau_{21}", 1.0, rebinNumis, 0., 600., httbarp_ak8SJtau21 , hst1p_ak8tau21, hst2p_ak8tau21, hst3p_ak8tau21, hst4p_ak8tau21, hwjets1p_ak8tau21, hwjets2p_ak8tau21, hwjets3p_ak8tau21, hwjets4p_ak8tau21, hwjets5p_ak8tau21, hwjets6p_ak8tau21, hwjets7p_ak8tau21, hdatap_ak8tau21, hmudatap_ak8tau21 , heldatap_ak8tau21, IntMin, IntMax )
 
         # Plot tau 21 distribution
-        Plot_AK8Tau21_mid = ScaleStackPlot("AK8Tau21_mid", "#tau_{21}", 1.0, 5, 50., 600., httbarp_ak8tau21 , hst1p_ak8tau21, hst2p_ak8tau21, hst3p_ak8tau21, hst4p_ak8tau21, hwjets1p_ak8tau21, hwjets2p_ak8tau21, hwjets3p_ak8tau21, hwjets4p_ak8tau21, hwjets5p_ak8tau21, hwjets6p_ak8tau21, hwjets7p_ak8tau21, hdatap_ak8tau21, hmudatap_ak8tau21 , heldatap_ak8tau21  )
+        Plot_AK8Tau21_mid = ScaleStackPlot("AK8Tau21_mid", "#tau_{21}", 1.0, rebinNumis, 0., 1., httbarp_ak8tau21 , hst1p_ak8tau21, hst2p_ak8tau21, hst3p_ak8tau21, hst4p_ak8tau21, hwjets1p_ak8tau21, hwjets2p_ak8tau21, hwjets3p_ak8tau21, hwjets4p_ak8tau21, hwjets5p_ak8tau21, hwjets6p_ak8tau21, hwjets7p_ak8tau21, hdatap_ak8tau21, hmudatap_ak8tau21 , heldatap_ak8tau21 , 0., 1. )
 
         # Plot the Lepton Pt after AK8 Pt > 200 GeV and lepton and ak4 cuts but before other ak8 cuts
+        #print "THE Integral of ttbar Lepton Pt  httbarp_leppt is : ".format( httbarp_leppt.Integral() )
 
-        Plot_PtLep_mid = ScaleStackPlot("Pt_Lep_mid", "Lepton Pt (GeV)", 1.0, 5, 50., 600., httbarp_leppt , hst1p_leppt, hst2p_leppt, hst3p_leppt, hst4p_leppt, hwjets1p_leppt, hwjets2p_leppt, hwjets3p_leppt, hwjets4p_leppt, hwjets5p_leppt, hwjets6p_leppt, hwjets7p_leppt, hdatap_leppt, hmudatap_leppt , heldatap_leppt  )
+        Plot_PtLep_mid = ScaleStackPlot("Pt_Lep_mid", "Lepton Pt (GeV)", 1.0, rebinNumis, 0., 600., httbarp_leppt , hst1p_leppt, hst2p_leppt, hst3p_leppt, hst4p_leppt, hwjets1p_leppt, hwjets2p_leppt, hwjets3p_leppt, hwjets4p_leppt, hwjets5p_leppt, hwjets6p_leppt, hwjets7p_leppt, hdatap_leppt, hmudatap_leppt , heldatap_leppt , 53., 300. )
 
         # Plot the Lepton Pt before all selection except  AK8 Pt > 200 GeV
 
-        Plot_PtLep_pre = ScaleStackPlot("Pt_Lep_pre", "Lepton Pt (GeV)", 1.0, 5, 50., 600., httbarpo_leppt , hst1po_leppt, hst2po_leppt, hst3po_leppt, hst4po_leppt, hwjets1po_leppt, hwjets2po_leppt, hwjets3po_leppt, hwjets4po_leppt, hwjets5po_leppt, hwjets6po_leppt, hwjets7po_leppt, hdatapo_leppt, hmudatapo_leppt , heldatapo_leppt  )
+        Plot_PtLep_pre = ScaleStackPlot("Pt_Lep_pre", "Lepton Pt (GeV)", 1.0, rebinNumis, 0., 600., httbarpo_leppt , hst1po_leppt, hst2po_leppt, hst3po_leppt, hst4po_leppt, hwjets1po_leppt, hwjets2po_leppt, hwjets3po_leppt, hwjets4po_leppt, hwjets5po_leppt, hwjets6po_leppt, hwjets7po_leppt, hdatapo_leppt, hmudatapo_leppt , heldatapo_leppt, 53., 300.  )
 
         # Plot the Lepton Pt after final selection
 
-        Plot_PtLep_post = ScaleStackPlot("Pt_Lep_post", "Lepton Pt (GeV)", 1.0, 5, 50., 600., httbar_leppt , hst1_leppt, hst2_leppt, hst3_leppt, hst4_leppt, hwjets1_leppt, hwjets2_leppt, hwjets3_leppt, hwjets4_leppt, hwjets5_leppt, hwjets6_leppt, hwjets7_leppt, hdata_leppt, hmudata_leppt , heldata_leppt  )
+        Plot_PtLep_post = ScaleStackPlot("Pt_Lep_post", "Lepton Pt (GeV)", 1.0, rebinNumis, 0., 600., httbar_leppt , hst1_leppt, hst2_leppt, hst3_leppt, hst4_leppt, hwjets1_leppt, hwjets2_leppt, hwjets3_leppt, hwjets4_leppt, hwjets5_leppt, hwjets6_leppt, hwjets7_leppt, hdata_leppt, hmudata_leppt , heldata_leppt, 53., 300.  )
+
+
+        # Plot the AK8 Pt after final selection
+
+        Plot_PtAK8_final = ScaleStackPlot("Pt_AK8_final", "AK8 Pt (GeV)", 1.0, rebinNumis, 0., 1000., httbar_ak8pt , hst1_ak8pt, hst2_ak8pt, hst3_ak8pt, hst4_ak8pt, hwjets1_ak8pt, hwjets2_ak8pt, hwjets3_ak8pt, hwjets4_ak8pt, hwjets5_ak8pt, hwjets6_ak8pt, hwjets7_ak8pt, hdata_ak8pt, hmudata_ak8pt , heldata_ak8pt, 200.,800. )
 
         #Plot the Ht of the lepton
 
-        Plot_HtLep = ScaleStackPlot("Ht_Lep", "Lepton Ht (GeV)", 1.0, 5, 50., 600., httbar_lephtlep , hst1_lephtlep, hst2_lephtlep, hst3_lephtlep, hst4_lephtlep, hwjets1_lephtlep , hwjets2_lephtlep, hwjets3_lephtlep, hwjets4_lephtlep, hwjets5_lephtlep, hwjets6_lephtlep, hwjets7_lephtlep, hdata_lephtlep, hmudata_lephtlep , heldata_lephtlep  )
+        Plot_HtLep = ScaleStackPlot("Ht_Lep", "Lepton Ht (GeV)", 1.0, rebinNumis, 0., 600., httbar_lephtlep , hst1_lephtlep, hst2_lephtlep, hst3_lephtlep, hst4_lephtlep, hwjets1_lephtlep , hwjets2_lephtlep, hwjets3_lephtlep, hwjets4_lephtlep, hwjets5_lephtlep, hwjets6_lephtlep, hwjets7_lephtlep, hdata_lephtlep, hmudata_lephtlep , heldata_lephtlep, 100., 400.  )
 
 fout.cd()
 fout.Write()
@@ -3049,15 +3411,14 @@ fout.Close()
 
 
 ts = (time.time() -startTime)
+
 unitIs = 'Seconds'
 if ts > 60. :
-    ts = ts/60.
+    ts /= 60.
     unitIs = 'Minutes'
     if ts > 60. :
-        ts = ts/60.
+        ts /= 60.
         unitIs = 'Hours' 
 
-print ('The script took {0}  {1}!'.format(    ( time.time() - startTime)/ 60.  , unitIs    ) )
-
-
+print ('The script took {0}  {1}!'.format(   ts  , unitIs    ) )
 
