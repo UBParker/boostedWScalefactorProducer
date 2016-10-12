@@ -83,7 +83,7 @@ def Wtag_Selector(argv) :
                       help='Do you want to apply SD mass corrections from Thea ???')
 
     parser.add_option('--Type2', action='store_true',
-                      default=True,
+                      default=False,
                       dest='Type2',
                       help='Do you want to apply selection for type 2 tops as described in AN-16-215 ?')
 
@@ -483,10 +483,10 @@ def Wtag_Selector(argv) :
             if options.Type2 : fout= ROOT.TFile('./output80xselector/histos_type2_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
             else : fout= ROOT.TFile('./output80xselector/histos_80x_' +options.dtype + '_'+ options.treeLocation+'_'+ options.filestr + '.root', "RECREATE")
         filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype, options.treeLocation)
-        if "wjets" in options.dtype : # fix this : only valid when running on lpc
-            filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%('wjets', options.dtype, options.treeLocation)
-        if  options.dtype =="data": # fix this : only valid when running on lpc
-            filein =  './%s/mu%s/Puppi_mu%s_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype, options.dtype, options.treeLocation)
+        #if "wjets" in options.dtype : # fix this : only valid when running on lpc
+        #    filein =  './%s/Puppi_%s_%s_80Xv2p0Ntuple.root'%('wjets', options.dtype, options.treeLocation)
+        #if  options.dtype =="data": # fix this : only valid when running on lpc
+        #    filein =  './%s/mu%s/Puppi_mu%s_%s_80Xv2p0Ntuple.root'%(options.dtype, options.dtype, options.dtype, options.treeLocation)
 
     if options.is80x and options.b2gtree:  
         if options.maxEvents > 0. :
@@ -2122,36 +2122,36 @@ def Wtag_Selector(argv) :
         # filling jet variable plots before lepton and AK4 selection 
         if options.b2gtree:
             if (options.dtype == 'data') :
-                hpAll_lepSt_Data.Fill(ST[0] ,               TheWeight )  
+                hpAll_lepSt_Data.Fill(ST[0] ,            TheWeight )  
                 hpAll_lepHt_Data.Fill(Ht ,               TheWeight )
                 hpAll_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
                 hpAll_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
                 if LepisMu <= 0. : # 
-                    hpAll_lepHt_ElData.Fill(Ht ,     TheWeight )
+                    hpAll_lepHt_ElData.Fill(Ht ,        TheWeight )
                     hpAll_lepSt_ElData.Fill(ST[0] ,     TheWeight )
                     hpAll_AK8Tau21_ElData.Fill(tau21,          TheWeight ) 
                     hpAll_AK8Pt_ElData.Fill(FatJetSD_pt ,      TheWeight )
                     #h_AK8subjetTau21_ElData.Fill(W_tau21,  TheWeight )
-                    #h_AK8subjetPt_ElData.Fill(W_pt, TheWeight )
+                    #h_AK8subjetPt_ElData.Fill(W_pt,        TheWeight )
                 if LepisMu < 0. :
-                    hpAll_lepHt_MuData.Fill(Ht ,     TheWeight )
+                    hpAll_lepHt_MuData.Fill(Ht ,        TheWeight )
                     hpAll_lepSt_MuData.Fill(ST[0] ,     TheWeight )
                     hpAll_AK8Tau21_MuData.Fill(tau21,          TheWeight ) 
                     hpAll_AK8Pt_MuData.Fill(FatJetSD_pt ,      TheWeight )
                     #h_AK8subjetTau21_MuData.Fill(W_tau21,  TheWeight )
-                    #h_AK8subjetPt_MuData.Fill(W_pt, TheWeight )
+                    #h_AK8subjetPt_MuData.Fill(W_pt,        TheWeight )
             if (options.dtype != 'data') :
-                hpAll_lepSt_MC.Fill(ST[0] ,               TheWeight )  
+                hpAll_lepSt_MC.Fill(ST[0] ,            TheWeight )  
                 hpAll_lepHt_MC.Fill(Ht ,               TheWeight )
                 hpAll_AK8Tau21_MC.Fill(tau21,          TheWeight ) 
                 hpAll_AK8Pt_MC.Fill(FatJetSD_pt ,      TheWeight )          
         if not options.b2gtree:
             St = Ht + HtLep
             if (options.dtype == 'data') :
-                hpAll_lepSt_Data.Fill(St ,               TheWeight )
-                hpAll_lepHt_Data.Fill(Ht ,               TheWeight )
-                hpAll_AK8Tau21_Data.Fill(tau21,          TheWeight ) 
-                hpAll_AK8Pt_Data.Fill(FatJetSD_pt ,      TheWeight )
+                hpAll_lepSt_Data.Fill(St ,                       TheWeight )
+                hpAll_lepHt_Data.Fill(Ht ,                       TheWeight )
+                hpAll_AK8Tau21_Data.Fill(tau21,                  TheWeight ) 
+                hpAll_AK8Pt_Data.Fill(FatJetSD_pt ,              TheWeight )
                 hpAll_mWsubjetPasstag_Data.Fill(thatMass       , TheWeight )
                 #hpAll_AK8subjetTau21_Data.Fill(W_tau21,  TheWeight )
                 #hpAll_AK8subjetPt_Data.Fill(W_pt, TheWeight )
@@ -2566,7 +2566,7 @@ def Wtag_Selector(argv) :
                         print "Fat Jet: SD Mass {0:6.3}, Pt {1:6.3}, tau32 {2:0.4} - W Subjet: SD Mass {3:6.3}, Pt {4:6.3}, tau21 {5:0.4} - dRLepFat {6:6.3} ".format(FatJetSD_m, FatJetSD_pt, tau32, W_m, W_pt, W_tau21, DeltaRLepFat[0] )
 
         # FIX THIS -Fill the Combined Trees after selection here for later use as RooFit Input
-        if fillTree :    
+        if fillTree is True :    
             if options.writeTree :
                 print "Tree writing is not yet enabled"
 
