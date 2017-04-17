@@ -21,13 +21,15 @@ parser.add_option('--76X',dest="use76X", default=False, action="store_true", hel
 parser.add_option('--useDDT',dest="useDDT", default=False, action="store_true", help="Use DDT tagger")
 parser.add_option('--useN2DDT',dest="useN2DDT", default=False, action="store_true", help="Use N_2^DDT tagger")
 parser.add_option('--usePuppiSD',dest="usePuppiSD", default=True, action="store_true", help="Use PUPPI+softdrop")
+parser.add_option('--salsetup',dest="salsetup", default=True, action="store_true", help="Sal's setup")
 
 (options, args) = parser.parse_args()
 
 #Added these 2 lines - Michael
 # For running on lpc
-ROOT.gSystem.Load("/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/roofit/5.34.22-cms3/lib/libRooFitCore.so")
-ROOT.gSystem.Load("/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/roofit/5.34.22-cms3/lib/libRooFit.so")
+if not options.salsetup: 
+    ROOT.gSystem.Load("/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/roofit/5.34.22-cms3/lib/libRooFitCore.so")
+    ROOT.gSystem.Load("/cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/roofit/5.34.22-cms3/lib/libRooFit.so")    
 # For running on local machine
 #ROOT.gSystem.Load("/opt/local/libexec/root6/lib/root/libRooFitCore.so")
 #ROOT.gSystem.Load("/opt/local/libexec/root6/lib/root/libRooFit.so")
@@ -592,24 +594,24 @@ class initialiseFits:
       # Fit functions for minor backgrounds
 #      self.mj_shape["VV"]                 = "ExpGaus"
 #      self.mj_shape["VV_fail"]            = "ExpGaus"
-      self.mj_shape["WJets0"]             = "ErfExp" #"GausErfExp_Wjets" #"ErfExp"
+      self.mj_shape["WJets0"]             = "Exp" #"GausErfExp_Wjets" #"ErfExp"
 #      self.mj_shape["WJets0"]             = "Exp"
-      self.mj_shape["WJets0_fail"]        = "ErfExp"
+      self.mj_shape["WJets0_fail"]        = "Exp"
 #      self.mj_shape["WJets0_fail"]        = "Exp"
-      self.mj_shape["QCD"]                = "ErfExp"#  "GausChebychev_QCD" #"GausErfExp_QCD"#"GausChebychev_ttbar_failSubjetTau21cut"
+      self.mj_shape["QCD"]                = "Exp"#  "GausChebychev_QCD" #"GausErfExp_QCD"#"GausChebychev_ttbar_failSubjetTau21cut"
 
-      self.mj_shape["QCD_fail"]           =  "ErfExp" # "GausErfExp_QCD_failSubjetTau21cut"
+      self.mj_shape["QCD_fail"]           =  "Exp" # "GausErfExp_QCD_failSubjetTau21cut"
       #self.mj_shape["STop"]               = "ExpGaus_sp"
-      self.mj_shape["STop"]               = "ErfExpGaus_sp"       
+      self.mj_shape["STop"]               = "ExpGaus"
       self.mj_shape["STop_fail"]          = "ExpGaus"  
       
       if (options.usePuppiSD): 
-        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"  
+        self.mj_shape["STop_fail"]          = "ExpGaus"  
 
       if (options.useN2DDT):
 #        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"
 #        self.mj_shape["STop_fail"]          = "ExpGaus"
-        self.mj_shape["STop_fail"]          = "ExpGaus_sp"
+        self.mj_shape["STop_fail"]          = "ExpGaus"
 
 #      if (options.tau2tau1cutHP==0.60): 
 #        self.mj_shape["QCD_fail"]     = "Exp"
@@ -623,18 +625,18 @@ class initialiseFits:
 #        self.mj_shape["STop"]               = "ExpGaus"  
         
       # Fit functions used in simultaneous fit of pass and fail categories
-      self.mj_shape["bkg_mc_fail"]          =  "GausErfExp_ttbar_failSubjetTau21cut"
+      self.mj_shape["bkg_mc_fail"]          = "Exp" #"GausErfExp_ttbar_failSubjetTau21cut"
       self.mj_shape["bkg_data_fail"]        = "Exp"#"GausErfExp_ttbar_failSubjetTau21cut"
       
 #      self.mj_shape["signal_mc_fail"]       = "GausExp_failSubjetTau21cut" #Before GausChebychev_ttbar_failSubjetTau21cut
 #      self.mj_shape["signal_data_fail"]     = "GausExp_failSubjetTau21cut"
-      self.mj_shape["signal_mc_fail"]       = "GausErfExp_ttbar_failSubjetTau21cut" #"GausChebychev_ttbar_failSubjetTau21cut" 
-      self.mj_shape["signal_data_fail"]     = "Exp" #"GausErfExp_ttbar_failSubjetTau21cut"
+      self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut" #"GausChebychev_ttbar_failSubjetTau21cut" 
+      self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut"
 
-      self.mj_shape["bkg_data"]             = "ErfExp_ttbar"  # "GausChebychev_ttbar"
-      self.mj_shape["bkg_mc"]               = "ErfExp_ttbar" # "GausChebychev_ttbar"  #"GausChebychev_ttbar" #"ErfExp_ttbar"   
+      self.mj_shape["bkg_data"]             = "Exp"  # "GausChebychev_ttbar"
+      self.mj_shape["bkg_mc"]               = "Exp" # "GausChebychev_ttbar"  #"GausChebychev_ttbar" #"ErfExp_ttbar"   
       
-      self.mj_shape["signal_data"]          = "Gaus" #Before 2Gaus_ttbar
+      self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
       self.mj_shape["signal_mc"]            = "Gaus_ttbar"
       
 #      if (options.useDDT): 
@@ -689,7 +691,10 @@ class initialiseFits:
         
 
       # Directory and input files
-      self.file_Directory         = "/uscms_data/d3/aparker/Wtag/ForkofB2GTTBar_V4Branch/CMSSW_8_0_22/src/Analysis/B2GTTbar/test/pyttbarfw/"
+      if not options.salsetup: 
+        self.file_Directory         = "/uscms_data/d3/aparker/Wtag/ForkofB2GTTBar_V4Branch/CMSSW_8_0_22/src/Analysis/B2GTTbar/test/pyttbarfw/"
+      else:
+        self.file_Directory         = "/Users/rappoccio/fwlite/B2G/boostedWScalefactorProducer/data/"
       #self.file_Directory = "/Users/rappoccio/fwlite/B2G/boostedWScalefactorProducer/data/"
 #"/uscms_data/d3/aparker/Wtag/ForkofB2GTTBar_V4Branch/CMSSW_8_0_22/src/Analysis/B2GTTbar/test/pyttbarfw/"
 #      self.file_Directory         = "$HOME/EXOVVAnalysisRunII/AnalysisOutput/Wtag_80X/WWTree_%s/"%(self.channel) #For 80X!!!!
@@ -702,7 +707,7 @@ class initialiseFits:
 
       postfix = ""
       if options.use76X: postfix ="_76X"  
-      self.nameTag = "noTopTagSkimWeights3"  #"looserMETandPtRelCuts"    #"noTopTagSkimWeights3" #"looserMETandPtRelCuts"
+      self.nameTag = "looserMETandPtRelCuts"  # "noTopTagSkimWeights3"     #"noTopTagSkimWeights3" #"looserMETandPtRelCuts"
       self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_data_76X_PUPPISD.root")
       self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root")#("ExoDiBosonAnalysis.WWTree_pseudodata_76X_PUPPISD.root")     
       self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ")#("ExoDiBosonAnalysis.WWTree_WJets_76X_PUPPISD.root")
@@ -828,8 +833,8 @@ class initialiseFits:
         print ""
 
         self.get_mj_dataset(self.file_TTbar_mc,"_TTbar")
-        #self.get_mj_dataset(self.file_TTbar_mc,"_TTbar_realW")
-        #self.get_mj_dataset(self.file_TTbar_mc,"_TTbar_fakeW")
+        self.get_mj_dataset(self.file_TTbar_mc,"_TTbar_realW")
+        self.get_mj_dataset(self.file_TTbar_mc,"_TTbar_fakeW")
 
         # Get dataset used for fit to total MC
         print "################################################"
