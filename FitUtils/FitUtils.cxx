@@ -134,7 +134,7 @@ void fit_mj_single_MC(RooWorkspace* workspace, const std::string & fileName, con
 void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::string,std::string > mj_shape, std::map<std::string,int> color_palet, std::vector<std::string>* constraintlist_data, std::vector<std::string>* constraintlist_MC, const std::string & label, const std::string & channel, const std::string & wtagger, const double & ca8_ungroomed_pt_min, const double & ca8_ungroomed_pt_max){
   
   
-  float ttSF = 0.9 ; //0.667028210351; // powheg80X
+  float ttSF = 0.94 ; //0.667028210351; // powheg80X
 //  float ttSF = 1.;
   
 
@@ -208,6 +208,9 @@ void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::str
   RooAbsPdf* model_histpdf_QCD_fail   = workspace->pdf((std::string(rdataset_QCD_mj_fail->GetName())+"_histpdf").c_str());
 
   RooRealVar* number_TTbar_fail  = new RooRealVar(("rrv_number_TTbar_fail"+label+"_"+channel).c_str(),("rrv_number_TTbar_fail"+label+"_"+channel).c_str(),rdataset_TTbar_mj_fail->sumEntries()*ttSF);
+
+  RooRealVar* number_TTbar_fakeW_fail  = new RooRealVar(("rrv_number_TTbar_fakeW_fail"+label+"_"+channel).c_str(),("rrv_number_TTbar_fakeW_fail"+label+"_"+channel).c_str(),rdataset_TTbar_fakeW_mj_fail->sumEntries()*ttSF);
+
   RooRealVar* number_STop_fail   = new RooRealVar(("rrv_number_STop_fail"+label +"_"+channel).c_str(),("rrv_number_STop_fail"+label+"_"+channel).c_str(),rdataset_STop_mj_fail->sumEntries());
 //  RooRealVar* number_VV_fail     = new RooRealVar(("rrv_number_VV_fail"+label   +"_"+channel).c_str(),("rrv_number_VV_fail"+label+"_"+channel).c_str(),rdataset_VV_mj_fail->sumEntries());
   RooRealVar* number_WJets_fail  = new RooRealVar(("rrv_number_WJets_fail"+label+"_"+channel).c_str(),("rrv_number_WJets_fail"+label+"_"+channel).c_str(),rdataset_WJets_mj_fail->sumEntries());
@@ -298,7 +301,7 @@ void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::str
 void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::string,int> color_palet, const std::string & label, const std::string & channel, const std::string & wtagger,const double & ca8_ungroomed_pt_min, const double & ca8_ungroomed_pt_max, const std::string & sample){
   
   //  float ttSF = 0.667028210351;
-  float ttSF = 0.9 ;
+  float ttSF = 0.94 ;
   std::cout<< "Using tt scalefactor of " << ttSF << std::endl;
 
   RooRealVar* rrv_mass_j = workspace->var("rrv_mass_j");
@@ -320,6 +323,7 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   change_dataset_to_histpdf(workspace,rrv_mass_j, rdataset_WJets_mj);
   change_dataset_to_histpdf(workspace,rrv_mass_j, rdataset_QCD_mj);
  
+  RooAbsPdf* model_histpdf_TTbar  = workspace->pdf((std::string(rdataset_TTbar_mj->GetName())+"_histpdf").c_str());
   RooAbsPdf* model_histpdf_TTbar_fakeW  = workspace->pdf((std::string(rdataset_TTbar_fakeW_mj->GetName())+"_histpdf").c_str());
   RooAbsPdf* model_histpdf_STop  = workspace->pdf((std::string(rdataset_STop_mj->GetName())+"_histpdf").c_str());
 //  RooAbsPdf* model_histpdf_VV    = workspace->pdf((std::string(rdataset_VV_mj->GetName())+"_histpdf").c_str());
@@ -344,6 +348,7 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   change_dataset_to_histpdf(workspace,rrv_mass_j, rdataset_WJets_mj_fail);
   change_dataset_to_histpdf(workspace,rrv_mass_j, rdataset_QCD_mj_fail);
 
+  RooAbsPdf* model_histpdf_TTbar_fail  = workspace->pdf((std::string(rdataset_TTbar_mj_fail->GetName())+"_histpdf").c_str());
   RooAbsPdf* model_histpdf_TTbar_fakeW_fail  = workspace->pdf((std::string(rdataset_TTbar_fakeW_mj_fail->GetName())+"_histpdf").c_str());
   RooAbsPdf* model_histpdf_STop_fail  = workspace->pdf((std::string(rdataset_STop_mj_fail->GetName())+"_histpdf").c_str());
 //  RooAbsPdf* model_histpdf_VV_fail    = workspace->pdf((std::string(rdataset_VV_mj_fail->GetName())+"_histpdf").c_str());
@@ -402,7 +407,8 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   combData_p_f_data->plotOn(xframe_data,RooFit::Name("data_invisible"),RooFit::Cut(cut.Data()),RooFit::MarkerSize(1.5), RooFit::DataError(RooAbsData::SumW2), RooFit::XErrorSize(0) );
   
   std::cout<< "PLOTTING SIM. FIT! PASS: " << std::endl;
-  model_TTbar_STop_QCD_WJets->plotOn(xframe_data,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets),RooFit::Name("TTbar"),RooFit::Components(cut.Data()),RooFit::DrawOption("F"), RooFit::FillColor(color_palet["TTbar"]), RooFit::LineColor(kBlack), RooFit::VLines());
+  model_TTbar_STop_QCD_WJets->plotOn(xframe_data,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets),RooFit::Name("TTbar"),RooFit::DrawOption("F"), RooFit::FillColor(color_palet["TTbar"]), RooFit::LineColor(kBlack), RooFit::VLines());
+  //,RooFit::Components(cut.Data())
   
   model_histpdf_TTbar_fakeW->plotOn(xframe_data,RooFit::Normalization(fraction_number_TTbar_fakeW),RooFit::Name("TTbar_fakeW"), RooFit::DrawOption("F"), RooFit::FillColor(color_palet["TTbar_fakeW"+label]), RooFit::LineColor(kBlack), RooFit::VLines());
 
