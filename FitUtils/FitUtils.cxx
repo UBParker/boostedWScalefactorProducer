@@ -224,7 +224,7 @@ void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::str
   double scale_number_TTbar_STop_QCD_WJets_fail = (rdataset_TTbar_mj_fail->sumEntries()*ttSF+rdataset_TTbar_mj_fail_unmerged->sumEntries()*ttSF+rdataset_STop_mj_fail->sumEntries()+rdataset_VV_mj_fail->sumEntries()+rdataset_WJets_mj_fail->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries());*/
   double scale_number_TTbar_STop_QCD_WJets      = (rdataset_TTbar_mj->sumEntries()*ttSF+rdataset_STop_mj->sumEntries()+rdataset_WJets_mj->sumEntries()+rdataset_QCD_mj->sumEntries())/(rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries());
   double scale_number_TTbar_STop_QCD_WJets_fail = (rdataset_TTbar_mj_fail->sumEntries()*ttSF+rdataset_STop_mj_fail->sumEntries()+rdataset_WJets_mj_fail->sumEntries()+rdataset_QCD_mj_fail->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries());
-  double scale_number_TTbar_fakeW =    fraction_before_fit * rdataset_TTbar_fakeW_mj->sumEntries()*ttSF;
+  //double scale_number_TTbar_fakeW =    fraction_before_fit * rdataset_TTbar_fakeW_mj->sumEntries()*ttSF;
 
   RooRealVar* rrv_scale_number_TTbar_STop_QCD_WJets = new RooRealVar(("rrv_scale_number_TTbar_STop_QCD_WJets"+label).c_str(),("rrv_scale_number_TTbar_STop_QCD_WJets"+label).c_str(),scale_number_TTbar_STop_QCD_WJets);
   RooRealVar* rrv_scale_number_TTbar_STop_QCD_WJets_fail = new RooRealVar(("rrv_scale_number_TTbar_STop_QCD_WJets_fail"+label).c_str(),("rrv_scale_number_TTbar_STop_QCD_WJets_fail"+label).c_str(),scale_number_TTbar_STop_QCD_WJets_fail);
@@ -358,8 +358,8 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   double scale_number_TTbar_STop_QCD_WJets_fail = (rdataset_TTbar_mj_fail->sumEntries()*ttSF+rdataset_TTbar_mj_fail_unmerged->sumEntries()*ttSF+rdataset_STop_mj_fail->sumEntries()+rdataset_VV_mj_fail->sumEntries() +rdataset_WJets_mj_fail->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );*/
   double scale_number_TTbar_STop_QCD_WJets      = (rdataset_TTbar_mj->sumEntries()*ttSF+rdataset_STop_mj->sumEntries()+rdataset_QCD_mj->sumEntries()+rdataset_WJets_mj->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
   double scale_number_TTbar_STop_QCD_WJets_fail = (rdataset_TTbar_mj_fail->sumEntries()*ttSF+rdataset_STop_mj_fail->sumEntries()+rdataset_WJets_mj_fail->sumEntries()+rdataset_QCD_mj->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
-  double fraction_number_TTbar_fakeW      = fraction_before_fit * rdataset_TTbar_fakeW_mj->sumEntries()*ttSF;
-  double fraction_number_TTbar_fakeW_fail      = fraction_before_fit * rdataset_TTbar_mj_fail->sumEntries()*ttSF;
+  double fraction_number_TTbar_fakeW      = fraction_before_fit * rdataset_TTbar_mj->sumEntries()*ttSF/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
+  double fraction_number_TTbar_fakeW_fail      = fraction_before_fit * rdataset_TTbar_mj_fail->sumEntries()*ttSF/ ( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
     
   
   std::cout<<"SCALE NR. PASS = " << scale_number_TTbar_STop_QCD_WJets << std::endl;
