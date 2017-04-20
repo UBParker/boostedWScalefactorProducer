@@ -21,8 +21,9 @@ parser.add_option('--76X',dest="use76X", default=False, action="store_true", hel
 parser.add_option('--useDDT',dest="useDDT", default=False, action="store_true", help="Use DDT tagger")
 parser.add_option('--useN2DDT',dest="useN2DDT", default=False, action="store_true", help="Use N_2^DDT tagger")
 parser.add_option('--usePuppiSD',dest="usePuppiSD", default=True, action="store_true", help="Use PUPPI+softdrop")
-parser.add_option('--salsetup',dest="salsetup", default=True, action="store_true", help="Sal's setup")
-
+parser.add_option('--salsetup',dest="salsetup", default=False, action="store_true", help="Sal's setup")
+parser.add_option('--binmin',dest="ptbinmin", default=300, type=int,help="Minimum subjet 0 pt")
+parser.add_option('--binmax',dest="ptbinmax", default=500, type=int,help="Maximum subjet 0 pt")
 (options, args) = parser.parse_args()
 
 #Added these 2 lines - Michael
@@ -662,8 +663,8 @@ class initialiseFits:
       in_mj_max        = in_mj_min+nbins_mj*self.BinWidth_mj
       
       jetMass = "Pruned jet mass"
-      if options.usePuppiSD: jetMass = "(300<pt<500) PUPPI Softdrop Subjet0 Mass"
-      if options.useN2DDT: jetMass = "(300<pt<500) PUPPI Softdrop Subjet0 Mass"
+      if options.usePuppiSD: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
+      if options.useN2DDT: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
 
       rrv_mass_j = RooRealVar("rrv_mass_j", jetMass ,(in_mj_min+in_mj_max)/2.,in_mj_min,in_mj_max,"GeV")
       rrv_mass_j.setBins(nbins_mj)
@@ -738,7 +739,7 @@ class initialiseFits:
       # Define label used for plots and choosing fit paramters in PDFs/MakePdf.cxx  
       wp = "%.2f" %options.tau2tau1cutHP
       wp = wp.replace(".","v")
-      ptBin = "ptSubjet300to500_ttSF0p9"
+      ptBin = "ptSubjet"+str(options.ptbinmin)+"To"+str(options.ptbinmax)+"_ttSF0p9"
       self.wtagger_label = self.wtagger_label + "%s%s%s%s"%(wp,in_sample,postfix, ptBin ) 
 
       
@@ -1063,7 +1064,7 @@ class initialiseFits:
           ### Wtag mass window cut
           #if  not ( 10. <=  self.ak8subjet0PuppiSD_m <= 140.) : continue
 
-          if not (300. <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= 500.): continue
+          if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= options.ptbinmax ): continue
 
           SJtau1 = getattr(treeIn,"JetSDsubjet0tau1") 
           SJtau2 = getattr(treeIn,"JetSDsubjet0tau2")

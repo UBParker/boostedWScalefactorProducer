@@ -134,7 +134,7 @@ void fit_mj_single_MC(RooWorkspace* workspace, const std::string & fileName, con
 void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::string,std::string > mj_shape, std::map<std::string,int> color_palet, std::vector<std::string>* constraintlist_data, std::vector<std::string>* constraintlist_MC, const std::string & label, const std::string & channel, const std::string & wtagger, const double & ca8_ungroomed_pt_min, const double & ca8_ungroomed_pt_max){
   
   
-  float ttSF = 0.94 ; //0.667028210351; // powheg80X
+  float ttSF = 0.9 ; //0.667028210351; // powheg80X
 //  float ttSF = 1.;
   
 
@@ -301,7 +301,7 @@ void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::str
 void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::string,int> color_palet, const std::string & label, const std::string & channel, const std::string & wtagger,const double & ca8_ungroomed_pt_min, const double & ca8_ungroomed_pt_max, const std::string & sample){
   
   //  float ttSF = 0.667028210351;
-  float ttSF = 0.94 ;
+  float ttSF = 0.9 ;
   std::cout<< "Using tt scalefactor of " << ttSF << std::endl;
 
   RooRealVar* rrv_mass_j = workspace->var("rrv_mass_j");
@@ -363,8 +363,8 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   double scale_number_TTbar_STop_QCD_WJets_fail = (rdataset_TTbar_mj_fail->sumEntries()*ttSF+rdataset_TTbar_mj_fail_unmerged->sumEntries()*ttSF+rdataset_STop_mj_fail->sumEntries()+rdataset_VV_mj_fail->sumEntries() +rdataset_WJets_mj_fail->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );*/
   double scale_number_TTbar_STop_QCD_WJets      = (rdataset_TTbar_mj->sumEntries()*ttSF+rdataset_STop_mj->sumEntries()+rdataset_QCD_mj->sumEntries()+rdataset_WJets_mj->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
   double scale_number_TTbar_STop_QCD_WJets_fail = (rdataset_TTbar_mj_fail->sumEntries()*ttSF+rdataset_STop_mj_fail->sumEntries()+rdataset_WJets_mj_fail->sumEntries()+rdataset_QCD_mj->sumEntries())/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
-  double fraction_number_TTbar_fakeW      = fraction_before_fit * rdataset_TTbar_mj->sumEntries()*ttSF/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
-  double fraction_number_TTbar_fakeW_fail      = fraction_before_fit * rdataset_TTbar_mj_fail->sumEntries()*ttSF/ ( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
+  double fraction_number_TTbar_fakeW      = fraction_before_fit * rdataset_TTbar_mj->sumEntries()*ttSF/( rdataset_TTbar_mj->sumEntries()+rdataset_TTbar_mj_fail->sumEntries() );
+  double fraction_number_TTbar_fakeW_fail      = fraction_before_fit * rdataset_TTbar_mj_fail->sumEntries()*ttSF/ ( rdataset_TTbar_mj->sumEntries()+rdataset_TTbar_mj_fail->sumEntries() );
     
   
   std::cout<<"SCALE NR. PASS = " << scale_number_TTbar_STop_QCD_WJets << std::endl;
