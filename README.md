@@ -26,13 +26,13 @@ python Automatic_Setup.py --vclean 1#To compile
 ### running
 ```
 python Automatic_Setup.py  #To compile
-python wtagSFfits2.py -usePuppiSD   #To run
+python wSubjetTagSFfits.py --usePuppiSD -b --HP 0.4 --binmin 300 --binmax 500  #To run
 ```
 
 The basic script to be run is 
 
 ```
-python wtagSFfits2.py
+python wSubjetTagSFfits.py
 ```
 It takes as input .root files containing a TTree with a branch for the mass distribution you want to calculate a scalefactor for. This branch can contain events after full selection is applied, or new selections can be implemented on the fly in wtagSFfits.py. In addition to a data and the separate background MC files, you need one file called "*pseudodata* wchich contains all MC added together (with their appropriate weights, using ROOT hadd).
 
@@ -51,4 +51,7 @@ It takes as input .root files containing a TTree with a branch for the mass dist
     --useDDT : Uses DDT tagger instead of pruning+softdrop (ops! Requires softdrop variables)
     --usePuppiSD : Uses PUPPI + softdrop and PUPPI n-subjettiness
     --useN2DDT: Uses N2DDT
+    --salsetup: Different sourcing for running locally 
+    --binmin: Minimum Pt of SD subjet 0 of the leading AK8 jet
+    --binmax: Maximum Pt of SD subjet 0 of the leading AK8 jet
 ```
