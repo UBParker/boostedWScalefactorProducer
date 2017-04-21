@@ -634,9 +634,9 @@ class initialiseFits:
       self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut" #"GausChebychev_ttbar_failSubjetTau21cut" 
       self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut"
 
-      self.mj_shape["bkg_data"]             = "GausChebychev_ttbar"  
+      self.mj_shape["bkg_data"]             = "ExpGaus"  #"GausChebychev_ttbar"  
       ### NOTE: "ExpGaus" may be better
-      self.mj_shape["bkg_mc"]               = "GausChebychev_ttbar"  # "ExpGaus"
+      self.mj_shape["bkg_mc"]               = "ExpGaus"  #"GausChebychev_ttbar"  # "ExpGaus"
       
       self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
       self.mj_shape["signal_mc"]            = "Gaus_ttbar"
