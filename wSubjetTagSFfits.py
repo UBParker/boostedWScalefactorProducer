@@ -59,9 +59,6 @@ RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
 
 if options.noX: gROOT.SetBatch(True)
 
-#Define counts of Gen Matched Ws in each category              
-countRealWsInFail = 0
-countRealWsInPass = 0
 
 def getLegend():
   legend = TLegend(0.6010112,0.7183362,0.8202143,0.919833)
@@ -244,6 +241,11 @@ def doFitsToMatchedTT():
     workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")
     ttMC_fitter = initialiseFits("em", options.sample, 50, 140, workspace4fit_)
 
+    print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    print"RealWs in Pass:  {0}".format(ttMC_fitter.countRealWsInPass)
+    print"RealWs in Fail:  {0}".format(ttMC_fitter.countRealWsInFail)
+    print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
     ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_realW")
     ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_fakeW")
     print ttMC_fitter.file_TTbar_mc
@@ -393,183 +395,7 @@ def GetWtagScalefactors( workspace,fitter):
     fitter.file_out_ttbar_control.write("\nLP W-tag eff+SF (wo/ext fail)         %0.3f +/- %0.3f                  %0.3f +/- %0.3f                        %0.3f +/- %0.3f" %(tmpq_eff_data_em_LP,tmpq_eff_data_em_LP_err,tmpq_eff_MC_em_LP,tmpq_eff_MC_em_LP_err,pureq_wtagger_sf_em_LP,pureq_wtagger_sf_em_LP_err))
     fitter.file_out_ttbar_control.write("\n")
     fitter.file_out_ttbar_control.write("\n-----------------------------------------------------------------------------------------------------------------------------")
-class doWtagFits(initialiseFits):
-    def __init__(self, initialise_Fits ):
-        self.workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")                           # create workspace
-        self.boostedW_fitter_em = initialiseFits("em", options.sample, 50, 140, self.workspace4fit_)    # Define all shapes to be used for Mj, define regions (SB,signal) and input files. 
-        self.boostedW_fitter_em.get_datasets_fit_minor_bkg()                                            # Loop over intrees to create datasets om Mj and fit the single MCs.
-       
-        print "Printing workspace:"; self.workspace4fit_.Print(); print ""
-        
-        self.boostedW_fitter_em.get_sim_fit_components()     
 
-        #Defining categories
-        sample_type = RooCategory("sample_type","sample_type")
-        sample_type.defineType("em_pass")
-        sample_type.defineType("em_fail")
-
-        #Importing fit variables
-        rrv_mass_j = self.workspace4fit_.var("rrv_mass_j")
-        rrv_weight = RooRealVar("rrv_weight","rrv_weight",0. ,10000000.)
-        
-        rdataset_data_em_mj      = self.workspace4fit_.data("rdataset_data_em_mj")
-        rdataset_data_em_mj_fail = self.workspace4fit_.data("rdataset_data_failSubjetTau21cut_em_mj")
-
-        #For binned fit (shorter computing time, more presise when no SumW2Error is used!)
-        if options.doBinnedFit:
-          #Converting to RooDataHist
-          rdatahist_data_em_mj      = RooDataHist(rdataset_data_em_mj.binnedClone())
-          rdatahist_data_em_mj_fail = RooDataHist(rdataset_data_em_mj_fail.binnedClone())
-
-          #Converting back to RooDataSet
-          rdataset_data_em_mj_2 = rdataset_data_em_mj.emptyClone()
-          for i in range(0,rdatahist_data_em_mj.numEntries()):
-            rdataset_data_em_mj_2.add(rdatahist_data_em_mj.get(i),rdatahist_data_em_mj.weight())
-
-          rdataset_data_em_mj_fail_2 = rdataset_data_em_mj_fail.emptyClone()
-          for i in range(0,rdatahist_data_em_mj_fail.numEntries()):
-            rdataset_data_em_mj_fail_2.add(rdatahist_data_em_mj_fail.get(i),rdatahist_data_em_mj_fail.weight())
-
-          #Combined dataset
-          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj_2),RooFit.Import("em_fail",rdataset_data_em_mj_fail_2) )
-
-        #For unbinned fit
-        else:
-          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj),RooFit.Import("em_fail",rdataset_data_em_mj_fail) )
-
-        #-------------IMPORT MC-------------
-        #Importing MC datasets
-        rdataset_TotalMC_em_mj      = self.workspace4fit_.data("rdataset_TotalMC_em_mj")
-        rdataset_TotalMC_em_mj_fail = self.workspace4fit_.data("rdataset_TotalMC_failSubjetTau21cut_em_mj")
-
-        if options.doBinnedFit:
-          #Converting to RooDataHist
-          rdatahist_TotalMC_em_mj      = RooDataHist(rdataset_TotalMC_em_mj.binnedClone())
-          rdatahist_TotalMC_em_mj_fail = RooDataHist(rdataset_TotalMC_em_mj_fail.binnedClone())
-
-          #Converting back to RooDataSet
-          rdataset_TotalMC_em_mj_2 = rdataset_TotalMC_em_mj.emptyClone()
-          for i in range(0,rdatahist_TotalMC_em_mj.numEntries()):
-            rdataset_TotalMC_em_mj_2.add(rdatahist_TotalMC_em_mj.get(i),rdatahist_TotalMC_em_mj.weight())
-
-          rdataset_TotalMC_em_mj_fail_2 = rdataset_TotalMC_em_mj_fail.emptyClone()
-          for i in range(0,rdatahist_TotalMC_em_mj_fail.numEntries()):
-            rdataset_TotalMC_em_mj_fail_2.add(rdatahist_TotalMC_em_mj_fail.get(i),rdatahist_TotalMC_em_mj_fail.weight())
-
-          #Combined MC dataset
-          combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj_2),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail_2) )
-
-        else:
-         combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail) )
-
-        #-------------Define and perform fit to data-------------
-        #Import pdf from single fits and define the simultaneous total pdf
-        model_data_em      = self.workspace4fit_.pdf("model_data_em")
-        model_data_fail_em = self.workspace4fit_.pdf("model_data_failSubjetTau21cut_em")
-
-        simPdf_data = RooSimultaneous("simPdf_data_em","simPdf_data_em",sample_type)
-        simPdf_data.addPdf(model_data_em,"em_pass")
-        simPdf_data.addPdf(model_data_fail_em,"em_fail")
-
-        #Import Gaussian constraints to propagate error to likelihood
-        constrainslist_data_em = ROOT.std.vector(ROOT.std.string)()
-        for i in range(self.boostedW_fitter_em.constrainslist_data.size()):
-            constrainslist_data_em.push_back(self.boostedW_fitter_em.constrainslist_data.at(i))
-            print self.boostedW_fitter_em.constrainslist_data.at(i)
-        pdfconstrainslist_data_em = RooArgSet("pdfconstrainslist_data_em")
-        for i in range(constrainslist_data_em.size()):
-          pdfconstrainslist_data_em.add(self.workspace4fit_.pdf(constrainslist_data_em.at(i)) )
-          pdfconstrainslist_data_em.Print()
-
-        # Perform simoultaneous fit to data
-        if options.doBinnedFit:
-          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em))#, RooFit.SumW2Error(kTRUE))
-          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em))#, RooFit.SumW2Error(kTRUE))
-        else:
-          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em), RooFit.SumW2Error(kTRUE))
-          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em), RooFit.SumW2Error(kTRUE))
-
-        #Draw       
-        isData = True
-        chi2FailData = drawFrameGetChi2(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj_fail,model_data_fail_em,isData)
-        chi2PassData = drawFrameGetChi2(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj,model_data_em,isData)
-
-        #Print final data fit results
-        print "FIT parameters (DATA) :"; print ""
-        print "CHI2 PASS = %.3f    CHI2 FAIL = %.3f" %(chi2PassData,chi2FailData)
-        print ""; print rfresult_data.Print("v"); print ""
-
-        #-------------Define and perform fit to MC-------------
-
-        # fit TotalMC --> define the simultaneous total pdf
-        model_TotalMC_em      = self.workspace4fit_.pdf("model_TotalMC_em")
-        model_TotalMC_fail_em = self.workspace4fit_.pdf("model_TotalMC_failSubjetTau21cut_em")
-        simPdf_TotalMC = RooSimultaneous("simPdf_TotalMC_em","simPdf_TotalMC_em",sample_type)
-        simPdf_TotalMC.addPdf(model_TotalMC_em,"em_pass")
-        simPdf_TotalMC.addPdf(model_TotalMC_fail_em,"em_fail")
-
-        #Import Gaussian constraints  for fixed paramters to propagate error to likelihood
-        constrainslist_TotalMC_em = ROOT.std.vector(ROOT.std.string)()
-        for i in range(self.boostedW_fitter_em.constrainslist_mc.size()):
-            constrainslist_TotalMC_em.push_back(self.boostedW_fitter_em.constrainslist_mc.at(i))
-        pdfconstrainslist_TotalMC_em = RooArgSet("pdfconstrainslist_TotalMC_em")
-        for i in range(constrainslist_TotalMC_em.size()):
-          pdfconstrainslist_TotalMC_em.add(self.workspace4fit_.pdf(constrainslist_TotalMC_em[i]) )
-
-        # Perform simoultaneous fit to MC
-        if options.doBinnedFit:
-          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em))#, RooFit.SumW2Error(kTRUE))--> Removing due to unexected behaviour. See https://root.cern.ch/phpBB3/viewtopic.php?t=16917, https://root.cern.ch/phpBB3/viewtopic.php?t=16917
-          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em))#, RooFit.SumW2Error(kTRUE))        
-        else:
-          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em), RooFit.SumW2Error(kTRUE))
-          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em), RooFit.SumW2Error(kTRUE))
-          
-        isData = False  
-        chi2FailMC = drawFrameGetChi2(self,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj_fail,model_TotalMC_fail_em,isData)
-        chi2PassMC = drawFrameGetChi2(self,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj,model_TotalMC_em,isData)
-        
-        #Print final MC fit results
-        print "FIT Par. (MC) :"; print ""
-        print "CHI2 PASS = %.3f    CHI2 FAIL = %.3f" %(chi2PassMC,chi2FailMC)
-        print ""; print rfresult_TotalMC.Print("v"); print ""
-
-        drawDataAndMC(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj_fail,model_data_fail_em,True,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj_fail,model_TotalMC_fail_em,False)
-
-        drawDataAndMC(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj,model_data_em,True,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj,model_TotalMC_em,False)
-        
-        # draw the final fit results
-        DrawScaleFactorTTbarControlSample(self.workspace4fit_,self.boostedW_fitter_em.color_palet,"","em",self.boostedW_fitter_em.wtagger_label,self.boostedW_fitter_em.AK8_pt_min,self.boostedW_fitter_em.AK8_pt_max,options.sample)
-       
-        # Get W-tagging scalefactor and efficiencies
-        GetWtagScalefactors( self.workspace4fit_,self.boostedW_fitter_em)
-        
-        # wpForPlotting ="%.2f"%options.tau2tau1cutHP
-        # wpForPlotting = wpForPlotting.replace(".","v")
-        # pf=""
-        # if options.usePuppiSD: pf = "_PuppiSD"
-        # if options.useDDT: pf = "_PuppiSD_DDT"
-        # postfix = "%s_%s" %(pf,wpForPlotting)
-        # cmd =   "mv plots plots%s" %postfix
-        # print cmd
-        # os.system(cmd)
-        # cmd =   "mv WtaggingSF.txt plots%s" %postfix
-        # print cmd
-        # os.system(cmd)
-
-        print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        print"RealWs in Pass:  {0}".format(initialise_Fits.countRealWsInPass)
-        print"RealWs in Fail:  {0}".format(initialise_Fits.countRealWsInFail)
-        print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-
-
-        self.workspace4fit_.Print()
-        sys.exit()
-
-        wout = ROOT.TFile.Open("Workspace.root","RECREATE")
-        wout.cd()
-        self.workspace4fit_.Write()        
-        # Delete workspace
-#        del self.workspace4fit_
 
 class initialiseFits:
 
@@ -578,7 +404,11 @@ class initialiseFits:
       
       RooAbsPdf.defaultIntegratorConfig().setEpsRel(1e-9)
       RooAbsPdf.defaultIntegratorConfig().setEpsAbs(1e-9)
-    
+
+      #Define counts of Gen Matched Ws in each category              
+      self.countRealWsInFail = 0
+      self.countRealWsInPass = 0
+
       # Set channel 
       self.channel = in_channel
       
@@ -1094,12 +924,12 @@ class initialiseFits:
             #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
             #print"A Gen Matched W (RealW) Failed the HP tau21 cut"
             #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
-            countRealWsInFail += 1
+            self.countRealWsInFail += 1
           if  isRealW == 1 and wtagger <= options.tau2tau1cutHP :
             #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
             #print"A Gen Matched W (RealW) PASSED the HP tau21 cut"  
             #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
-            countRealWsInPass += 1
+            self.countRealWsInPass += 1
           if options.useDDT:
             if (getattr(treeIn,"JetPuppiSDsubjet0tau1") >= 0.1) and (getattr(treeIn,"JetPuppiSDsubjet0pt") >= 0.1) :
               wtagger = getattr(treeIn,"JetPuppiSDsubjet0tau2")/getattr(treeIn,"JetPuppiSDsubjet0tau1")+ (0.063 * TMath.log( (pow( getattr(treeIn,"JetPuppiSDsubjet0mass"),2))/getattr(treeIn,"JetPuppiSDsubjet0pt") ))        
@@ -1264,6 +1094,179 @@ class initialiseFits:
       #print "WHAT!!!"
       combData_p_f.Print("v")
       
+
+class doWtagFits():
+    def __init__(self ):
+        self.workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")                           # create workspace
+        self.boostedW_fitter_em = initialiseFits("em", options.sample, 50, 140, self.workspace4fit_)    # Define all shapes to be used for Mj, define regions (SB,signal) and input files. 
+        self.boostedW_fitter_em.get_datasets_fit_minor_bkg()                                            # Loop over intrees to create datasets om Mj and fit the single MCs.
+       
+        print "Printing workspace:"; self.workspace4fit_.Print(); print ""
+        
+        self.boostedW_fitter_em.get_sim_fit_components()     
+
+        #Defining categories
+        sample_type = RooCategory("sample_type","sample_type")
+        sample_type.defineType("em_pass")
+        sample_type.defineType("em_fail")
+
+        #Importing fit variables
+        rrv_mass_j = self.workspace4fit_.var("rrv_mass_j")
+        rrv_weight = RooRealVar("rrv_weight","rrv_weight",0. ,10000000.)
+        
+        rdataset_data_em_mj      = self.workspace4fit_.data("rdataset_data_em_mj")
+        rdataset_data_em_mj_fail = self.workspace4fit_.data("rdataset_data_failSubjetTau21cut_em_mj")
+
+        #For binned fit (shorter computing time, more presise when no SumW2Error is used!)
+        if options.doBinnedFit:
+          #Converting to RooDataHist
+          rdatahist_data_em_mj      = RooDataHist(rdataset_data_em_mj.binnedClone())
+          rdatahist_data_em_mj_fail = RooDataHist(rdataset_data_em_mj_fail.binnedClone())
+
+          #Converting back to RooDataSet
+          rdataset_data_em_mj_2 = rdataset_data_em_mj.emptyClone()
+          for i in range(0,rdatahist_data_em_mj.numEntries()):
+            rdataset_data_em_mj_2.add(rdatahist_data_em_mj.get(i),rdatahist_data_em_mj.weight())
+
+          rdataset_data_em_mj_fail_2 = rdataset_data_em_mj_fail.emptyClone()
+          for i in range(0,rdatahist_data_em_mj_fail.numEntries()):
+            rdataset_data_em_mj_fail_2.add(rdatahist_data_em_mj_fail.get(i),rdatahist_data_em_mj_fail.weight())
+
+          #Combined dataset
+          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj_2),RooFit.Import("em_fail",rdataset_data_em_mj_fail_2) )
+
+        #For unbinned fit
+        else:
+          combData_data = RooDataSet("combData_data","combData_data",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_data_em_mj),RooFit.Import("em_fail",rdataset_data_em_mj_fail) )
+
+        #-------------IMPORT MC-------------
+        #Importing MC datasets
+        rdataset_TotalMC_em_mj      = self.workspace4fit_.data("rdataset_TotalMC_em_mj")
+        rdataset_TotalMC_em_mj_fail = self.workspace4fit_.data("rdataset_TotalMC_failSubjetTau21cut_em_mj")
+
+        if options.doBinnedFit:
+          #Converting to RooDataHist
+          rdatahist_TotalMC_em_mj      = RooDataHist(rdataset_TotalMC_em_mj.binnedClone())
+          rdatahist_TotalMC_em_mj_fail = RooDataHist(rdataset_TotalMC_em_mj_fail.binnedClone())
+
+          #Converting back to RooDataSet
+          rdataset_TotalMC_em_mj_2 = rdataset_TotalMC_em_mj.emptyClone()
+          for i in range(0,rdatahist_TotalMC_em_mj.numEntries()):
+            rdataset_TotalMC_em_mj_2.add(rdatahist_TotalMC_em_mj.get(i),rdatahist_TotalMC_em_mj.weight())
+
+          rdataset_TotalMC_em_mj_fail_2 = rdataset_TotalMC_em_mj_fail.emptyClone()
+          for i in range(0,rdatahist_TotalMC_em_mj_fail.numEntries()):
+            rdataset_TotalMC_em_mj_fail_2.add(rdatahist_TotalMC_em_mj_fail.get(i),rdatahist_TotalMC_em_mj_fail.weight())
+
+          #Combined MC dataset
+          combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj_2),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail_2) )
+
+        else:
+         combData_TotalMC = RooDataSet("combData_TotalMC","combData_TotalMC",RooArgSet(rrv_mass_j,rrv_weight),RooFit.WeightVar(rrv_weight),RooFit.Index(sample_type),RooFit.Import("em_pass",rdataset_TotalMC_em_mj),RooFit.Import("em_fail",rdataset_TotalMC_em_mj_fail) )
+
+        #-------------Define and perform fit to data-------------
+        #Import pdf from single fits and define the simultaneous total pdf
+        model_data_em      = self.workspace4fit_.pdf("model_data_em")
+        model_data_fail_em = self.workspace4fit_.pdf("model_data_failSubjetTau21cut_em")
+
+        simPdf_data = RooSimultaneous("simPdf_data_em","simPdf_data_em",sample_type)
+        simPdf_data.addPdf(model_data_em,"em_pass")
+        simPdf_data.addPdf(model_data_fail_em,"em_fail")
+
+        #Import Gaussian constraints to propagate error to likelihood
+        constrainslist_data_em = ROOT.std.vector(ROOT.std.string)()
+        for i in range(self.boostedW_fitter_em.constrainslist_data.size()):
+            constrainslist_data_em.push_back(self.boostedW_fitter_em.constrainslist_data.at(i))
+            print self.boostedW_fitter_em.constrainslist_data.at(i)
+        pdfconstrainslist_data_em = RooArgSet("pdfconstrainslist_data_em")
+        for i in range(constrainslist_data_em.size()):
+          pdfconstrainslist_data_em.add(self.workspace4fit_.pdf(constrainslist_data_em.at(i)) )
+          pdfconstrainslist_data_em.Print()
+
+        # Perform simoultaneous fit to data
+        if options.doBinnedFit:
+          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em))#, RooFit.SumW2Error(kTRUE))
+          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em))#, RooFit.SumW2Error(kTRUE))
+        else:
+          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em), RooFit.SumW2Error(kTRUE))
+          rfresult_data = simPdf_data.fitTo(combData_data,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_data_em), RooFit.SumW2Error(kTRUE))
+
+        #Draw       
+        isData = True
+        chi2FailData = drawFrameGetChi2(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj_fail,model_data_fail_em,isData)
+        chi2PassData = drawFrameGetChi2(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj,model_data_em,isData)
+
+        #Print final data fit results
+        print "FIT parameters (DATA) :"; print ""
+        print "CHI2 PASS = %.3f    CHI2 FAIL = %.3f" %(chi2PassData,chi2FailData)
+        print ""; print rfresult_data.Print("v"); print ""
+
+        #-------------Define and perform fit to MC-------------
+
+        # fit TotalMC --> define the simultaneous total pdf
+        model_TotalMC_em      = self.workspace4fit_.pdf("model_TotalMC_em")
+        model_TotalMC_fail_em = self.workspace4fit_.pdf("model_TotalMC_failSubjetTau21cut_em")
+        simPdf_TotalMC = RooSimultaneous("simPdf_TotalMC_em","simPdf_TotalMC_em",sample_type)
+        simPdf_TotalMC.addPdf(model_TotalMC_em,"em_pass")
+        simPdf_TotalMC.addPdf(model_TotalMC_fail_em,"em_fail")
+
+        #Import Gaussian constraints  for fixed paramters to propagate error to likelihood
+        constrainslist_TotalMC_em = ROOT.std.vector(ROOT.std.string)()
+        for i in range(self.boostedW_fitter_em.constrainslist_mc.size()):
+            constrainslist_TotalMC_em.push_back(self.boostedW_fitter_em.constrainslist_mc.at(i))
+        pdfconstrainslist_TotalMC_em = RooArgSet("pdfconstrainslist_TotalMC_em")
+        for i in range(constrainslist_TotalMC_em.size()):
+          pdfconstrainslist_TotalMC_em.add(self.workspace4fit_.pdf(constrainslist_TotalMC_em[i]) )
+
+        # Perform simoultaneous fit to MC
+        if options.doBinnedFit:
+          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em))#, RooFit.SumW2Error(kTRUE))--> Removing due to unexected behaviour. See https://root.cern.ch/phpBB3/viewtopic.php?t=16917, https://root.cern.ch/phpBB3/viewtopic.php?t=16917
+          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em))#, RooFit.SumW2Error(kTRUE))        
+        else:
+          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em), RooFit.SumW2Error(kTRUE))
+          rfresult_TotalMC = simPdf_TotalMC.fitTo(combData_TotalMC,RooFit.Save(kTRUE),RooFit.Verbose(kFALSE), RooFit.Minimizer("Minuit2"),RooFit.ExternalConstraints(pdfconstrainslist_TotalMC_em), RooFit.SumW2Error(kTRUE))
+          
+        isData = False  
+        chi2FailMC = drawFrameGetChi2(self,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj_fail,model_TotalMC_fail_em,isData)
+        chi2PassMC = drawFrameGetChi2(self,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj,model_TotalMC_em,isData)
+        
+        #Print final MC fit results
+        print "FIT Par. (MC) :"; print ""
+        print "CHI2 PASS = %.3f    CHI2 FAIL = %.3f" %(chi2PassMC,chi2FailMC)
+        print ""; print rfresult_TotalMC.Print("v"); print ""
+
+        drawDataAndMC(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj_fail,model_data_fail_em,True,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj_fail,model_TotalMC_fail_em,False)
+
+        drawDataAndMC(self, rrv_mass_j,rfresult_data,rdataset_data_em_mj,model_data_em,True,rrv_mass_j,rfresult_TotalMC,rdataset_TotalMC_em_mj,model_TotalMC_em,False)
+        
+        # draw the final fit results
+        DrawScaleFactorTTbarControlSample(self.workspace4fit_,self.boostedW_fitter_em.color_palet,"","em",self.boostedW_fitter_em.wtagger_label,self.boostedW_fitter_em.AK8_pt_min,self.boostedW_fitter_em.AK8_pt_max,options.sample)
+       
+        # Get W-tagging scalefactor and efficiencies
+        GetWtagScalefactors( self.workspace4fit_,self.boostedW_fitter_em)
+        
+        # wpForPlotting ="%.2f"%options.tau2tau1cutHP
+        # wpForPlotting = wpForPlotting.replace(".","v")
+        # pf=""
+        # if options.usePuppiSD: pf = "_PuppiSD"
+        # if options.useDDT: pf = "_PuppiSD_DDT"
+        # postfix = "%s_%s" %(pf,wpForPlotting)
+        # cmd =   "mv plots plots%s" %postfix
+        # print cmd
+        # os.system(cmd)
+        # cmd =   "mv WtaggingSF.txt plots%s" %postfix
+        # print cmd
+        # os.system(cmd)
+
+        self.workspace4fit_.Print()
+        sys.exit()
+
+        wout = ROOT.TFile.Open("Workspace.root","RECREATE")
+        wout.cd()
+        self.workspace4fit_.Write()        
+        # Delete workspace
+#        del self.workspace4fit_
+
 ### Start  main
 if __name__ == '__main__':
     channel = options.channel ## ele, mu or ele+mu combined
