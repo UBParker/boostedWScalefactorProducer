@@ -1037,7 +1037,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
 
   // FOR MC FITS TO MATCHED TT MC!!!    
   else if( TString(label).Contains("realW") or TString(label).Contains("fakeW")){
-
+    std::cout << "FITTING TO MATCHED and UNMATCHED TTbar" << std::endl;
     if( model == "Exp"){
       std::cout << "Making Exp2" << std::endl;
       std::cout<< "######### Exp = levelled exp funtion for W+jets mlvj ############" <<std::endl;
@@ -1353,7 +1353,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
     }
   }  
   else if( TString(label).Contains("fakeW")){ // Background component of ttbar fit
-    if( model == "GausErfExp_ttbar_fakeW"){
+    if( model == "GausErfExp_ttbar"){
 
       double mean1_tmp =  8.553e+01;         // 8.153e+01;
       double sigma1_tmp = 8.5932e+00;

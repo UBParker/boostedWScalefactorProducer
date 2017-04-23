@@ -267,6 +267,11 @@ def doFitsToMC():
     workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")
     boostedW_fitter_em = initialiseFits("em", options.sample, 50, 140, workspace4fit_)
     boostedW_fitter_em.get_datasets_fit_minor_bkg()
+    print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    print"RealWs in Pass:  {0}".format(boostedW_fitter_em.countRealWsInPass)
+    print"RealWs in Fail:  {0}".format(boostedW_fitter_em.countRealWsInFail)
+    print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
     print "Finished fitting MC! Plots can be found in plots_*_MCfits. Printing workspace:"
     workspace4fit_.Print()
                     
@@ -421,10 +426,10 @@ class initialiseFits:
       
       # Fit functions for matched tt MC
 #      self.mj_shape["TTbar_realW"]      = "ExpGaus"
-      self.mj_shape["TTbar_realW"]      = "GausErfExp_ttbar" #before "2Gaus_ttbar"
+      self.mj_shape["TTbar_realW"]      = "ExpGaus" #"GausErfExp_ttbar" #before "2Gaus_ttbar"
 #      self.mj_shape["TTbar_realW_fail"] = "GausExp_failSubjetTau21cut"
-      self.mj_shape["TTbar_realW_fail"] = "GausChebychev_ttbar_failSubjetTau21cut"
-      self.mj_shape["TTbar_fakeW"]      =  "GausErfExp_ttbar_fakeW"
+      self.mj_shape["TTbar_realW_fail"] = "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut"
+      self.mj_shape["TTbar_fakeW"]      =  "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"
 #      self.mj_shape["TTbar_fakeW_fail"] = "Exp"## Make model : _bkg_TotalMC_failSubjetTau21cut GausChebychev_ttbar_failSubjetTau21cut  500 ##
 
       self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut"      
