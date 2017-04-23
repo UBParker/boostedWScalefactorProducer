@@ -59,6 +59,10 @@ RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
 
 if options.noX: gROOT.SetBatch(True)
 
+#Define counts of Gen Matched Ws in each category              
+countRealWsInFail = 0
+countRealWsInPass = 0
+
 def getLegend():
   legend = TLegend(0.6010112,0.7183362,0.8202143,0.919833)
   legend.SetTextSize(0.032)
@@ -263,7 +267,7 @@ def doFitsToMC():
     print "Finished fitting MC! Plots can be found in plots_*_MCfits. Printing workspace:"
     workspace4fit_.Print()
                     
-def GetWtagScalefactors(workspace,fitter):
+def GetWtagScalefactors( workspace,fitter):
 
     #------------- Calculate scalefactors -------------
     ### Efficiency in data and MC
@@ -389,9 +393,8 @@ def GetWtagScalefactors(workspace,fitter):
     fitter.file_out_ttbar_control.write("\nLP W-tag eff+SF (wo/ext fail)         %0.3f +/- %0.3f                  %0.3f +/- %0.3f                        %0.3f +/- %0.3f" %(tmpq_eff_data_em_LP,tmpq_eff_data_em_LP_err,tmpq_eff_MC_em_LP,tmpq_eff_MC_em_LP_err,pureq_wtagger_sf_em_LP,pureq_wtagger_sf_em_LP_err))
     fitter.file_out_ttbar_control.write("\n")
     fitter.file_out_ttbar_control.write("\n-----------------------------------------------------------------------------------------------------------------------------")
-     
-class doWtagFits:
-    def __init__(self):
+class doWtagFits(initialiseFits):
+    def __init__(self, initialise_Fits ):
         self.workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")                           # create workspace
         self.boostedW_fitter_em = initialiseFits("em", options.sample, 50, 140, self.workspace4fit_)    # Define all shapes to be used for Mj, define regions (SB,signal) and input files. 
         self.boostedW_fitter_em.get_datasets_fit_minor_bkg()                                            # Loop over intrees to create datasets om Mj and fit the single MCs.
@@ -538,7 +541,7 @@ class doWtagFits:
         DrawScaleFactorTTbarControlSample(self.workspace4fit_,self.boostedW_fitter_em.color_palet,"","em",self.boostedW_fitter_em.wtagger_label,self.boostedW_fitter_em.AK8_pt_min,self.boostedW_fitter_em.AK8_pt_max,options.sample)
        
         # Get W-tagging scalefactor and efficiencies
-        GetWtagScalefactors(self.workspace4fit_,self.boostedW_fitter_em)
+        GetWtagScalefactors( self.workspace4fit_,self.boostedW_fitter_em)
         
         # wpForPlotting ="%.2f"%options.tau2tau1cutHP
         # wpForPlotting = wpForPlotting.replace(".","v")
@@ -552,6 +555,11 @@ class doWtagFits:
         # cmd =   "mv WtaggingSF.txt plots%s" %postfix
         # print cmd
         # os.system(cmd)
+
+        print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+        print"RealWs in Pass:  {0}".format(initialise_Fits.countRealWsInPass)
+        print"RealWs in Fail:  {0}".format(initialise_Fits.countRealWsInFail)
+        print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 
         self.workspace4fit_.Print()
@@ -570,7 +578,7 @@ class initialiseFits:
       
       RooAbsPdf.defaultIntegratorConfig().setEpsRel(1e-9)
       RooAbsPdf.defaultIntegratorConfig().setEpsAbs(1e-9)
-      
+    
       # Set channel 
       self.channel = in_channel
       
@@ -1022,8 +1030,8 @@ class initialiseFits:
           if TString(label).Contains("realW") and isRealW != 1 : 
             continue
           if TString(label).Contains("fakeW") and isFakeW != 1 : 
-            continue
-            
+            continue 
+         
           PuppiJetCorr = getattr(treeIn,"JetPuppiCorrFactor")
           
           self.ak8PuppiSDJetP4_Subjet0 = ROOT.TLorentzVector()
@@ -1081,6 +1089,17 @@ class initialiseFits:
             if  SJtau1   >= 0.1 :
               wtagger = SJtau2/ SJtau1
             else : wtagger = 10.
+
+          if  isRealW == 1 and wtagger >= options.tau2tau1cutHP :
+            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+            #print"A Gen Matched W (RealW) Failed the HP tau21 cut"
+            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+            countRealWsInFail += 1
+          if  isRealW == 1 and wtagger <= options.tau2tau1cutHP :
+            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
+            #print"A Gen Matched W (RealW) PASSED the HP tau21 cut"  
+            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
+            countRealWsInPass += 1
           if options.useDDT:
             if (getattr(treeIn,"JetPuppiSDsubjet0tau1") >= 0.1) and (getattr(treeIn,"JetPuppiSDsubjet0pt") >= 0.1) :
               wtagger = getattr(treeIn,"JetPuppiSDsubjet0tau2")/getattr(treeIn,"JetPuppiSDsubjet0tau1")+ (0.063 * TMath.log( (pow( getattr(treeIn,"JetPuppiSDsubjet0mass"),2))/getattr(treeIn,"JetPuppiSDsubjet0pt") ))        
