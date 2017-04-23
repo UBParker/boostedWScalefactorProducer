@@ -241,13 +241,14 @@ def doFitsToMatchedTT():
     workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")
     ttMC_fitter = initialiseFits("em", options.sample, 50, 140, workspace4fit_)
 
+    ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_realW")
+    ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_fakeW")
+    
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     print"RealWs in Pass:  {0}".format(ttMC_fitter.countRealWsInPass)
     print"RealWs in Fail:  {0}".format(ttMC_fitter.countRealWsInFail)
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
-    ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_realW")
-    ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_fakeW")
     print ttMC_fitter.file_TTbar_mc
     print "_TTbar_realW"
     print ttMC_fitter.mj_shape["TTbar_realW"]
