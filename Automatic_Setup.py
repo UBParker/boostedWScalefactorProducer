@@ -13,7 +13,7 @@ from ROOT import gROOT, gStyle, gSystem, TLatex
 
 parser = OptionParser()
 parser.add_option('--vclean', help='clean all the so files', type=int, default=0.)
-parser.add_option('--local', help='Running locally?',action="store_true" , default=False )
+parser.add_option('--salsetup', help='Running salsetuply?',action="store_true" , default=False )
 
 (options, args) = parser.parse_args()
 
@@ -24,7 +24,7 @@ if __name__ == "__main__":
   # For running on LPC
   ROOT.gSystem.AddIncludePath("-I$ROOFITSYS/include");
 
-  if options.local :
+  if options.salsetup :
     ROOT.gSystem.AddIncludePath("-I$ROOTSYS/libexec/include");
 
      # ROOT.gSystem.AddIncludePath("-I$ROOTSYS/libexec/root6/include/root");
@@ -32,9 +32,9 @@ if __name__ == "__main__":
   
   #Added this line - Michael
   # For running on LPC
-  if not options.local :
+  if not options.salsetup :
     ROOT.gSystem.Load("$ROOFITSYS/lib/libRooFitCore.so")
-  #For running locally
+  #For running salsetuply
   #ROOT.gSystem.Load("$ROOTSYS/libexec/root6/lib/root/libRooFitCore.so")
 
   inPath = os.getenv("PWD")
@@ -59,9 +59,9 @@ if __name__ == "__main__":
   ROOT.gROOT.ProcessLine(".L HWWLVJRooPdfs.cxx+");
   ROOT.gSystem.Load("HWWLVJRooPdfs_cxx.so");
 
-  if not options.local :
+  if not options.salsetup :
     #Add this line - Michael
-    ROOT.gSystem.Load("$ROOTSYS/lib/libRooFit.so")
+    ROOT.gSystem.Load("$ROOFITSYS/lib/libRooFit.so")
     #ROOT.gSystem.Load("$ROOTSYS/libexec/root6/lib/libRooFit.so")                                                                                                       
   ROOT.gROOT.ProcessLine(".L MakePdf.cxx+");
   ROOT.gSystem.Load("MakePdf_cxx.so");
