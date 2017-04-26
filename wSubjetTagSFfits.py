@@ -854,7 +854,8 @@ class initialiseFits:
           
           isRealW = None
           isFakeW = None
-          if  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
+          #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or 
+          if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
               isRealW = 0
               isFakeW = 1
           else:
