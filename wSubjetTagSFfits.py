@@ -955,8 +955,8 @@ class initialiseFits:
             tmp_scale_to_lumi =  getattr(treeIn2,"SemiLeptLumiweight")  ## weigth for xs and lumi
           #print "TString(label). {}".format(TString(label))
           if not TString(label).Contains("data"):
-            tmp_event_weight     =  getattr(treeIn2,"SemiLeptLumiweight") 
-            tmp_event_weight4fit = getattr(treeIn2,"SemiLeptAllotherweights") * tmp_event_weight 
+            tmp_event_weight     =  getattr(treeIn2,"SemiLeptLumiweight") * getattr(treeIn2,"SemiLeptAllotherweights")
+            tmp_event_weight4fit =  tmp_event_weight 
             #print"WEIGHT:::  tmp_event_weight4fit {0:2.2f} ".format( tmp_event_weight4fit )
             
           else:
