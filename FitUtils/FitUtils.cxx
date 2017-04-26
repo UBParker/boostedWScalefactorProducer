@@ -366,9 +366,11 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   double fraction_number_TTbar_fakeW      = fraction_before_fit * rdataset_TTbar_fakeW_mj->sumEntries()*ttSF/( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
   double fraction_number_TTbar_fakeW_fail      = fraction_before_fit * rdataset_TTbar_fakeW_mj_fail->sumEntries()*ttSF/ ( rdataset_data_mj->sumEntries()+rdataset_data_mj_fail->sumEntries() );
   /// FIX THE SCALING OF FAKEW ! tried replacing *et_data_* with *et_TTbar* 
-  
-  std::cout<<"SCALE NR. PASS = " << scale_number_TTbar_STop_QCD_WJets << std::endl;
-  std::cout<<"SCALE NR. FAIL = " << scale_number_TTbar_STop_QCD_WJets_fail << std::endl;
+  std::cout<<"$$$ SCALE NR. TTbar FakeW PASS = " << fraction_number_TTbar_fakeW  << std::endl;
+  std::cout<<"$$$ SCALE NR. TTbar FakeW FAIL = " << fraction_number_TTbar_fakeW_fail  << std::endl;
+
+  std::cout<<"$$$ SCALE NR. All others PASS = " << scale_number_TTbar_STop_QCD_WJets << std::endl;
+  std::cout<<"$$$ SCALE NR. All others FAIL = " << scale_number_TTbar_STop_QCD_WJets_fail << std::endl;
   RooAbsPdf* model_data_fail = workspace->pdf(("model_data"+label+"_"+"failSubjetTau21cut"+"_"+channel).c_str());
   RooAbsPdf* model_data = workspace->pdf(("model_data"+label+"_"+channel).c_str());
 
@@ -464,19 +466,19 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
 
   // plot mc fit function
   cut.Form("category_p_f%s_%s==category_p_f%s_%s::pass",label.c_str(),channel.c_str(),label.c_str(),channel.c_str());
-  simPdf_TotalMC->plotOn(xframe_data,RooFit::Name("MC fit"),RooFit::Slice(*category_p_f,"pass"), RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_TotalMC),RooFit::NormRange("controlsample_fitting_range"), RooFit::LineStyle(kSolid), RooFit::LineColor(kRed));
+  simPdf_TotalMC->plotOn(xframe_data,RooFit::Name("MC fit"),RooFit::Slice(*category_p_f,"pass"), RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_TotalMC),RooFit::NormRange("controlsample_fitting_range"), RooFit::LineStyle(kSolid), RooFit::LineColor(kRed)); //,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets));
 //  cut.Form("model_bkg_TotalMC_%s_mj,model_STop_%s_mj,model_VV_%s_mj,model_WJets0_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
   cut.Form("model_bkg_TotalMC_%s_mj,model_STop_%s_mj,model_WJets0_%s_mj, model_QCD_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(), channel.c_str());
-  simPdf_TotalMC->plotOn(xframe_data,RooFit::Name("mc fit bkg_invisible"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_TotalMC),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));
+  simPdf_TotalMC->plotOn(xframe_data,RooFit::Name("mc fit bkg_invisible"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_TotalMC),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));//,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets));
 
   // plot data fit function
   cut.Form("category_p_f%s_%s==category_p_f%s_%s::pass",label.c_str(),channel.c_str(),label.c_str(),channel.c_str());
   combData_p_f_data->plotOn(xframe_data,RooFit::Name("data_invisible"),RooFit::Cut(cut.Data()),RooFit::MarkerSize(1.5),RooFit::DataError(RooAbsData::SumW2),RooFit::XErrorSize(0));
 
-  simPdf_data->plotOn(xframe_data,RooFit::Name("Data fit"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::LineStyle(kSolid), RooFit::LineColor(kBlue));
+  simPdf_data->plotOn(xframe_data,RooFit::Name("Data fit"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::LineStyle(kSolid), RooFit::LineColor(kBlue)); //,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets));
 //  cut.Form("model_bkg_data_%s_mj,model_STop_%s_mj,model_VV_%s_mj,model_WJets0_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
   cut.Form("model_bkg_data_%s_mj,model_STop_%s_mj,model_WJets0_%s_mj,model_QCD_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
-  simPdf_data->plotOn(xframe_data,RooFit::Name("dat fit bkg_invisible"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()), RooFit::LineStyle(kDashed), RooFit::LineColor(kBlue));
+  simPdf_data->plotOn(xframe_data,RooFit::Name("dat fit bkg_invisible"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()), RooFit::LineStyle(kDashed), RooFit::LineColor(kBlue));//,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets));
 
 
 
