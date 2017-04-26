@@ -432,7 +432,7 @@ class initialiseFits:
       self.mj_shape["TTbar_fakeW"]      =  "ExpGaus" # "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"
 #      self.mj_shape["TTbar_fakeW_fail"] = "Exp"## Make model : _bkg_TotalMC_failSubjetTau21cut GausChebychev_ttbar_failSubjetTau21cut  500 ##
 
-      self.mj_shape["TTbar_fakeW_fail"] = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut"      
+      self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut"      
       if (options.useDDT): 
         self.mj_shape["TTbar_realW_fail"]       = "GausChebychev_ttbar_failSubjetTau21cut"  
         
