@@ -245,8 +245,16 @@ def doFitsToMatchedTT():
     ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_fakeW")
     
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    print"RealWs in Pass:  {0}".format(ttMC_fitter.countRealWsInPass)
-    print"RealWs in Fail:  {0}".format(ttMC_fitter.countRealWsInFail)
+    print"RealWs Passing tau21 cut:)  {0}".format(ttMC_fitter.countRealWsInPass)
+    print"RealWs Failing tau21 cut:(  {0}".format(ttMC_fitter.countRealWsInFail)
+    print"..............................................."
+    print"   Here W candidate is most massive subjet     "
+    print"..............................................."
+    print"W candidate is SJ 0 :  {0}".format(ttMC_fitter.countWisSJ0)
+    print"W candidate is SJ 1 :  {0}".format(ttMC_fitter.countWisSJ1)
+    print"..............................................."
+    print"W cand has highest bdisc :)  {0}".format(ttMC_fitter.countWhighMassandBdisc)
+    print"W cand has lowest  bdisc :(  {0}".format(ttMC_fitter.countWhighMassLowBdisc)
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
     print ttMC_fitter.file_TTbar_mc
@@ -414,6 +422,10 @@ class initialiseFits:
       #Define counts of Gen Matched Ws in each category              
       self.countRealWsInFail = 0
       self.countRealWsInPass = 0
+      self.countWhighMassandBdisc = 0 
+      self.countWhighMassLowBdisc = 0
+      self.countWisSJ0 = 0
+      self.countWisSJ1 = 0
 
       # Set channel 
       self.channel = in_channel
@@ -851,23 +863,6 @@ class initialiseFits:
       for i in range(treeIn.GetEntries()):
           if i % 5000 == 0: print "iEntry: ",i
           treeIn.GetEntry(i)
-          
-          isRealW = None
-          isFakeW = None
-          #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or 
-          if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
-              isRealW = 1
-              isFakeW = 0
-          else:
-              isRealW = 0
-              isFakeW = 1
-
-          #if isFakeW == 1 : continue
-          #print"EVENT LOOP : TString(label) is {} and isRealW is {} and fakeW is {}".format(TString(label), isRealW, isFakeW)
-          if TString(label).Contains("realW") and isRealW != 1 : 
-            continue
-          if TString(label).Contains("fakeW") and isFakeW != 1 : 
-            continue 
          
           PuppiJetCorr = getattr(treeIn,"JetPuppiCorrFactor")
           
@@ -910,22 +905,102 @@ class initialiseFits:
           ### Wtag mass window cut
           #if  not ( 10. <=  self.ak8subjet0PuppiSD_m <= 140.) : continue
 
-          if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= options.ptbinmax ): continue
+          ### Pick our W candidate from the 2 subjets. Higher mass /lower B disc than the b candidate
+          self.subjet0isW = False
+          self.subjet1isW = False
 
-          SJtau1 = getattr(treeIn,"JetSDsubjet0tau1") 
-          SJtau2 = getattr(treeIn,"JetSDsubjet0tau2")
+          ### Throw away events where subjets are too light
+          if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
+
+          ### Pick the most massive as the W candidate
+          if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
+            self.subjet0isW   = True
+            self.countWisSJ0 += 1
+          else:  
+            self.subjet1isW   = True
+            self.countWisSJ1 += 1
+      
+          ### NOTE: Next testing option of SJ with lowest b disc being W candidate, see below.
+
+          SJ0tau1 = getattr(treeIn,"JetSDsubjet0tau1") 
+          SJ0tau2 = getattr(treeIn,"JetSDsubjet0tau2")
+          SJ1tau1 = getattr(treeIn,"JetSDsubjet1tau1") 
+          SJ1tau2 = getattr(treeIn,"JetSDsubjet1tau2")
 
           #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f} and tau1{3:2.2f} and tau2 {4:2.2f} and SJ pt {5:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass, SJtau1 , SJtau2, subjet0Pt)
-          if SJtau1 >= 0.1 :
-            wtagger = SJtau2/ SJtau1
-            #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass)
-            #if self.ak8subjet0PuppiSD_m > 50. : print"Fat jet SD subjet 0 mass is {0:2.2f} ,tau21 is {1:2.2f}, pt is {2:2.2f}".format( self.ak8PuppiSD_m , wtagger,  self.ak8PuppiSDJetP4_Subjet0.Perp() )
+          wtagger  = 0.
+          SJ0tau21 = 0.
+          SJ1tau21 = 0.
+          if SJ0tau1 >= 0.1 :
+            SJ0tau21 = SJ0tau2/ SJ0tau1
+          else:
+            SJ0tau21 = 10.
 
-          else : wtagger = 10.
-          if options.usePuppiSD:
-            if  SJtau1   >= 0.1 :
-              wtagger = SJtau2/ SJtau1
-            else : wtagger = 10.
+          if SJ1tau1 >= 0.1 :
+            SJ1tau21 = SJ1tau2/ SJ1tau1
+          else:
+            SJ1tau21 = 10.
+
+          if   self.subjet0isW and  SJ0tau21 < 10:
+              wtagger = SJ0tau21  
+          elif self.subjet1isW and  SJ1tau21 < 10:    
+              wtagger = SJ1tau21
+          else : 
+              wtagger = 10.
+          
+          if wtagger == 10. : continue
+          ### Count instances where W candidate has higher mass and lower bdisc 
+          
+          SJ0Bdisc = getattr(treeIn,"JetSDsubjet0bdisc")
+          SJ1Bdisc = getattr(treeIn,"JetSDsubjet1bdisc")
+
+          ### Count instances where W candidate has higher mass and higher bdisc 
+          if self.subjet0isW :
+            if SJ0Bdisc > SJ1Bdisc :
+              self.countWhighMassandBdisc +=1
+            if SJ0Bdisc < SJ1Bdisc :
+              self.countWhighMassLowBdisc +=1
+          elif self.subjet1isW :
+            if SJ0Bdisc < SJ1Bdisc :
+              self.countWhighMassandBdisc +=1
+            if SJ0Bdisc > SJ1Bdisc :
+              self.countWhighMassLowBdisc +=1
+
+          #print"W candidate(higher mass subjet) has higher Bdisc than b candidate"
+
+          #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass)
+          #if self.ak8subjet0PuppiSD_m > 50. : print"Fat jet SD subjet 0 mass is {0:2.2f} ,tau21 is {1:2.2f}, pt is {2:2.2f}".format( self.ak8PuppiSD_m , wtagger,  self.ak8PuppiSDJetP4_Subjet0.Perp() )
+
+
+          ### Choose which pt bin to plot
+
+          if self.subjet0isW : 
+            if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= options.ptbinmax ): continue
+          elif self.subjet1isW : 
+            if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet1.Perp() <= options.ptbinmax ): continue
+
+          ### Gen matching for ttbar only
+
+          isRealW = None
+          isFakeW = None
+          #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or 
+          if self.subjet0isW :
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
+              isRealW = 1
+              isFakeW = 0
+          elif self.subjet1isW :
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :
+              isRealW = 1
+              isFakeW = 0
+
+          #if isFakeW == 1 : continue
+          #print"EVENT LOOP : TString(label) is {} and isRealW is {} and fakeW is {}".format(TString(label), isRealW, isFakeW)
+          if TString(label).Contains("realW") and isRealW != 1 : 
+            continue
+          if TString(label).Contains("fakeW") and isFakeW != 1 : 
+            continue 
+
+          ### See how many gen matched Ws pass and fail the tau21 cut
 
           if  isRealW == 1 and wtagger >= options.tau2tau1cutHP :
             #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
