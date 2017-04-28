@@ -565,7 +565,9 @@ class initialiseFits:
 
       postfix = ""
       if options.use76X: postfix ="_76X"  
-      self.nameTag = "looserMETandPtRelCuts"  # "noTopTagSkimWeights3"     #"noTopTagSkimWeights3" #"looserMETandPtRelCuts"
+      self.nameTag = "METmu40el80ptRel30" # <-- have same MET cuts as "looserMETandPtRelCuts" just more gen particle and subjet 1 info branches in the ttree (all V4 ttrees)
+      # "looserMETandPtRelCuts"<-- have MET cuts of 40 GeV for muon and 80 GeV for electrons and Pt Rel 30 
+      # "noTopTagSkimWeights3" <-- have MET cuts of 50 GeV for muon and 120 GeV for electrons and Pt Rel 40 
       self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_data_76X_PUPPISD.root")
       self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root")#("ExoDiBosonAnalysis.WWTree_pseudodata_76X_PUPPISD.root")     
       self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ")#("ExoDiBosonAnalysis.WWTree_WJets_76X_PUPPISD.root")
@@ -912,20 +914,24 @@ class initialiseFits:
           ### Throw away events where subjets are too light
           if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
 
+          ### Decide on how W candidate subjet is picked
+          whighMass = True
+          wlowBdisc = False
           ### Pick the most massive as the W candidate
-          if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
-            self.subjet0isW   = True
-            self.countWisSJ0 += 1
-          else:  
-            self.subjet1isW   = True
-            self.countWisSJ1 += 1
+          if whighMass:
+            if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
+              self.subjet0isW   = True
+              self.countWisSJ0 += 1
+            else:  
+              self.subjet1isW   = True
+              self.countWisSJ1 += 1
       
           ### NOTE: Next testing option of SJ with lowest b disc being W candidate, see below.
 
-          SJ0tau1 = getattr(treeIn,"JetSDsubjet0tau1") 
-          SJ0tau2 = getattr(treeIn,"JetSDsubjet0tau2")
-          SJ1tau1 = getattr(treeIn,"JetSDsubjet1tau1") 
-          SJ1tau2 = getattr(treeIn,"JetSDsubjet1tau2")
+          SJ0tau1 = getattr(treeIn,"JetPuppiSDsubjet0tau1")  
+          SJ0tau2 = getattr(treeIn,"JetPuppiSDsubjet0tau2")
+          SJ1tau1 = getattr(treeIn,"JetPuppiSDsubjet1tau1") 
+          SJ1tau2 = getattr(treeIn,"JetPuppiSDsubjet1tau2")
 
           #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f} and tau1{3:2.2f} and tau2 {4:2.2f} and SJ pt {5:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass, SJtau1 , SJtau2, subjet0Pt)
           wtagger  = 0.
@@ -941,18 +947,28 @@ class initialiseFits:
           else:
             SJ1tau21 = 10.
 
-          if   self.subjet0isW and  SJ0tau21 < 10:
-              wtagger = SJ0tau21  
-          elif self.subjet1isW and  SJ1tau21 < 10:    
-              wtagger = SJ1tau21
-          else : 
-              wtagger = 10.
-          
-          if wtagger == 10. : continue
           ### Count instances where W candidate has higher mass and lower bdisc 
           
-          SJ0Bdisc = getattr(treeIn,"JetSDsubjet0bdisc")
-          SJ1Bdisc = getattr(treeIn,"JetSDsubjet1bdisc")
+          SJ0Bdisc = getattr(treeIn,"JetPuppiSDsubjet0bdisc")
+          SJ1Bdisc = getattr(treeIn,"JetPuppiSDsubjet1bdisc")
+
+          ### Pick the lowest Bdisc as the W candidate
+          if wlowBdisc :                                                                                                                                                          
+            if SJ0Bdisc < SJ1Bdisc :                                                                                                                           
+              self.subjet0isW   = True                                                                                                                                                                          
+              self.countWisSJ0 += 1                                                                                                                                                                             
+            else:                                                                                                                                                                                               
+              self.subjet1isW   = True                                                                                                                                                                          
+              self.countWisSJ1 += 1  
+
+          if   self.subjet0isW and  SJ0tau21 < 10:
+              wtagger = SJ0tau21
+          elif self.subjet1isW and  SJ1tau21 < 10:
+              wtagger = SJ1tau21
+          else :
+              wtagger = 10.
+
+          if wtagger == 10. : continue
 
           ### Count instances where W candidate has higher mass and higher bdisc 
           if self.subjet0isW :
@@ -989,7 +1005,7 @@ class initialiseFits:
               isRealW = 1
               isFakeW = 0
           elif self.subjet1isW :
-            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :  
               isRealW = 1
               isFakeW = 0
 
