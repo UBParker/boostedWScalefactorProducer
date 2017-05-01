@@ -250,8 +250,10 @@ def doFitsToMatchedTT():
     print"FakeWs Passing tau21 cut :(  {0}".format(ttMC_fitter.countFakeWsInPass)
     print"FakeWs Failing tau21 cut :)  {0}".format(ttMC_fitter.countFakeWsInFail)
     print"..............................................."
-    ### FIX THIS Add switch here to line below matches what code is actually doing 
-    print"   Here W candidate is most massive subjet     "
+    if  whighMass :   
+      print"   Here W candidate is most massive subjet     "
+    else :
+      print"   Here W candidate is lowest Bdisc subjet     "
     print"..............................................."
     print"W candidate is SJ 0 :  {0}".format(ttMC_fitter.countWisSJ0)
     print"W candidate is SJ 1 :  {0}".format(ttMC_fitter.countWisSJ1)
@@ -922,8 +924,8 @@ class initialiseFits:
           #if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
 
           ### Decide on how W candidate subjet is picked
-          whighMass =  True
-          wlowBdisc =  False
+          whighMass =  False #True
+          wlowBdisc =  True #False
           ### Pick the most massive as the W candidate
           if whighMass:
             if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
