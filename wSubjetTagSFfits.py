@@ -250,10 +250,10 @@ def doFitsToMatchedTT():
     print"FakeWs Passing tau21 cut :(  {0}".format(ttMC_fitter.countFakeWsInPass)
     print"FakeWs Failing tau21 cut :)  {0}".format(ttMC_fitter.countFakeWsInFail)
     print"..............................................."
-    if  whighMass :   
-      print"   Here W candidate is most massive subjet     "
-    else :
-      print"   Here W candidate is lowest Bdisc subjet     "
+    #if  ttMC_fitter.whighMass : # <--- FIX THIS:  reference to whighMass redefine as self.whighMass   
+    #  print"   Here W candidate is most massive subjet     "
+    #else :
+    print"   Here W candidate is lowest Bdisc subjet     "
     print"..............................................."
     print"W candidate is SJ 0 :  {0}".format(ttMC_fitter.countWisSJ0)
     print"W candidate is SJ 1 :  {0}".format(ttMC_fitter.countWisSJ1)
@@ -924,10 +924,10 @@ class initialiseFits:
           #if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
 
           ### Decide on how W candidate subjet is picked
-          whighMass =  False #True
-          wlowBdisc =  True #False
+          self.whighMass =  False #True
+          self.wlowBdisc =  True #False
           ### Pick the most massive as the W candidate
-          if whighMass:
+          if self.whighMass:
             if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
               self.subjet0isW   = True
               self.countWisSJ0 += 1
@@ -962,7 +962,7 @@ class initialiseFits:
           SJ1Bdisc = getattr(treeIn,"JetPuppiSDsubjet1bdisc")
 
           ### Pick the lowest Bdisc as the W candidate
-          if wlowBdisc :                                                                                                                                                          
+          if self.wlowBdisc :                                                                                                                                                          
             if SJ0Bdisc < SJ1Bdisc :                                                                                                                           
               self.subjet0isW   = True                                                                                                                                                                          
               self.countWisSJ0 += 1                                                                                                                                                                             
@@ -977,7 +977,7 @@ class initialiseFits:
           else :
               wtagger = 10.
 
-          if wtagger == 10. : continue
+          #if wtagger == 10. : continue
 
           ### Count instances where W candidate has higher mass and higher bdisc 
           if self.subjet0isW :
@@ -995,14 +995,6 @@ class initialiseFits:
 
           #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass)
           #if self.ak8subjet0PuppiSD_m > 50. : print"Fat jet SD subjet 0 mass is {0:2.2f} ,tau21 is {1:2.2f}, pt is {2:2.2f}".format( self.ak8PuppiSD_m , wtagger,  self.ak8PuppiSDJetP4_Subjet0.Perp() )
-
-
-          ### Choose which pt bin to plot
-
-          if self.subjet0isW : 
-            if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= options.ptbinmax ): continue
-          elif self.subjet1isW : 
-            if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet1.Perp() <= options.ptbinmax ): continue
 
           ### Gen matching for ttbar only
 
@@ -1069,6 +1061,12 @@ class initialiseFits:
             tmp_jet_mass = self.ak8subjet0PuppiSD_m
           if self.subjet1isW:
             tmp_jet_mass = self.ak8subjet1PuppiSD_m          
+
+          ### Choose which pt bin to plot                                                                                           
+          if self.subjet0isW :
+            if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= options.ptbinmax ): continue
+          elif self.subjet1isW :
+            if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet1.Perp() <= options.ptbinmax ): continue
           
           if i==0: 
             tmp_scale_to_lumi =  getattr(treeIn2,"SemiLeptLumiweight")  ## weigth for xs and lumi
