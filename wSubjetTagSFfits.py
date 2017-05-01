@@ -245,9 +245,12 @@ def doFitsToMatchedTT():
     ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_fakeW")
     
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    print"RealWs Passing tau21 cut:)  {0}".format(ttMC_fitter.countRealWsInPass)
-    print"RealWs Failing tau21 cut:(  {0}".format(ttMC_fitter.countRealWsInFail)
+    print"RealWs Passing tau21 cut :)  {0}".format(ttMC_fitter.countRealWsInPass)
+    print"RealWs Failing tau21 cut :(  {0}".format(ttMC_fitter.countRealWsInFail)
+    print"FakeWs Passing tau21 cut :(  {0}".format(ttMC_fitter.countFakeWsInPass)
+    print"FakeWs Failing tau21 cut :)  {0}".format(ttMC_fitter.countFakeWsInFail)
     print"..............................................."
+    ### FIX THIS Add switch here to line below matches what code is actually doing 
     print"   Here W candidate is most massive subjet     "
     print"..............................................."
     print"W candidate is SJ 0 :  {0}".format(ttMC_fitter.countWisSJ0)
@@ -278,6 +281,8 @@ def doFitsToMC():
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     print"RealWs in Pass:  {0}".format(boostedW_fitter_em.countRealWsInPass)
     print"RealWs in Fail:  {0}".format(boostedW_fitter_em.countRealWsInFail)
+    print"FakeWs in Pass:  {0}".format(boostedW_fitter_em.countFakeWsInPass)
+    print"FakeWs in Fail:  {0}".format(boostedW_fitter_em.countFakeWsInFail)
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
     print "Finished fitting MC! Plots can be found in plots_*_MCfits. Printing workspace:"
@@ -422,6 +427,8 @@ class initialiseFits:
       #Define counts of Gen Matched Ws in each category              
       self.countRealWsInFail = 0
       self.countRealWsInPass = 0
+      self.countFakeWsInFail = 0
+      self.countFakeWsInPass = 0
       self.countWhighMassandBdisc = 0 
       self.countWhighMassLowBdisc = 0
       self.countWisSJ0 = 0
@@ -912,11 +919,11 @@ class initialiseFits:
           self.subjet1isW = False
 
           ### Throw away events where subjets are too light
-          if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
+          #if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
 
           ### Decide on how W candidate subjet is picked
-          whighMass = True
-          wlowBdisc = False
+          whighMass =  True
+          wlowBdisc =  False
           ### Pick the most massive as the W candidate
           if whighMass:
             if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
@@ -1018,16 +1025,29 @@ class initialiseFits:
 
           ### See how many gen matched Ws pass and fail the tau21 cut
 
-          if  isRealW == 1 and wtagger >= options.tau2tau1cutHP :
-            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
-            #print"A Gen Matched W (RealW) Failed the HP tau21 cut"
-            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
-            self.countRealWsInFail += 1
-          if  isRealW == 1 and wtagger <= options.tau2tau1cutHP :
-            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
-            #print"A Gen Matched W (RealW) PASSED the HP tau21 cut"  
-            #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
-            self.countRealWsInPass += 1
+          if  isRealW == 1 :
+            if wtagger >= options.tau2tau1cutHP :
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+              #print"A Gen Matched W (RealW) Failed the HP tau21 cut"
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+              self.countRealWsInFail += 1
+            else :
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"                                                              
+              #print"A Gen Matched W (RealW) Passed the HP tau21 cut"                                                              
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"                                                              
+              self.countRealWsInPass += 1
+          elif  isFakeW == 1 :
+            if wtagger >= options.tau2tau1cutHP :
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
+              #print"A Un Matched W (FakeW) Failed the HP tau21 cut"  
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
+              self.countFakeWsInFail += 1
+            else :
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"                                                              
+              #print"A Un Matched W (FakeW) Passed the HP tau21 cut"                                                               
+              #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"                                                              
+              self.countFakeWsInPass += 1
+
           if options.useDDT:
             if (getattr(treeIn,"JetPuppiSDsubjet0tau1") >= 0.1) and (getattr(treeIn,"JetPuppiSDsubjet0pt") >= 0.1) :
               wtagger = getattr(treeIn,"JetPuppiSDsubjet0tau2")/getattr(treeIn,"JetPuppiSDsubjet0tau1")+ (0.063 * TMath.log( (pow( getattr(treeIn,"JetPuppiSDsubjet0mass"),2))/getattr(treeIn,"JetPuppiSDsubjet0pt") ))        
