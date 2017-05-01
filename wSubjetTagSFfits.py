@@ -893,7 +893,7 @@ class initialiseFits:
                                                      getattr(treeIn,"JetPuppiSDsubjet1mass")  )
           self.ak8PuppiSDJetP4_Subjet1Raw =   self.ak8PuppiSDJetP4_Subjet1 
           self.ak8PuppiSDJetP4_Subjet1 =   self.ak8PuppiSDJetP4_Subjet1 * PuppiJetCorr
-
+          self.ak8subjet1PuppiSD_m = self.ak8PuppiSDJetP4_Subjet1.M()
 
 
           self.ak8PuppiSDJetP4Raw =  self.ak8PuppiSDJetP4_Subjet0Raw +  self.ak8PuppiSDJetP4_Subjet1Raw
@@ -1059,9 +1059,11 @@ class initialiseFits:
               discriminantCut = 1
           elif wtagger > options.tau2tau1cutLP: # Extreme fail
               discriminantCut = 0
-              
-          tmp_jet_mass = self.ak8subjet0PuppiSD_m
           
+          if self.subjet0isW :   
+            tmp_jet_mass = self.ak8subjet0PuppiSD_m
+            if self.subjet1isW:
+            tmp_jet_mass = self.ak8subjet1PuppiSD_m          
           
           if i==0: 
             tmp_scale_to_lumi =  getattr(treeIn2,"SemiLeptLumiweight")  ## weigth for xs and lumi
