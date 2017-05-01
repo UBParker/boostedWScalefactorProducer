@@ -1062,7 +1062,7 @@ class initialiseFits:
           
           if self.subjet0isW :   
             tmp_jet_mass = self.ak8subjet0PuppiSD_m
-            if self.subjet1isW:
+          if self.subjet1isW:
             tmp_jet_mass = self.ak8subjet1PuppiSD_m          
           
           if i==0: 
