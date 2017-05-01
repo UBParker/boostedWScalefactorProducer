@@ -1011,18 +1011,16 @@ class initialiseFits:
             if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
               isRealW = 1
               isFakeW = 0
+            else:
+              isRealW = 0
+              isFakeW = 1
           elif self.subjet1isW :
             if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :  
               isRealW = 1
               isFakeW = 0
-
-          #if isFakeW == 1 : continue
-          #print"EVENT LOOP : TString(label) is {} and isRealW is {} and fakeW is {}".format(TString(label), isRealW, isFakeW)
-          if TString(label).Contains("realW") and isRealW != 1 : 
-            continue
-          if TString(label).Contains("fakeW") and isFakeW != 1 : 
-            continue 
-
+            else:
+              isRealW = 0
+              isFakeW = 1
           ### See how many gen matched Ws pass and fail the tau21 cut
 
           if  isRealW == 1 :
@@ -1036,7 +1034,7 @@ class initialiseFits:
               #print"A Gen Matched W (RealW) Passed the HP tau21 cut"                                                              
               #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"                                                              
               self.countRealWsInPass += 1
-          elif  isFakeW == 1 :
+          else  :
             if wtagger >= options.tau2tau1cutHP :
               #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  
               #print"A Un Matched W (FakeW) Failed the HP tau21 cut"  
@@ -1047,6 +1045,11 @@ class initialiseFits:
               #print"A Un Matched W (FakeW) Passed the HP tau21 cut"                                                               
               #print"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"                                                              
               self.countFakeWsInPass += 1
+
+          if TString(label).Contains("ealW") and isRealW != 1 :
+            continue
+          if TString(label).Contains("akeW") and isFakeW != 1 :
+            continue
 
           if options.useDDT:
             if (getattr(treeIn,"JetPuppiSDsubjet0tau1") >= 0.1) and (getattr(treeIn,"JetPuppiSDsubjet0pt") >= 0.1) :
