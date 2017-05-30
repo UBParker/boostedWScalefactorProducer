@@ -26,6 +26,9 @@ parser.add_option('--binmin',dest="ptbinmin", default=300, type=int,help="Minimu
 parser.add_option('--binmax',dest="ptbinmax", default=500, type=int,help="Maximum subjet 0 pt")
 (options, args) = parser.parse_args()
 
+if options.ptbinmax < 0. :
+    options.ptbinmax = float('inf')
+
 #Added these 2 lines - Michael
 # For running on lpc
 if not options.salsetup: 
@@ -250,10 +253,10 @@ def doFitsToMatchedTT():
     print"FakeWs Passing tau21 cut :(  {0}".format(ttMC_fitter.countFakeWsInPass)
     print"FakeWs Failing tau21 cut :)  {0}".format(ttMC_fitter.countFakeWsInFail)
     print"..............................................."
-    #if  ttMC_fitter.whighMass : # <--- FIX THIS:  reference to whighMass redefine as self.whighMass   
-    #  print"   Here W candidate is most massive subjet     "
-    #else :
-    print"   Here W candidate is lowest Bdisc subjet     "
+    if  ttMC_fitter.whighMass : # <--- FIX THIS:  reference to whighMass redefine as self.whighMass   
+      print"   Here W candidate is most massive subjet     "
+    else :
+      print"   Here W candidate is lowest Bdisc subjet     "
     print"..............................................."
     print"W candidate is SJ 0 :  {0}".format(ttMC_fitter.countWisSJ0)
     print"W candidate is SJ 1 :  {0}".format(ttMC_fitter.countWisSJ1)
@@ -460,7 +463,7 @@ class initialiseFits:
       # Fit functions for minor backgrounds
 #      self.mj_shape["VV"]                 = "ExpGaus"
 #      self.mj_shape["VV_fail"]            = "ExpGaus"
-      self.mj_shape["WJets0"]             = "Exp" #"GausErfExp_Wjets" #"ErfExp"
+      self.mj_shape["WJets0"]             = "ExpGaus"  #"GausErfExp_Wjets" #"ErfExp"
 #      self.mj_shape["WJets0"]             = "Exp"
       self.mj_shape["WJets0_fail"]        = "Exp"
 #      self.mj_shape["WJets0_fail"]        = "Exp"
@@ -491,20 +494,25 @@ class initialiseFits:
 #        self.mj_shape["STop"]               = "ExpGaus"  
         
       # Fit functions used in simultaneous fit of pass and fail categories
-      self.mj_shape["bkg_mc_fail"]          = "Exp" #"GausErfExp_ttbar_failSubjetTau21cut"
+      self.mj_shape["bkg_mc_fail"]          = "Exp"
       self.mj_shape["bkg_data_fail"]        = "Exp"#"GausErfExp_ttbar_failSubjetTau21cut"
       
-#      self.mj_shape["signal_mc_fail"]       = "GausExp_failSubjetTau21cut" #Before GausChebychev_ttbar_failSubjetTau21cut
-#      self.mj_shape["signal_data_fail"]     = "GausExp_failSubjetTau21cut"
-      self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut" #"GausChebychev_ttbar_failSubjetTau21cut" 
+      self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut"  #"Gaus_ttbar"
       self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"GausErfExp_ttbar_failSubjetTau21cut"
-
-      self.mj_shape["bkg_data"]             = "ExpGaus"  #"GausChebychev_ttbar"  
-      ### NOTE: "ExpGaus" may be better
-      self.mj_shape["bkg_mc"]               = "ExpGaus"  #"GausChebychev_ttbar"  # "ExpGaus"
-      
+# was "ExpGaus"  below !!!
+      self.mj_shape["bkg_data"]             = "ExpGaus" #"GausChebychev_ttbar"  #"ExpGaus" #"GausChebychev_ttbar"  
+      self.mj_shape["bkg_mc"]               = "ExpGaus" #"GausChebychev_ttbar"  #"ExpGaus"  
+      if options.ptbinmin == 200 and options.ptbinmax == 300 :
+          self.mj_shape["bkg_data"]             = "ExpGaus" #"GausChebychev_ttbar"  #"ErfExpGaus_sp"
+          ### NOTE: "ExpGaus" may be better !!!
+          self.mj_shape["bkg_mc"]               = "ExpGaus" #"GausChebychev_ttbar" #"ErfExpGaus_sp"
+      # ptbinmin
       self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
       self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+      if  options.ptbinmin == 500 :
+          self.mj_shape["signal_data"]          = "GausChebychev_ttbar" #"Gaus_ttbar" #Before 2Gaus_ttbar                                                                                   
+          self.mj_shape["signal_mc"]            = "GausChebychev_ttbar" #"Gaus_ttbar"
+
       
 #      if (options.useDDT): 
 #        self.mj_shape["signal_mc_fail"]       = "GausChebychev_ttbar_failSubjetTau21cut" 
@@ -608,7 +616,9 @@ class initialiseFits:
       wp = "%.2f" %options.tau2tau1cutHP
       wp = wp.replace(".","v")
       ptBin = "ptSubjet"+str(options.ptbinmin)+"To"+str(options.ptbinmax)+"_ttSF0p9"
-      self.wtagger_label = self.wtagger_label + "%s%s%s%s"%(wp,in_sample,postfix, ptBin ) 
+      subjetBtag = "subjetisBmedCSV"
+      fitrangeis = "_fit50to140"
+      self.wtagger_label = self.wtagger_label + "%s%s%s%s%s%s"%(wp,in_sample,postfix, ptBin, subjetBtag, fitrangeis ) 
 
       
       #Color pallett for plots
@@ -907,7 +917,7 @@ class initialiseFits:
           
           ### Top mass window cut
           
-          if  not ( 110. <= self.ak8PuppiSD_m <= 250.) : continue
+          if  not ( 105. <= self.ak8PuppiSD_m <= 250.) : continue
 
           ### Top tag loose n-subjettiness cut
 
@@ -924,8 +934,8 @@ class initialiseFits:
           #if (self.ak8PuppiSDJetP4_Subjet0.M() and self.ak8PuppiSDJetP4_Subjet1.M()) < 10. : continue
 
           ### Decide on how W candidate subjet is picked
-          self.whighMass =  False #True
-          self.wlowBdisc =  True #False
+          self.whighMass =  True
+          self.wlowBdisc =  False
           ### Pick the most massive as the W candidate
           if self.whighMass:
             if (self.ak8PuppiSDJetP4_Subjet0.M() > self.ak8PuppiSDJetP4_Subjet1.M()) :
@@ -942,7 +952,7 @@ class initialiseFits:
           SJ1tau1 = getattr(treeIn,"JetPuppiSDsubjet1tau1") 
           SJ1tau2 = getattr(treeIn,"JetPuppiSDsubjet1tau2")
 
-          #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f} and tau1{3:2.2f} and tau2 {4:2.2f} and SJ pt {5:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass, SJtau1 , SJtau2, subjet0Pt)
+       #if fatjet0Mass < 210. : print"Fat jet mass is {0:2.2f} and tau32 is {1:2.2f} and SD subjet 0 mass is {2:2.2f} and tau1{3:2.2f} and tau2 {4:2.2f} and SJ pt {5:2.2f}".format(fatjet0Mass, fatjetTau32, subjet0Mass, SJtau1 , SJtau2, subjet0Pt)
           wtagger  = 0.
           SJ0tau21 = 0.
           SJ1tau21 = 0.
@@ -1002,14 +1012,16 @@ class initialiseFits:
           isFakeW = None
           #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or 
           if self.subjet0isW :
-            if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < 0.4)  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < 0.4)  and  min(getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2"), getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1")) > 0.5  :
+            #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
               isRealW = 1
               isFakeW = 0
             else:
               isRealW = 0
               isFakeW = 1
           elif self.subjet1isW :
-            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :  
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < 0.4)  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < 0.4)  and  min(getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2"), getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1")) > 0.5  :
+            #if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :  
               isRealW = 1
               isFakeW = 0
             else:
@@ -1044,6 +1056,9 @@ class initialiseFits:
             continue
           if TString(label).Contains("akeW") and isFakeW != 1 :
             continue
+ 
+          ### Require that one of the subjets be b-tagged use CSVv2 medium WP 0.8484
+          if not (  max(SJ0Bdisc, SJ1Bdisc) > 0.8484 ) : continue
 
           if options.useDDT:
             if (getattr(treeIn,"JetPuppiSDsubjet0tau1") >= 0.1) and (getattr(treeIn,"JetPuppiSDsubjet0pt") >= 0.1) :
