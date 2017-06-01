@@ -24,6 +24,10 @@ parser.add_option('--usePuppiSD',dest="usePuppiSD", default=True, action="store_
 parser.add_option('--salsetup',dest="salsetup", default=False, action="store_true", help="Sal's setup")
 parser.add_option('--binmin',dest="ptbinmin", default=300, type=int,help="Minimum subjet 0 pt")
 parser.add_option('--binmax',dest="ptbinmax", default=500, type=int,help="Maximum subjet 0 pt")
+parser.add_option('--v5',dest="v5", default=True, action="store_true", help="Use latest b2g ttrees ?")
+parser.add_option('--noQCD',dest="noQCD", default=True, action="store_true", help=" Don't use QCD")
+parser.add_option('--noST',dest="noST", default=True, action="store_true", help="Don't use ST")
+
 (options, args) = parser.parse_args()
 
 if options.ptbinmax < 0. :
@@ -467,15 +471,16 @@ class initialiseFits:
 #      self.mj_shape["WJets0"]             = "Exp"
       self.mj_shape["WJets0_fail"]        = "Exp"
 #      self.mj_shape["WJets0_fail"]        = "Exp"
-      self.mj_shape["QCD"]                = "Exp"#  "GausChebychev_QCD" #"GausErfExp_QCD"#"GausChebychev_ttbar_failSubjetTau21cut"
+      if not options.noQCD :
+          self.mj_shape["QCD"]                =  "Exp"
+          self.mj_shape["QCD_fail"]           =  "Exp"
 
-      self.mj_shape["QCD_fail"]           =  "Exp" # "GausErfExp_QCD_failSubjetTau21cut"
-      #self.mj_shape["STop"]               = "ExpGaus_sp"
-      self.mj_shape["STop"]               = "ExpGaus"
-      self.mj_shape["STop_fail"]          = "ExpGaus"  
-      
-      if (options.usePuppiSD): 
-        self.mj_shape["STop_fail"]          = "ExpGaus"  
+      if not options.noST :
+          #self.mj_shape["STop"]               = "ExpGaus_sp"
+          self.mj_shape["STop"]               = "ExpGaus"
+          self.mj_shape["STop_fail"]          = "ExpGaus"  
+          if (options.usePuppiSD): 
+              self.mj_shape["STop_fail"]          = "ExpGaus"  
 
       if (options.useN2DDT):
 #        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"
@@ -536,7 +541,7 @@ class initialiseFits:
       nbins_mj         = int( (in_mj_max - in_mj_min) / self.BinWidth_mj )
       in_mj_max        = in_mj_min+nbins_mj*self.BinWidth_mj
       
-      jetMass = "Pruned jet mass"
+      jetMass = "PUPPI + SoftDrop jet mass"
       if options.usePuppiSD: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
       if options.useN2DDT: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
 
@@ -582,16 +587,27 @@ class initialiseFits:
 
       postfix = ""
       if options.use76X: postfix ="_76X"  
-      self.nameTag = "METmu40el80ptRel30" # <-- have same MET cuts as "looserMETandPtRelCuts" just more gen particle and subjet 1 info branches in the ttree (all V4 ttrees)
-      # "looserMETandPtRelCuts"<-- have MET cuts of 40 GeV for muon and 80 GeV for electrons and Pt Rel 30 
-      # "noTopTagSkimWeights3" <-- have MET cuts of 50 GeV for muon and 120 GeV for electrons and Pt Rel 40 
-      self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_data_76X_PUPPISD.root")
-      self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root")#("ExoDiBosonAnalysis.WWTree_pseudodata_76X_PUPPISD.root")     
-      self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ")#("ExoDiBosonAnalysis.WWTree_WJets_76X_PUPPISD.root")
-      self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_VV_76X_PUPPISD.root")        
-      self.file_TTbar_mc          = ("ttbarTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
-      self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_STop_76X_PUPPISD.root")
-    
+      if not options.v5 :
+        self.nameTag = "METmu40el80ptRel30" # <-- have same MET cuts as "looserMETandPtRelCuts" just more gen particle and subjet 1 info branches in the ttree (all V4 ttrees)
+        # "looserMETandPtRelCuts"<-- have MET cuts of 40 GeV for muon and 80 GeV for electrons and Pt Rel 30 
+        # "noTopTagSkimWeights3" <-- have MET cuts of 50 GeV for muon and 120 GeV for electrons and Pt Rel 40 
+        self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_data_76X_PUPPISD.root")
+        self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root")#("ExoDiBosonAnalysis.WWTree_pseudodata_76X_PUPPISD.root")     
+        self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ")#("ExoDiBosonAnalysis.WWTree_WJets_76X_PUPPISD.root")
+        self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_VV_76X_PUPPISD.root")        
+        self.file_TTbar_mc          = ("ttbarTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
+        self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_STop_76X_PUPPISD.root")
+      if options.v5 :   
+        self.nameTag = "May30"
+        self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_May30.root
+        self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_May30.root
+        self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ") # wjets_highmass_May30.root
+        if not options.noQCD :
+            self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root") # QCD_highmass_May30.root
+        self.file_TTbar_mc          = ("ttbarTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") # ttbarTuneCUETP8M2T4_highmass_May30.root
+        if not options.noST :
+            self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root") # ST_highmass_May30.root
+
       #self.file_data              = ("Data_2Trans.root")
       #self.file_WJets0_mc         = ("WJets_2Trans.root") 
       #self.file_VV_mc             = ("VV_2Trans.root")
@@ -626,8 +642,10 @@ class initialiseFits:
       self.color_palet["data"]              = 1
       self.color_palet["WJets"]             = 2
       #self.color_palet["VV"]                = 4
-      self.color_palet["QCD"]               = 5
-      self.color_palet["STop"]              = 7
+      if not options.noQCD:
+          self.color_palet["QCD"]               = 5
+      if not options.noST:
+          self.color_palet["STop"]              = 7
       self.color_palet["TTbar"]             = 210
       self.color_palet["TTbar_realW"]       = 210
       self.color_palet["TTbar_fakeW"]       = 419
@@ -636,7 +654,7 @@ class initialiseFits:
       self.color_palet["Other_Backgrounds"] = 1    
       
       # Cuts (dont need these cuts if they are already implemented in ROOT tree)
-      self.vpt_cut      = 200   # hadronic and leptonic W cut
+      self.vpt_cut      = 150   # hadronic and leptonic W cut
       self.mass_lvj_max = 5000. # invariant mass of 3 body max
       self.mass_lvj_min = 0.    # invariant mass of 3 body min
       self.pfMET_cut    = 40.    # missing transverse energy
@@ -656,16 +674,16 @@ class initialiseFits:
     def get_datasets_fit_minor_bkg(self):
         
         rrv_mass_j = self.workspace4fit_.var("rrv_mass_j")
-  
-        # Build single-t fit pass and fail distributions
-        print "##################################################"
-        print "############### Single Top DataSet ###############"
-        print "##################################################"
-        print ""
+        if not options.noST :
+            # Build single-t fit pass and fail distributions
+            print "##################################################"
+            print "############### Single Top DataSet ###############"
+            print "##################################################"
+            print ""
 
-        self.get_mj_dataset(self.file_STop_mc,"_STop")
-        fit_mj_single_MC(self.workspace4fit_,self.file_STop_mc,"_STop"                        ,self.mj_shape["STop"],self.channel,self.wtagger_label) #Start value and range of parameters defined in PDFs/MakePDF.cxx
-        fit_mj_single_MC(self.workspace4fit_,self.file_STop_mc,"_STop_failSubjetTau21cut"        ,self.mj_shape["STop_fail"],self.channel,self.wtagger_label)
+            self.get_mj_dataset(self.file_STop_mc,"_STop")
+            fit_mj_single_MC(self.workspace4fit_,self.file_STop_mc,"_STop"                        ,self.mj_shape["STop"],self.channel,self.wtagger_label) #Start value and range of parameters defined in PDFs/MakePDF.cxx
+            fit_mj_single_MC(self.workspace4fit_,self.file_STop_mc,"_STop_failSubjetTau21cut"        ,self.mj_shape["STop_fail"],self.channel,self.wtagger_label)
 
         ### Build WJet fit pass and fail distributions
         print "###########################################"
@@ -689,18 +707,17 @@ class initialiseFits:
 #        fit_mj_single_MC(self.workspace4fit_,self.file_VV_mc,"_VV",self.mj_shape["VV"],self.channel,self.wtagger_label)
 #        fit_mj_single_MC(self.workspace4fit_,self.file_VV_mc,"_VV_failSubjetTau21cut",self.mj_shape["VV_fail"],self.channel,self.wtagger_label)
         
-        
-
-        print "#########################################"
-        print "################## QCD ##################"
-        print "#########################################"
-        print ""
-        print ""
-   
-        self.get_mj_dataset(self.file_QCD_mc,"_QCD")
-        fit_mj_single_MC(self.workspace4fit_,self.file_QCD_mc,"_QCD",self.mj_shape["QCD"],self.channel,self.wtagger_label)
-        fit_mj_single_MC(self.workspace4fit_,self.file_QCD_mc,"_QCD_failSubjetTau21cut",self.mj_shape["QCD_fail"],self.channel,self.wtagger_label)
-        
+        if not options.noQCD:
+            print "#########################################"
+            print "################## QCD ##################"
+            print "#########################################"
+            print ""
+            print ""
+       
+            self.get_mj_dataset(self.file_QCD_mc,"_QCD")
+            fit_mj_single_MC(self.workspace4fit_,self.file_QCD_mc,"_QCD",self.mj_shape["QCD"],self.channel,self.wtagger_label)
+            fit_mj_single_MC(self.workspace4fit_,self.file_QCD_mc,"_QCD_failSubjetTau21cut",self.mj_shape["QCD_fail"],self.channel,self.wtagger_label)
+            
 
         if options.fitMC:
             return
@@ -758,8 +775,10 @@ class initialiseFits:
         self.workspace4fit_.var("rrv_number_dataset_signal_region_data_"    +self.channel+"_mj").Print()
 #        self.workspace4fit_.var("rrv_number_dataset_signal_region_VV"      +self.channel+"_mj").Print()
         self.workspace4fit_.var("rrv_number_dataset_signal_region_WJets0_"  +self.channel+"_mj").Print()
-        self.workspace4fit_.var("rrv_number_dataset_signal_region_QCD_"     +self.channel+"_mj").Print()
-        self.workspace4fit_.var("rrv_number_dataset_signal_region_STop_"    +self.channel+"_mj").Print()
+        if not options.noQCD :
+            self.workspace4fit_.var("rrv_number_dataset_signal_region_QCD_"     +self.channel+"_mj").Print()
+        if not options.noST :
+            self.workspace4fit_.var("rrv_number_dataset_signal_region_STop_"    +self.channel+"_mj").Print()
         self.workspace4fit_.var("rrv_number_dataset_signal_region_TTbar_"   +self.channel+"_mj").Print()
         print ""
         print ""
