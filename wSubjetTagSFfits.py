@@ -595,18 +595,18 @@ class initialiseFits:
         self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root")#("ExoDiBosonAnalysis.WWTree_pseudodata_76X_PUPPISD.root")     
         self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ")#("ExoDiBosonAnalysis.WWTree_WJets_76X_PUPPISD.root")
         self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_VV_76X_PUPPISD.root")        
-        self.file_TTbar_mc          = ("ttbarTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
+        self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
         self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_STop_76X_PUPPISD.root")
       if options.v5 :   
-        self.nameTag = "May30"
-        self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_May30.root
-        self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_May30.root
-        self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ") # wjets_highmass_May30.root
+        self.nameTag = "June1"
+        self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_June1.root
+        self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_June1.root
+        self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ") # wjets_highmass_June1.root
         if not options.noQCD :
-            self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root") # QCD_highmass_May30.root
-        self.file_TTbar_mc          = ("ttbarTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") # ttbarTuneCUETP8M2T4_highmass_May30.root
+            self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root") # QCD_highmass_June1.root
+        self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") # ttbarTuneCUETP8M2T4_highmass_June1.root
         if not options.noST :
-            self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root") # ST_highmass_May30.root
+            self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root") # ST_highmass_June1.root
 
       #self.file_data              = ("Data_2Trans.root")
       #self.file_WJets0_mc         = ("WJets_2Trans.root") 
