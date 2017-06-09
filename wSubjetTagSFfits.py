@@ -25,8 +25,8 @@ parser.add_option('--salsetup',dest="salsetup", default=False, action="store_tru
 parser.add_option('--binmin',dest="ptbinmin", default=300, type=int,help="Minimum subjet 0 pt")
 parser.add_option('--binmax',dest="ptbinmax", default=500, type=int,help="Maximum subjet 0 pt")
 parser.add_option('--v5',dest="v5", default=True, action="store_true", help="Use latest b2g ttrees ?")
-parser.add_option('--noQCD',dest="noQCD", default=True, action="store_true", help=" Don't use QCD")
-parser.add_option('--noST',dest="noST", default=True, action="store_true", help="Don't use ST")
+parser.add_option('--noQCD',dest="noQCD", default=False, action="store_true", help=" Don't use QCD")
+parser.add_option('--noST',dest="noST", default=False, action="store_true", help="Don't use ST")
 
 (options, args) = parser.parse_args()
 
@@ -1434,6 +1434,6 @@ if __name__ == '__main__':
         print "Doing fits to MC only"
         doFitsToMC()
     else:
-        print 'Getting W-tagging scalefactor for %s sample for n-subjettiness < %.2f' %(channel,options.tau2tau1cutHP) #I am actually not doing a simoultaneous fit. So..... change this
+        print 'Getting W-tagging scalefactor for %s sample for n-subjettiness < %.2f' %(channel,options.tau2tau1cutHP)
         getSF()
 
