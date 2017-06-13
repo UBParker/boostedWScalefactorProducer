@@ -15,7 +15,7 @@ source /cvmfs/cms.cern.ch/slc6_amd64_gcc491/lcg/root/5.34.22-cms/bin/thisroot.cs
 ```
 ### getting the code
 ```
-git clone https://github.com/UBParker/boostedWScalefactorProducer.git -b originalRemote/LatestGreatest 
+git clone https://github.com/UBParker/boostedWScalefactorProducer.git -b TreeV5 
 ```
 ### compiling
 ```
@@ -26,7 +26,8 @@ python Automatic_Setup.py --vclean 1#To compile
 ### running
 ```
 python Automatic_Setup.py  #To compile
-python wSubjetTagSFfits.py --usePuppiSD -b --HP 0.4 --binmin 300 --binmax 500  #To run
+python wSubjetTagSFfits.py -b --HP 0.35 --binmin 500 --binmax -1  #To run on W candidate subjets of pt > 500 GeV
+python wSubjetTagSFfits.py -b --HP 0.4 --binmin 300 --binmax 500 --fitTT #To show fits to matched and unmatched ttbar
 ```
 
 The basic script to be run is 
