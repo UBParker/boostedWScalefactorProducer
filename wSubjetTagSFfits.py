@@ -456,11 +456,11 @@ class initialiseFits:
 #      self.mj_shape["TTbar_realW"]      = "ExpGaus"
       self.mj_shape["TTbar_realW"]      = "Gaus_ttbar" # "ExpGaus" #"GausErfExp_ttbar" #before "2Gaus_ttbar"
 #      self.mj_shape["TTbar_realW_fail"] = "GausExp_failSubjetTau21cut"
-      self.mj_shape["TTbar_realW_fail"] =  "ExpGaus" # "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut"
-      self.mj_shape["TTbar_fakeW"]      =  "ExpGaus" # "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"
+      self.mj_shape["TTbar_realW_fail"] =  "Gaus_ttbar"  #"ExpGaus" # "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut"
+      self.mj_shape["TTbar_fakeW"]      =  "ErfExp" #  "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"
 #      self.mj_shape["TTbar_fakeW_fail"] = "Exp"## Make model : _bkg_TotalMC_failSubjetTau21cut GausChebychev_ttbar_failSubjetTau21cut  500 ##
 
-      self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut"      
+      self.mj_shape["TTbar_fakeW_fail"] = "ErfExp" #"GausErfExp_ttbar_failSubjetTau21cut"      
       if (options.useDDT): 
         self.mj_shape["TTbar_realW_fail"]       = "GausChebychev_ttbar_failSubjetTau21cut"  
         
@@ -482,10 +482,10 @@ class initialiseFits:
           if (options.usePuppiSD): 
               self.mj_shape["STop_fail"]          = "ExpGaus"  
 
-      if (options.useN2DDT):
+#      if (options.useN2DDT):
 #        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"
 #        self.mj_shape["STop_fail"]          = "ExpGaus"
-        self.mj_shape["STop_fail"]          = "ExpGaus"
+#        #self.mj_shape["STop_fail"]          = "ExpGaus"
 
 #      if (options.tau2tau1cutHP==0.60): 
 #        self.mj_shape["QCD_fail"]     = "Exp"
@@ -511,12 +511,55 @@ class initialiseFits:
           self.mj_shape["bkg_data"]             = "ExpGaus" #"GausChebychev_ttbar"  #"ErfExpGaus_sp"
           ### NOTE: "ExpGaus" may be better !!!
           self.mj_shape["bkg_mc"]               = "ExpGaus" #"GausChebychev_ttbar" #"ErfExpGaus_sp"
+      if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.35 :
+          self.mj_shape["bkg_mc_fail"]          =  "ExpGaus"
+          self.mj_shape["bkg_data_fail"]        =  "ExpGaus"
+
+          self.mj_shape["signal_mc_fail"]       = "ExpGaus" 
+          self.mj_shape["signal_data_fail"]     = "ExpGaus"  
+
+          self.mj_shape["bkg_data"]             =  "ExpGaus" 
+          self.mj_shape["bkg_mc"]               =  "ExpGaus"
+  
+          self.mj_shape["signal_data"]          = "Gaus_ttbar"                               
+          self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+
+      if options.ptbinmin == 200 and options.ptbinmax == 300 and options.tau2tau1cutHP==0.55 :
+          self.mj_shape["bkg_mc_fail"]          =  "Exp"
+          self.mj_shape["bkg_data_fail"]        =  "Exp"
+
+          self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"ExpGaus"
+          self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"ExpGaus"
+
+          self.mj_shape["bkg_data"]             =  "ExpGaus"
+          self.mj_shape["bkg_mc"]               =  "ExpGaus"
+
+          self.mj_shape["signal_data"]          = "Gaus_ttbar"
+          self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+
+
+      if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
+          self.mj_shape["bkg_mc_fail"]          =  "Exp"
+          self.mj_shape["bkg_data_fail"]        =  "Exp"
+
+          self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
+          self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
+
+          self.mj_shape["bkg_data"]             =  "ExpGaus"
+          self.mj_shape["bkg_mc"]               =  "ExpGaus"
+
+          self.mj_shape["signal_data"]          = "Gaus_ttbar"
+          self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+
       # ptbinmin
-      self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
-      self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+      #self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
+      #self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+
+
+
       if  options.ptbinmin == 500 :
-          self.mj_shape["signal_data"]          = "GausChebychev_ttbar" #"Gaus_ttbar" #Before 2Gaus_ttbar                                                                                   
-          self.mj_shape["signal_mc"]            = "GausChebychev_ttbar" #"Gaus_ttbar"
+          self.mj_shape["signal_data"]          = "GausErfExp_ttbar" #"GausChebychev_ttbar" #"Gaus_ttbar" #Before 2Gaus_ttbar                                                                                   
+          self.mj_shape["signal_mc"]            = "GausErfExp_ttbar" #"GausChebychev_ttbar" #"Gaus_ttbar"
 
       
 #      if (options.useDDT): 
@@ -530,7 +573,7 @@ class initialiseFits:
 #       self.mj_shape["signal_data_fail"]     = "GausChebychev_ttbar_failSubjetTau21cut"
       
       #Set lumi  
-      self.Lumi=35800.
+      self.Lumi= 35860.#  35800.
       # self.Lumi=2198. #74
       if options.use76X: self.Lumi=35800. #76
           
@@ -598,7 +641,7 @@ class initialiseFits:
         self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
         self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_STop_76X_PUPPISD.root")
       if options.v5 :   
-        self.nameTag = "June1"
+        self.nameTag = "June11"
         self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_June1.root
         self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_June1.root
         self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ") # wjets_highmass_June1.root
@@ -934,6 +977,8 @@ class initialiseFits:
           self.ak8PuppiSD_m  = float(self.ak8PuppiSDJetP4.M())       
           fatjetTau32 = getattr(treeIn, "JetPuppiTau32")
           
+          self.ptRelLepAK4 = getattr(treeIn,"PtRel"),
+          self.dRLepAK4 = getattr(treeIn,"AK4_dRminLep_dRlep")
           ### Top mass window cut
           
           if  not ( 105. <= self.ak8PuppiSD_m <= 250.) : continue
@@ -941,6 +986,9 @@ class initialiseFits:
           ### Top tag loose n-subjettiness cut
 
           if  not ( fatjetTau32 < 0.8 ) : continue
+
+          ### 2-D Cut to reduced QCD contamination
+          if not ( self.ptRelLepAK4 > 45. or self.dRLepAK4 > 0.4 ): continue
 
           ### Wtag mass window cut
           #if  not ( 10. <=  self.ak8subjet0PuppiSD_m <= 140.) : continue
