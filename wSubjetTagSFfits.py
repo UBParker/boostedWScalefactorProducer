@@ -531,11 +531,11 @@ class initialiseFits:
           self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"ExpGaus"
           self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"ExpGaus"
 
-          self.mj_shape["bkg_data"]             =  "ExpGaus"
-          self.mj_shape["bkg_mc"]               =  "ExpGaus"
+          self.mj_shape["bkg_data"]             =  "Exp"
+          self.mj_shape["bkg_mc"]               =  "Exp"
 
-          self.mj_shape["signal_data"]          = "Gaus_ttbar"
-          self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+          self.mj_shape["signal_data"]          = "GausErfExp_ttbar" #"Gaus_ttbar"
+          self.mj_shape["signal_mc"]            = "GausErfExp_ttbar" #"Gaus_ttbar"
 
 
       if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
