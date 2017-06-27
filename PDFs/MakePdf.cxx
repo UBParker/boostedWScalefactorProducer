@@ -642,10 +642,10 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       double p1_tmp = -2.2128e-01; double p1_tmp_err = 5.02e-01; //3.02e-01;                                                                                                                                       
       double frac_tmp =  5.6400e-01  ; double frac_tmp_err =  2.02e-01; //1.20e-01;                                                                                                                                
       double mean1_tmp = 62.;  //8.9682e+01;
-      double sigma1_tmp = 13.; //12.; I CHANGED THESE 2 variables
+      double sigma1_tmp = 12.; //12.; I CHANGED THESE 2 variables
 
-      double mean2_tmp = 78.;  //8.9682e+01;                                                                                                                                                                        
-      double sigma2_tmp = 18.; //12.; I ADDED THIS SECOND GAUSSIAN                                                                                                                                                 
+      double mean2_tmp = 80.;  //8.9682e+01;                                                                                                                                                                        
+      double sigma2_tmp = 19.; //12.; I ADDED THIS SECOND GAUSSIAN                                                                                                                                                 
 
       RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, 55., 65.);
       RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp,11.,19. );
