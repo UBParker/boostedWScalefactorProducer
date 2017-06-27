@@ -537,8 +537,8 @@ class initialiseFits:
           self.mj_shape["signal_data"]          = "GausErfExp_ttbar" #"Gaus_ttbar"
           self.mj_shape["signal_mc"]            = "GausErfExp_ttbar" #"Gaus_ttbar"
 
-
-      if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
+      if options.tau2tau1cutHP==0.55 : ## This was originally optimized for the 300-500 WP so it may not work for other bins but try it    WORKING HERE ???
+      #if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
           self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
           self.mj_shape["bkg_data_fail"]        = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
 
