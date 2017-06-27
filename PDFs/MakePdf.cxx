@@ -372,6 +372,26 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       return model_pdf ;
     }
     
+    if( model == "DeuxGaus"){
+      double frac_tmp = 0.3;
+
+      std::cout << "Making gaus0" << std::endl;
+      RooRealVar* rrv_mean0_gaus   = new RooRealVar(("rrv_mean0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),70,68,73);
+      RooRealVar* rrv_sigma0_gaus  = new RooRealVar(("rrv_sigma0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),20,15.,35);
+      //RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean0_gaus,*rrv_sigma0_gaus);
+      RooGaussian* gaus0 = new RooGaussian(("gaus0"+label+"_"+channel+spectrum).c_str(),("gaus0"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean0_gaus,*rrv_sigma0_gaus);                                                       
+      std::cout << "Done" << std::endl;
+      std::cout << "Making gaus1" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),58,55,62);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),25,12.,40);
+      std::cout << "Done" << std::endl;
+      /// ??? WORKING HERE
+      RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);                                                        
+      std::cout<< "######## Testing 1,2 ########"<<std::endl;                                                                                                                                                                          
+      RooRealVar* rrv_frac1 = new RooRealVar(("rrv_frac1"+label+"_"+channel+spectrum).c_str(),("rrv_frac1"+label+"_"+channel+spectrum).c_str(),frac_tmp,0,1);                                                                                                                                                                                                                                                                             std::cout<< "######## Testing 1,2,3. ########"<<std::endl;                                                                                                                                                                                                                            RooAddPdf* model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus0,*gaus1),RooArgList(*rrv_frac1),1);                                      
+        
+      return model_pdf ;
+    }
 
     if( model == "ErfExp" ){
       std::cout<< "########### Erf*Exp for mj fit  ############"<<std::endl;
@@ -607,9 +627,10 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       return model_pdf ;
     }
 
-    if( model == "GausChebychev_QCD"){
+    if( model == "DeuxGausChebychev"){
 
       RooAbsPdf* model_pdf = NULL ;
+      RooAbsPdf* model_pdf2 = NULL ;
 
       //double p0_tmp = 3.1099e-01 ; double p0_tmp_err = 5.e-01; //1.86e-01;
       //double p1_tmp = -2.2128e-01; double p1_tmp_err = 5.02e-01; //3.02e-01;
@@ -620,13 +641,19 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       double p0_tmp = 4.1099e-01 ; double p0_tmp_err = 5.e-01; //1.86e-01;                                                                                                                                         
       double p1_tmp = -2.2128e-01; double p1_tmp_err = 5.02e-01; //3.02e-01;                                                                                                                                       
       double frac_tmp =  5.6400e-01  ; double frac_tmp_err =  2.02e-01; //1.20e-01;                                                                                                                                
-      double mean1_tmp = 8.9682e+01;
-      double sigma1_tmp = 12.;
+      double mean1_tmp = 60.;  //8.9682e+01;
+      double sigma1_tmp = 15.; //12.; I CHANGED THESE 2 variables
 
+      double mean2_tmp = 84.;  //8.9682e+01;                                                                                                                                                                        
+      double sigma2_tmp = 18.; //12.; I ADDED THIS SECOND GAUSSIAN                                                                                                                                                 
 
-      RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, 75., 95.);
-      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp,10.,25. );
-      RooGaussian* gaus = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, 55., 65.);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp,11.,19. );
+      RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+
+      RooRealVar* rrv_mean2_gaus = new RooRealVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),mean2_tmp, 75., 92.);
+      RooRealVar* rrv_sigma2_gaus = new RooRealVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),sigma2_tmp,8.,20. );
+      RooGaussian* gaus2 = new RooGaussian(("gaus2"+label+"_"+channel+spectrum).c_str(),("gaus2"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean2_gaus,*rrv_sigma2_gaus);
 
       RooRealVar* rrv_p0_cheb = new RooRealVar(("rrv_p0_cheb"+label+"_"+channel+spectrum).c_str(),("rrv_p0_cheb"+label+"_"+channel+spectrum).c_str(),p0_tmp);
       RooRealVar* rrv_p1_cheb = new RooRealVar(("rrv_p1_cheb"+label+"_"+channel+spectrum).c_str(),("rrv_p1_cheb"+label+"_"+channel+spectrum).c_str(),p1_tmp);
@@ -634,15 +661,16 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       RooChebychev* cheb = new RooChebychev(("cheb"+label+"_"+channel+spectrum).c_str(),("cheb"+label+"_"+channel+spectrum).c_str(), *rrv_x, RooArgList(*rrv_p0_cheb,*rrv_p1_cheb) );
 
       RooRealVar* rrv_frac = new RooRealVar(("rrv_frac"+label+"_"+channel+spectrum).c_str(),("rrv_frac"+label+"_"+channel+spectrum).c_str(),frac_tmp);
-      model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus,*cheb),RooArgList(*rrv_frac),1);
+      model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus1,*gaus2),RooArgList(*rrv_frac),1);
+      model_pdf2 = new RooAddPdf(("model_pdf2"+label+"_"+channel+spectrum).c_str(),("model_pdf2"+label+"_"+channel+spectrum).c_str(),RooArgList(*model_pdf, *cheb),RooArgList(*rrv_frac),1);
 
-      return model_pdf ;
+      return model_pdf2 ;
     }
     
     if( model == "GausErfExp_QCD_failSubjetTau21cut"){
 
-      double mean1_tmp = 8.7653e+01;
-      double sigma1_tmp = 7.5932e+00;
+      double mean1_tmp = 60. ; //8.7653e+01;
+      double sigma1_tmp = 11.; //7.5932e+00;
       float rangeMean = 6. ;
       float rangeWidth = 10. ;
       double frac_tmp = 0.6;
@@ -1152,6 +1180,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       RooAddPdf* model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus1,*erfExp),RooArgList(*rrv_frac),1);
 
       return model_pdf ;
+
     }
 
     if( model == "2Gaus_ttbar"){
@@ -1192,13 +1221,72 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       RooFormulaVar* rrv_mean2_gaus   = new RooFormulaVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),"@0+@1",RooArgList(*rrv_mean1_gaus,*rrv_deltamean_gaus));
       RooRealVar* rrv_scalesigma_gaus = new RooRealVar(("rrv_scalesigma_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_scalesigma_gaus"+label+"_"+channel+spectrum).c_str(),scalesigma_tmp,0,5);
       RooFormulaVar* rrv_sigma2_gaus  = new RooFormulaVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),"@0*@1", RooArgList(*rrv_sigma1_gaus,*rrv_scalesigma_gaus));
-      RooGaussian* gaus2 = new RooGaussian(("gaus2"+label+"_"+channel+spectrum).c_str(),("gaus2"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean2_gaus,*rrv_sigma2_gaus);
+      RooGaussian* gaus2 = new RooGaussian(("gaus2"+label+"_"+channel+spectrum).c_str(),("gaus2"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean2_gaus,*rrv_sigma2_gaus);      std::cout<< "######## Testing 1,2 ########"<<std::endl;                                                                                                                                                                          
+                                                                                                                                                                                                                                       
+      RooRealVar* rrv_frac = new RooRealVar(("rrv_frac"+label+"_"+channel+spectrum).c_str(),("rrv_frac"+label+"_"+channel+spectrum).c_str(),frac_tmp,0,1);//,frac_tmp-frac_tmp_err,frac_tmp+frac_tmp_err);                            \
+                                                                                                                                                                                                                                       
+      std::cout<< "######## Testing 1,2,3. ########"<<std::endl;                                                                                                                                                                       
+                                                                                                                                                                                                                                       
+      RooAddPdf* model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus1,*gaus2),RooArgList(*rrv_frac),1);                                       
+        
 
-      RooRealVar* rrv_frac = new RooRealVar(("rrv_frac"+label+"_"+channel+spectrum).c_str(),("rrv_frac"+label+"_"+channel+spectrum).c_str(),frac_tmp,0,1);//,frac_tmp-frac_tmp_err,frac_tmp+frac_tmp_err);
+      //RooRealVar* rrv_frac = new RooRealVar(("rrv_frac"+label+"_"+channel+spectrum).c_str(),("rrv_frac"+label+"_"+channel+spectrum).c_str(),frac_tmp,0,1);//,frac_tmp-frac_tmp_err,frac_tmp+frac_tmp_err);
+      // RooAddPdf* model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus1,*gaus2),RooArgList(*rrv_frac),1);
+
+      return model_pdf ;
+    }
+
+
+
+    /*
+    if( model == "2Gaus"){
+
+      double mean1_tmp = 8.1934e+01;
+      double sigma1_tmp = 8.1149e+00;
+      float rangeMean = 50. ;
+      float rangeWidth = 25. ;
+      double frac_tmp = 0.2 ;
+      double deltamean_tmp  = 49.499 ;
+      double scalesigma_tmp = 1.5752;
+ 
+      std::cout<< "######## 2 Gaussian fit to bkg  ########"<<std::endl;
+      // ??? cout 
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, mean1_tmp-rangeMean, mean1_tmp+rangeMean);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp, sigma1_tmp-rangeWidth,sigma1_tmp+rangeWidth );
+
+      if( TString(label.c_str()).Contains("fail") ){
+        if( TString(label).Contains("data") ) {
+          rrv_mean1_gaus  = workspace->var(("rrv_mean1_gaus_ttbar_data_"+channel+spectrum).c_str());
+          rrv_sigma1_gaus = workspace->var(("rrv_sigma1_gaus_ttbar_data_"+channel+spectrum).c_str());
+        }
+        else if( TString(label).Contains("TotalMC") ) {
+          rrv_mean1_gaus  = workspace->var(("rrv_mean1_gaus_ttbar_TotalMC_"+channel+spectrum).c_str());
+          rrv_sigma1_gaus = workspace->var(("rrv_sigma1_gaus_ttbar_TotalMC_"+channel+spectrum).c_str());
+        }
+      }
+
+      RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      std::cout<< "######## Testing ########"<<std::endl;
+
+
+      RooRealVar* rrv_deltamean_gaus  = new RooRealVar(("rrv_deltamean_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_deltamean_gaus"+label+"_"+channel+spectrum).c_str(),deltamean_tmp,0,60);
+      RooFormulaVar* rrv_mean2_gaus   = new RooFormulaVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),"@0+@1",RooArgList(*rrv_mean1_gaus,*rrv_deltamean_gaus));
+      RooRealVar* rrv_scalesigma_gaus = new RooRealVar(("rrv_scalesigma_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_scalesigma_gaus"+label+"_"+channel+spectrum).c_str(),scalesigma_tmp,0,6);
+      RooFormulaVar* rrv_sigma2_gaus  = new RooFormulaVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),"@0*@1", RooArgList(*rrv_sigma1_gaus,*rrv_scalesigma_gaus));
+      RooGaussian* gaus2 = new RooGaussian(("gaus2"+label+"_"+channel+spectrum).c_str(),("gaus2"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean2_gaus,*rrv_sigma2_gaus);
+      std::cout<< "######## Testing 1,2 ########"<<std::endl;
+
+      RooRealVar* rrv_frac = new RooRealVar(("rrv_frac"+label+"_"+channel+spectrum).c_str(),("rrv_frac"+label+"_"+channel+spectrum).c_str(),frac_tmp,0,1);//,frac_tmp-frac_tmp_err,frac_tmp+frac_tmp_err);                                                                                                                                                                    
+      std::cout<< "######## Testing 1,2,3. ########"<<std::endl;
+
       RooAddPdf* model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus1,*gaus2),RooArgList(*rrv_frac),1);
 
       return model_pdf ;
     }
+
+
+    */
+
   // FOR MC FITS TO MATCHED TT MC!!! 
     if( model == "GausChebychev_ttbar_failSubjetTau21cut"){
 

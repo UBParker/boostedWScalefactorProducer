@@ -472,8 +472,8 @@ class initialiseFits:
       self.mj_shape["WJets0_fail"]        = "Exp"
 #      self.mj_shape["WJets0_fail"]        = "Exp"
       if not options.noQCD :
-          self.mj_shape["QCD"]                =  "Exp"
-          self.mj_shape["QCD_fail"]           =  "Exp"
+          self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"
+          self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"
 
       if not options.noST :
           #self.mj_shape["STop"]               = "ExpGaus_sp"
@@ -539,27 +539,24 @@ class initialiseFits:
 
 
       if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
-          self.mj_shape["bkg_mc_fail"]          =  "Exp"
-          self.mj_shape["bkg_data_fail"]        =  "Exp"
+          self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
+          self.mj_shape["bkg_data_fail"]        = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
 
-          self.mj_shape["signal_mc_fail"]       = "Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
-          self.mj_shape["signal_data_fail"]     = "Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
+          self.mj_shape["signal_mc_fail"]       = "ExpGaus" #"Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
+          self.mj_shape["signal_data_fail"]     = "ExpGaus"                                                                                                                                                   
 
           self.mj_shape["bkg_data"]             =  "ExpGaus"
           self.mj_shape["bkg_mc"]               =  "ExpGaus"
 
-          self.mj_shape["signal_data"]          = "Gaus_ttbar"
-          self.mj_shape["signal_mc"]            = "Gaus_ttbar"
+          self.mj_shape["signal_data"]          = "ExpGaus" #"Gaus_ttbar"
+          self.mj_shape["signal_mc"]            = "ExpGaus" #"Gaus_ttbar"
 
       # ptbinmin
       #self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
       #self.mj_shape["signal_mc"]            = "Gaus_ttbar"
-
-
-
-      if  options.ptbinmin == 500 :
-          self.mj_shape["signal_data"]          = "GausErfExp_ttbar" #"GausChebychev_ttbar" #"Gaus_ttbar" #Before 2Gaus_ttbar                                                                                   
-          self.mj_shape["signal_mc"]            = "GausErfExp_ttbar" #"GausChebychev_ttbar" #"Gaus_ttbar"
+      # if  options.ptbinmin == 500 :
+      #     self.mj_shape["signal_data"]          = "GausErfExp_ttbar" #"GausChebychev_ttbar" #"Gaus_ttbar" #Before 2Gaus_ttbar                                                                                   
+      #     self.mj_shape["signal_mc"]            = "GausErfExp_ttbar" #"GausChebychev_ttbar" #"Gaus_ttbar"
 
       
 #      if (options.useDDT): 
@@ -988,7 +985,7 @@ class initialiseFits:
           if  not ( fatjetTau32 < 0.8 ) : continue
 
           ### 2-D Cut to reduced QCD contamination
-          if not ( self.ptRelLepAK4 > 45. or self.dRLepAK4 > 0.4 ): continue
+          if not ( self.ptRelLepAK4 > 30. or self.dRLepAK4 > 0.4 ): continue
 
           ### Wtag mass window cut
           #if  not ( 10. <=  self.ak8subjet0PuppiSD_m <= 140.) : continue
