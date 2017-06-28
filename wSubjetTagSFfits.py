@@ -474,12 +474,18 @@ class initialiseFits:
       self.mj_shape["WJets0_fail"]        = "Exp"
 #      self.mj_shape["WJets0_fail"]        = "Exp"
       if not options.noQCD :
+          self.mj_shape["QCD"]                =  "ExpGaus" #"Gaus_QCD"                                                                                                    
+          self.mj_shape["QCD_fail"]           =  "ExpGaus" #"Gaus_QCD"                                                                                                    
           if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
-              self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"
-              self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"
+              self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                         
+              self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"                                                          
           if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
-              self.mj_shape["QCD"]                =  "ExpGaus"#"Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                                                                                                                                                    
-              self.mj_shape["QCD_fail"]           = "ExpGaus"#"Gaus_QCD"
+              self.mj_shape["QCD"]                =  "ExpGaus"#"Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                  \
+                                                                                                                                                                          
+              self.mj_shape["QCD_fail"]           = "ExpGaus"#"Gaus_QCD"                                                                                                  
+          if options.ptbinmin == 200  and options.tau2tau1cutHP==0.55 :
+              self.mj_shape["QCD"]                =  "Gaus_QCD"
+              self.mj_shape["QCD_fail"]           = "Gaus_QCD"
 
 
       if not options.noST :
@@ -559,14 +565,14 @@ class initialiseFits:
           self.mj_shape["signal_mc"]            = "ExpGaus" #"Gaus_ttbar"
 
       if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
-          self.mj_shape["bkg_mc_fail"]          =  "DeuxGausChebychev" #"DeuxGaus"  #"ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut"  #"DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                                                                                                                              
-          self.mj_shape["bkg_data_fail"]        =  "DeuxGausChebychev" # "DeuxGaus"  #"ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" # "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                                                                                                                              
+          self.mj_shape["bkg_mc_fail"]          =  "GausChebychev_ttbar"#"DeuxGausChebychev" #"DeuxGaus"  #"ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut"  #"DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                                                                                                                              
+          self.mj_shape["bkg_data_fail"]        =  "GausChebychev_ttbar"#"DeuxGausChebychev" # "DeuxGaus"  #"ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" # "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                                                                                                                              
 
           self.mj_shape["signal_mc_fail"]       = "GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus" #"Gaus_ttbar" #"ExpGaus"                                                                                                                                                                                                                              
           self.mj_shape["signal_data_fail"]     = "GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
 
-          self.mj_shape["bkg_data"]             =  "ExpGaus"
-          self.mj_shape["bkg_mc"]               =  "ExpGaus"
+          self.mj_shape["bkg_data"]             =  "GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
+          self.mj_shape["bkg_mc"]               =  "GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
 
           self.mj_shape["signal_data"]          = "Gaus"#"Gaus_ttbar"                                                                                                                                                                                                                                         
           self.mj_shape["signal_mc"]            = "Gaus" # "Gaus_ttbar"  
