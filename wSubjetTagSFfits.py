@@ -100,7 +100,7 @@ def drawFrameGetChi2(self, variable,fitResult,dataset,pdfModel,isData):
     if options.useDDT: postfix = "_PuppiSD_DDT"
     if options.useN2DDT: postfix = "_PuppiSD_N2DDT"
     title = "Pruned jet mass (GeV)"
-    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "PUPPI SD subjet 0 Jet Mass (GeV)"
+    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "W Subjet Mass (GeV)"
     
     
     frame = variable.frame()
@@ -126,7 +126,7 @@ def drawFrameGetChi2(self, variable,fitResult,dataset,pdfModel,isData):
     frame.GetYaxis().SetRangeUser(0,1500)
     frame.SetMinimum(0.)
     legend = getLegend()
-    if(isData): legend.AddEntry(frame.findObject(dataset.GetName ()),"CMS data","lpe")
+    if(isData): legend.AddEntry(frame.findObject(dataset.GetName ()),"Data","lpe")
     else: legend.AddEntry(frame.findObject(dataset.GetName ()),"Total MC","lpe")
     legend.AddEntry(frame.findObject(pdfModel.GetName()),"Sim. fit","l")
     if frame.findObject("Gaussian 1"):
@@ -160,7 +160,7 @@ def drawDataAndMC(self, variable,fitResult,dataset,pdfModel,isData,variable2,fit
     if options.useDDT: postfix = "_PuppiSD_DDT"
     if options.useN2DDT: postfix = "_PuppiSD_N2DDT"
     title = "Pruned jet mass (GeV)"
-    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "PUPPI SD Subjet 0 Jet mass (GeV)"
+    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "W Subjet Mass (GeV)"
 
 
     frame = variable.frame()
@@ -203,7 +203,7 @@ def drawDataAndMC(self, variable,fitResult,dataset,pdfModel,isData,variable2,fit
     frame.SetMinimum(0.)
 
     legend = getLegend()
-    if(isData): legend.AddEntry(frame.findObject(dataset.GetName ()),"CMS data","lpe")
+    if(isData): legend.AddEntry(frame.findObject(dataset.GetName ()),"Data","lpe")
     else: legend.AddEntry(frame.findObject(dataset.GetName ()),"Total MC","lpe")
     legend.AddEntry(frame.findObject(dataset2.GetName ()),"Total MC","lpe")
     legend.AddEntry(frame.findObject(pdfModel.GetName()),"Sim. Data fit","l")
@@ -472,8 +472,13 @@ class initialiseFits:
       self.mj_shape["WJets0_fail"]        = "Exp"
 #      self.mj_shape["WJets0_fail"]        = "Exp"
       if not options.noQCD :
-          self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"
-          self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"
+          if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
+              self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"
+              self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"
+          if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
+              self.mj_shape["QCD"]                =  "Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                                                                                                                                                    
+              self.mj_shape["QCD_fail"]           = "Gaus_QCD"
+
 
       if not options.noST :
           #self.mj_shape["STop"]               = "ExpGaus_sp"
@@ -537,8 +542,8 @@ class initialiseFits:
           self.mj_shape["signal_data"]          = "GausErfExp_ttbar" #"Gaus_ttbar"
           self.mj_shape["signal_mc"]            = "GausErfExp_ttbar" #"Gaus_ttbar"
 
-      if options.tau2tau1cutHP==0.55 : ## This was originally optimized for the 300-500 WP so it may not work for other bins but try it    WORKING HERE ???
-      #if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
+    
+      if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
           self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
           self.mj_shape["bkg_data_fail"]        = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
 
@@ -550,6 +555,19 @@ class initialiseFits:
 
           self.mj_shape["signal_data"]          = "ExpGaus" #"Gaus_ttbar"
           self.mj_shape["signal_mc"]            = "ExpGaus" #"Gaus_ttbar"
+
+      if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
+          self.mj_shape["bkg_mc_fail"]          =  "DeuxGausChebychev" #"DeuxGaus"  #"ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut"  #"DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                                                                                                                              
+          self.mj_shape["bkg_data_fail"]        =  "DeuxGausChebychev" # "DeuxGaus"  #"ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" # "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                                                                                                                              
+
+          self.mj_shape["signal_mc_fail"]       = "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus" #"Gaus_ttbar" #"ExpGaus"                                                                                                                                                                                                                              
+          self.mj_shape["signal_data_fail"]     = "ExpGaus"
+
+          self.mj_shape["bkg_data"]             =  "ExpGaus"
+          self.mj_shape["bkg_mc"]               =  "ExpGaus"
+
+          self.mj_shape["signal_data"]          = "Gaus_ttbar"                                                                                                                                                                                                                                         
+          self.mj_shape["signal_mc"]            = "Gaus_ttbar"  
 
       # ptbinmin
       #self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
@@ -582,7 +600,7 @@ class initialiseFits:
       in_mj_max        = in_mj_min+nbins_mj*self.BinWidth_mj
       
       jetMass = "PUPPI + SoftDrop jet mass"
-      if options.usePuppiSD: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
+      if options.usePuppiSD: jetMass =  "W Subjet Mass (GeV)"  #"("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
       if options.useN2DDT: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
 
       rrv_mass_j = RooRealVar("rrv_mass_j", jetMass ,(in_mj_min+in_mj_max)/2.,in_mj_min,in_mj_max,"GeV")

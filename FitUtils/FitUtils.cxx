@@ -584,16 +584,21 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
  //  theLeg->AddEntry(xframe_data->findObject("TTbar_realW"),"t#bar{t} (merged)"   ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
-  theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F");
+  //  theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("VV")         ,"WW/WZ/ZZ"            ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
  //  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
-  theLeg->AddEntry(xframe_data->findObject("data")       ,"CMS data"            ,"PLE"); 
-  theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
-  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
-  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
-  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
+  theLeg->AddEntry(xframe_data->findObject("data")       ,"Data"            ,"PLE"); 
   theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
+ theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
+ theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F"); 
+ theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");  
+ //theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F");
+// theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");  
+  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
+  //  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
+  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
+  //  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
   theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                 ,"F");
   
   xframe_data->addObject(theLeg);
@@ -631,6 +636,33 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
     tl_data_sigma->SetTextSize(0.03);
     // xframe_data.addObject(tl_data_mean); xframe_data.addObject(tl_data_sigma);
   }
+  // if(wtagger.c_str()  ){ // WORKING HERE TO ADD PT CUT LABELS
+  if (TString(wtagger).Contains("200To300") ){
+    TString latex ; latex.Form("200 < p_{T} < 300 (GeV)");
+    TLatex* pt_label  = new TLatex(0.25 ,0.62,latex.Data());
+    pt_label->SetNDC();
+    pt_label->SetTextSize(0.03);
+  }
+  if (TString(wtagger).Contains("300To500") ){
+    TString latex ; latex.Form("300 < p_{T} < 500 (GeV)");
+    TLatex* pt_label  = new TLatex(0.25 ,0.62,latex.Data());
+    pt_label->SetNDC();
+    pt_label->SetTextSize(0.03);
+  }
+  if (TString(wtagger).Contains("500Toinf") ){ 
+    TString latex ; latex.Form("500 < p_{T} (GeV)");
+    TLatex* pt_label  = new TLatex(0.25 ,0.62,latex.Data());
+    pt_label->SetNDC();
+    pt_label->SetTextSize(0.03);
+  }
+  if (TString(wtagger).Contains("200Toinf") ){ 
+    TString latex ; latex.Form("200 < p_{T} (GeV)");
+    TLatex* pt_label  = new TLatex(0.25 ,0.62,latex.Data());
+    pt_label->SetNDC();
+    pt_label->SetTextSize(0.03);
+  }
+
+
 
   xframe_data->GetYaxis()->SetRangeUser(1e-2,xframe_data->GetMaximum()*1.4);
   xframe_data_fail->GetYaxis()->SetRangeUser(1e-2,xframe_data_fail->GetMaximum()*1.4);

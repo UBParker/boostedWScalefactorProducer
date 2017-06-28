@@ -265,7 +265,7 @@ TLatex* banner4Plot(const std::string & channel, const float & lumi, const int &
  std::cout<<"############### draw the banner ########################"<<std::endl;
  TString bannerName;
 
-  bannerName.Form("                      CMS Preliminary, %.1f fb^{-1} (#sqrt{s} = 13 TeV)",lumi);
+  bannerName.Form("     CMS Preliminary, %.1f fb^{-1} (#sqrt{s} = 13 TeV)",lumi);
 
  TLatex* banner = NULL ;
  
@@ -342,7 +342,7 @@ TLegend* legend4Plot(RooPlot* plot, const int & left, const double & x_offset_lo
     else if(TString(objName) == "data"){
     // else if(TString(objName).Contains("data")){
      // theLeg->AddEntry(theObj,std::string("CMS Data "+legHeader).c_str(),"PE");
-      theLeg->AddEntry(theObj,"CMS Data ","PEL");  
+      theLeg->AddEntry(theObj,"Data ","PEL");  
      objName_before = objName;
     }
     else{
