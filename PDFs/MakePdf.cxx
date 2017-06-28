@@ -343,7 +343,7 @@ void ShowParam_Pdf(RooAbsPdf* model_pdf, RooArgSet* argset_notparameter){
 ///////////////////////////////////////////////
 RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, const std::string & model, const std::string & spectrum, const std::string & wtagger_label, const std::string & channel, std::vector<std::string>* constraint, const int & ismc){
   
-  std::cout<< "Making general PDF for wtagger_label = "<<wtagger_label.c_str() << " model = "<< model.c_str() << " label = "<< label.c_str()<< " ismc = "<< ismc << " channel = "<< channel.c_str()<< std::endl;
+  std::cout<< "Making general PDF for wtagger_label = Hi there"<<wtagger_label.c_str() << " model = "<< model.c_str() << " label = "<< label.c_str()<< " ismc = "<< ismc << " channel = "<< channel.c_str()<< std::endl;
 
   RooRealVar* rrv_x = NULL ; 
   if(TString(spectrum).Contains("_mj"))   rrv_x = workspace->var("rrv_mass_j");
@@ -1186,6 +1186,35 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       RooAddPdf* model_pdf  = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*exp,*gaus),RooArgList(*rrv_high));
       return model_pdf ;
     }
+
+    if( model == "Gaus_ttbar"){
+
+      double mean1_tmp = 80.5;
+      double sigma1_tmp = 10.1149e+00;
+      float rangeMean = 5. ;
+      float rangeWidth = 10;
+
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, mean1_tmp-4, mean1_tmp+9);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp, 10, 20);
+
+      if( TString(label.c_str()).Contains("bkg") ) rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp+3, sigma1_tmp-rangeWidth+3,sigma1_tmp+rangeWidth +3);
+
+      if( TString(label.c_str()).Contains("fail") ){
+        if( TString(label).Contains("data") ) {
+          rrv_mean1_gaus  = workspace->var(("rrv_mean1_gaus_ttbar_data_"+channel+spectrum).c_str());
+          rrv_sigma1_gaus = workspace->var(("rrv_sigma1_gaus_ttbar_data_"+channel+spectrum).c_str());
+        }
+        else if( TString(label).Contains("TotalMC") ) {
+          rrv_mean1_gaus  = workspace->var(("rrv_mean1_gaus_ttbar_TotalMC_"+channel+spectrum).c_str());
+          rrv_sigma1_gaus = workspace->var(("rrv_sigma1_gaus_ttbar_TotalMC_"+channel+spectrum).c_str());
+        }
+      }
+
+      RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+
+      return gaus1 ;
+    }
+
 
     if( model == "ErfExpGaus_sp"){
 
