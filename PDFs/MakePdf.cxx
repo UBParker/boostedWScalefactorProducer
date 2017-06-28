@@ -386,14 +386,14 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       double frac_tmp = 0.3;
 
       std::cout << "Making gaus0" << std::endl;
-      RooRealVar* rrv_mean0_gaus   = new RooRealVar(("rrv_mean0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),70,68,73);
-      RooRealVar* rrv_sigma0_gaus  = new RooRealVar(("rrv_sigma0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),20,15.,35);
+      RooRealVar* rrv_mean0_gaus   = new RooRealVar(("rrv_mean0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),80,75,83);
+      RooRealVar* rrv_sigma0_gaus  = new RooRealVar(("rrv_sigma0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),7.,5.,15);
       //RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean0_gaus,*rrv_sigma0_gaus);
       RooGaussian* gaus0 = new RooGaussian(("gaus0"+label+"_"+channel+spectrum).c_str(),("gaus0"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean0_gaus,*rrv_sigma0_gaus);                                                       
       std::cout << "Done" << std::endl;
       std::cout << "Making gaus1" << std::endl;
-      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),58,55,62);
-      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),25,12.,40);
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),50,40,60);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),30,22.,40);
       std::cout << "Done" << std::endl;
       /// ??? WORKING HERE
       RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);                                                        
