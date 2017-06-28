@@ -589,7 +589,9 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
  //  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
  //  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
   theLeg->AddEntry(xframe_data->findObject("data")       ,"Data"            ,"PLE"); 
-  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
+  // theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
+  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
+
  theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
  theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F"); 
  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");  
@@ -597,8 +599,10 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
 // theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");  
   theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
   //  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
-  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
-  //  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
+  //  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
+  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");
+ 
+ //  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
   theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                 ,"F");
   
   xframe_data->addObject(theLeg);
