@@ -521,6 +521,13 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
         
       }//end if QCD
 
+      if(TString(wtagger_label.c_str()).Contains("300To500")){
+	std::cout<<"For this 300-500 pt bin the model is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
+	rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 15. , 9., 25. );
+
+      
+     
+      }
 
       RooExponential* exp         = new RooExponential(("exp"+label+"_"+channel+spectrum).c_str(),("exp"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_c_Exp);
       RooGaussian* gaus           = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
