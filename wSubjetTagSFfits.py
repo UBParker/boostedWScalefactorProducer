@@ -1,4 +1,4 @@
-#!/Usr50/bin/env python
+#/Usr50/bin/env python
 from optparse import OptionParser
 import ROOT
 import sys
@@ -100,7 +100,7 @@ def drawFrameGetChi2(self, variable,fitResult,dataset,pdfModel,isData):
     if options.useDDT: postfix = "_PuppiSD_DDT"
     if options.useN2DDT: postfix = "_PuppiSD_N2DDT"
     title = "Pruned jet mass (GeV)"
-    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "W Subjet Mass (GeV)"
+    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "W Subjet Mass "
     
     
     frame = variable.frame()
@@ -160,7 +160,7 @@ def drawDataAndMC(self, variable,fitResult,dataset,pdfModel,isData,variable2,fit
     if options.useDDT: postfix = "_PuppiSD_DDT"
     if options.useN2DDT: postfix = "_PuppiSD_N2DDT"
     title = "Pruned jet mass (GeV)"
-    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "W Subjet Mass (GeV)"
+    if options.usePuppiSD or options.useDDT or options.useN2DDT:  title = "W Subjet Mass "
 
 
     frame = variable.frame()
@@ -476,14 +476,14 @@ class initialiseFits:
       if not options.noQCD :
           self.mj_shape["QCD"]                =  "ExpGaus" #"Gaus_QCD"                                                                                                    
           self.mj_shape["QCD_fail"]           =  "ExpGaus" #"Gaus_QCD"                                                                                                    
-          if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
+          if ( (options.ptbinmin == 300 and options.ptbinmax == 500) or (options.ptbinmin == 200  and options.ptbinmax != 300) ) and options.tau2tau1cutHP==0.55 :
               self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                         
               self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"                                                          
           if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
               self.mj_shape["QCD"]                =  "ExpGaus"#"Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                  \
                                                                                                                                                                           
               self.mj_shape["QCD_fail"]           = "ExpGaus"#"Gaus_QCD"                                                                                                  
-          if options.ptbinmin == 200  and options.tau2tau1cutHP==0.55 :
+          if options.ptbinmin == 200  and options.ptbinmax == 300 and options.tau2tau1cutHP==0.55 :
               self.mj_shape["QCD"]                =  "Gaus_QCD"
               self.mj_shape["QCD_fail"]           = "Gaus_QCD"
 
@@ -537,7 +537,7 @@ class initialiseFits:
           self.mj_shape["signal_data"]          = "Gaus_ttbar"                               
           self.mj_shape["signal_mc"]            = "Gaus_ttbar"
 
-      if options.ptbinmin == 200 and options.ptbinmax == 300 and options.tau2tau1cutHP==0.55 :
+      if options.ptbinmin == 200 and options.ptbinmax == 300  and options.tau2tau1cutHP==0.55 :
           self.mj_shape["bkg_mc_fail"]          = "Exp"
           self.mj_shape["bkg_data_fail"]        = "Exp"
 
@@ -577,6 +577,19 @@ class initialiseFits:
           self.mj_shape["signal_data"]          = "Gaus"#"Gaus_ttbar"                                                                                                                                                                                                                                         
           self.mj_shape["signal_mc"]            = "Gaus" # "Gaus_ttbar"  
 
+      if options.ptbinmin == 200 and options.ptbinmax != 300  and options.tau2tau1cutHP==0.55 :
+          self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "DeuxGaus" #"Exp"
+          self.mj_shape["bkg_data_fail"]        = "DeuxGausChebychev"  #"DeuxGaus" #"Exp"
+
+          self.mj_shape["signal_mc_fail"]       = "ExpGaus"                                                                                                   
+          self.mj_shape["signal_data_fail"]     = "ExpGaus"                                                                                                   
+
+          self.mj_shape["bkg_data"]             = "ExpGaus" # "Exp"                                                                                                               
+          self.mj_shape["bkg_mc"]               = "ExpGaus" # "Exp"                                                                                                               
+
+          self.mj_shape["signal_data"]          =  "ExpGaus" #"ExpGaus" #"GausErfExp_ttbar" #"Gaus_ttbar"                                                                                    
+          self.mj_shape["signal_mc"]            =  "ExpGaus" #"ExpGaus" #"GausErfExp_ttbar" #"Gaus_ttbar" 
+
       # ptbinmin
       #self.mj_shape["signal_data"]          = "Gaus_ttbar" #Before 2Gaus_ttbar
       #self.mj_shape["signal_mc"]            = "Gaus_ttbar"
@@ -608,7 +621,7 @@ class initialiseFits:
       in_mj_max        = in_mj_min+nbins_mj*self.BinWidth_mj
       
       jetMass = "PUPPI + SoftDrop jet mass"
-      if options.usePuppiSD: jetMass =  "W Subjet Mass (GeV)"  #"("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
+      if options.usePuppiSD: jetMass =  "W Subjet Mass "  #"("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
       if options.useN2DDT: jetMass = "("+str(options.ptbinmin)+"<pt<"+str(options.ptbinmax)+") PUPPI Softdrop Subjet0 Mass"
 
       rrv_mass_j = RooRealVar("rrv_mass_j", jetMass ,(in_mj_min+in_mj_max)/2.,in_mj_min,in_mj_max,"GeV")
