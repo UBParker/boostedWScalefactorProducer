@@ -376,6 +376,25 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
         RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),20,12.,40);
 
       }
+
+
+      if(TString(wtagger_label.c_str()).Contains("HP0v40")){
+
+	if(TString(wtagger_label.c_str()).Contains("300To500")){
+	  std::cout<<"Model used for 300-500 Medium WP 0.40 is "<<  model << "and tstring containing bkg is "<< wtagger_label.c_str()    << std::endl;
+          rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),89,86.,95.);
+          rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 8. , 4., 17. );
+          if ( TString(label).Contains("bkg")){ // WORKING HERE July 3rd 2017 ???? !!!!
+	    rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),89,86.,95.);
+	    rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 8. , 4., 17. );  
+          }
+
+     
+        }
+
+
+      }
+
       RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
       std::cout << "Done" << std::endl;
       return model_pdf ;
@@ -540,10 +559,28 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
         
       }//end if QCD
 
-      if(TString(wtagger_label.c_str()).Contains("300To500") or TString(wtagger_label.c_str()).Contains("200Toinf")  ){
+      if((TString(wtagger_label.c_str()).Contains("300To500") or TString(wtagger_label.c_str()).Contains("200Toinf")  ) and TString(wtagger_label.c_str()).Contains("HP0v55")   ) {
 	std::cout<<"For this 300-500 pt bin the model is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
 	rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 16. , 15., 35. );
-      }
+      }  
+      if(TString(wtagger_label.c_str()).Contains("HP0v40")){
+
+	if(TString(wtagger_label.c_str()).Contains("300To500")){
+	  std::cout<<"Model used for 300-500 Medium WP 0.40 is "<<  model << "and tstring containing bkg is "<< wtagger_label.c_str()    << std::endl;
+	  rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),84,78.,88.);
+	  rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 14. , 13., 30. );
+          if( TString(label.c_str()).Contains("bkg") ) {
+	    std::cout<<" Model used for 300-500 Medium WP 0.4 for bkg is "<<  model << "and tstring containing bkg is "<< wtagger_label.c_str()    << std::endl;
+            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),84,78.,92.);
+            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 18. , 15 , 50);
+
+          } // end if bkg 300-500
+        } 
+
+
+      } 
+
+      
 
       if(TString(wtagger_label.c_str()).Contains("200To300")){
 	std::cout<<"For this 200-300 pt bin the model is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
@@ -704,10 +741,16 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       double p1_tmp = -2.2128e-01; double p1_tmp_err = 5.02e-01; //3.02e-01;                                                                                                                                       
       double frac_tmp =  5.6400e-01  ; double frac_tmp_err =  2.02e-01; //1.20e-01;                                                                                                                                
       double mean1_tmp = 62.;  //8.9682e+01;
+      double mean1_low = 55.;
+      double mean1_high = 65.;
       double sigma1_tmp = 12.; //12.; I CHANGED THESE 2 variables
+      double sigma1_low = 11.; 
+      double sigma1_high = 19.;
 
-      double mean2_tmp = 80.;  //8.9682e+01;                                                                                                                                                                        
-      double sigma2_tmp = 19.; //12.; I ADDED THIS SECOND GAUSSIAN                                                                                                                                                 
+      double mean2_tmp = 80.; 
+ //8.9682e+01;                                                                                                                                                                        
+      double sigma2_tmp = 19.; //12.; I ADDED THIS SECOND GAUSSIAN                                                                                                                                                
+ 
       double mean2_low = 75.;
       double mean2_high = 92.;
       double sigma2_high = 20.;
@@ -723,9 +766,25 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
         double sigma2_high = 15.;
       }
 
+      if(TString(wtagger_label.c_str()).Contains("300To500")  and TString(wtagger_label.c_str()).Contains("HP0v40")  ){
+	std::cout<<"For this 300-500 pt bin in the Medium WP the model is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
+	double mean1_tmp = 50.;
+	double mean1_low = 49.; //45.;
+	double mean1_high = 55.;  // 60.;  
+	double sigma1_tmp = 22.; 
+	double sigma1_low = 18.; //15.;
+	double sigma1_high = 39.;
 
-      RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, 55., 65.);
-      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp,11.,19. );
+
+        double mean2_tmp = 86.;
+        double mean2_low = 80.;
+        double mean2_high = 89.;
+        double sigma2_tmp = 9.;
+        double sigma2_high = 25.;
+      }
+
+      RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, mean1_low, mean1_high);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp, sigma1_low, sigma1_high );
       RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
 
       RooRealVar* rrv_mean2_gaus = new RooRealVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),mean2_tmp, mean2_low , mean2_high );
