@@ -729,7 +729,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
     if( model == "DeuxGausChebychev"){
 
       RooAbsPdf* model_pdf = NULL ;
-      RooAbsPdf* model_pdf2 = NULL ;
+      RooAbsPdf* model_pdf_dgc = NULL ;
 
       //double p0_tmp = 3.1099e-01 ; double p0_tmp_err = 5.e-01; //1.86e-01;
       //double p1_tmp = -2.2128e-01; double p1_tmp_err = 5.02e-01; //3.02e-01;
@@ -768,19 +768,21 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
 
       if(TString(wtagger_label.c_str()).Contains("300To500")  and TString(wtagger_label.c_str()).Contains("HP0v40")  ){
 	std::cout<<"For this 300-500 pt bin in the Medium WP the model is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
-	double mean1_tmp = 50.;
-	double mean1_low = 49.; //45.;
-	double mean1_high = 55.;  // 60.;  
-	double sigma1_tmp = 22.; 
-	double sigma1_low = 18.; //15.;
-	double sigma1_high = 39.;
+	mean1_tmp = 50.;
+	mean1_low = 49.; 
+	mean1_high = 51.;
+	sigma1_tmp = 27.; 
+	sigma1_low = 26.;
+	sigma1_high = 39.;
+	
+        //p0_tmp = 4.5099e-01 ;
+	frac_tmp = 0.35; // 0.4;  // 5.6400e-01  ; 
 
-
-        double mean2_tmp = 86.;
-        double mean2_low = 80.;
-        double mean2_high = 89.;
-        double sigma2_tmp = 9.;
-        double sigma2_high = 25.;
+        mean2_tmp = 86.;
+        mean2_low = 80.;
+        mean2_high = 89.;
+        sigma2_tmp = 9.;
+        sigma2_high = 25.;
       }
 
       RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, mean1_low, mean1_high);
@@ -794,14 +796,14 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       RooRealVar* rrv_p0_cheb = new RooRealVar(("rrv_p0_cheb"+label+"_"+channel+spectrum).c_str(),("rrv_p0_cheb"+label+"_"+channel+spectrum).c_str(),p0_tmp);
       RooRealVar* rrv_p1_cheb = new RooRealVar(("rrv_p1_cheb"+label+"_"+channel+spectrum).c_str(),("rrv_p1_cheb"+label+"_"+channel+spectrum).c_str(),p1_tmp);
 
-      RooChebychev* cheb = new RooChebychev(("cheb"+label+"_"+channel+spectrum).c_str(),("cheb"+label+"_"+channel+spectrum).c_str(), *rrv_x, RooArgList(*rrv_p0_cheb,*rrv_p1_cheb) );
+      RooChebychev* chebbb = new RooChebychev(("chebbb"+label+"_"+channel+spectrum).c_str(),("chebbb"+label+"_"+channel+spectrum).c_str(), *rrv_x, RooArgList(*rrv_p0_cheb,*rrv_p1_cheb) );
 
       RooRealVar* rrv_frac = new RooRealVar(("rrv_frac"+label+"_"+channel+spectrum).c_str(),("rrv_frac"+label+"_"+channel+spectrum).c_str(),frac_tmp);
      
       model_pdf = new RooAddPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),RooArgList(*gaus1,*gaus2),RooArgList(*rrv_frac),1);
-      model_pdf2 = new RooAddPdf(("model_pdf2"+label+"_"+channel+spectrum).c_str(),("model_pdf2"+label+"_"+channel+spectrum).c_str(),RooArgList(*model_pdf, *cheb),RooArgList(*rrv_frac),1);
+      model_pdf_dgc = new RooAddPdf(("model_pdf_dgc"+label+"_"+channel+spectrum).c_str(),("model_pdf_dgc"+label+"_"+channel+spectrum).c_str(),RooArgList(*model_pdf, *chebbb),RooArgList(*rrv_frac),1);
 
-      return model_pdf2 ;
+      return model_pdf_dgc ;
     }
     
     if( model == "GausErfExp_QCD_failSubjetTau21cut"){
@@ -1036,6 +1038,9 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       double frac_tmp =  4.6400e-01  ; double frac_tmp_err = 1.20e-01;
       double mean1_tmp = 8.7682e+01;
       double sigma1_tmp = 11.2789e+00;
+      double sigma1_low = 5.;
+      double sigma1_high = 12.;
+
       double mean1_low = 84.;     // double mean1_high = 92.;                                                                                                                                                                                                 
       double mean1_high = 92.;
 
@@ -1045,6 +1050,12 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
         mean1_high = 87.;
       }
 
+      if(TString(wtagger_label.c_str()).Contains("300To500")){
+        sigma1_tmp = 14.;
+        sigma1_low = 10.;
+        sigma1_high = 25.;
+       
+      }
 
       // take the same gaussian used in the pass sample
       //RooAbsPdf* gaus = NULL ;
@@ -1052,7 +1063,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       //if( TString(label).Contains("TotalMC") ) gaus = workspace->pdf(("gaus1_ttbar_TotalMC_"+channel+spectrum).c_str());
       //if( TString(label).Contains("realW")   ) gaus = workspace->pdf(("gaus1_TTbar_realW_"+channel+spectrum).c_str());
       RooRealVar* rrv_mean1_gaus = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),mean1_tmp, mean1_low, mean1_high);
-      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp,5.,11. );
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),sigma1_tmp, sigma1_low, sigma1_high );
       RooGaussian* gaus = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
 
 

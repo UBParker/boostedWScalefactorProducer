@@ -530,8 +530,8 @@ class initialiseFits:
           self.mj_shape["signal_mc"]            = "Gaus_ttbar"
 
       if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.4 :
-          self.mj_shape["bkg_mc_fail"]          = "DeuxGaus"  #"DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                               
-          self.mj_shape["bkg_data_fail"]        = "DeuxGaus"  #"DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                               
+          self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                               
+          self.mj_shape["bkg_data_fail"]        = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"                                                                                               
 
           self.mj_shape["signal_mc_fail"]       = "ExpGaus" #"Gaus_ttbar" #"ExpGaus"                                                                                                                             
           self.mj_shape["signal_data_fail"]     = "ExpGaus"
