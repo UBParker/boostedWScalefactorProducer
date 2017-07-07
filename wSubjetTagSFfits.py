@@ -458,7 +458,7 @@ class initialiseFits:
       self.mj_shape["TTbar_realW_fail"] =  "Gaus_ttbar"
       self.mj_shape["TTbar_fakeW"]      =  "ErfExp"
       self.mj_shape["TTbar_fakeW_fail"] =  "ErfExp"
-      if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
+      if options.ptbinmin == 500 : # and options.tau2tau1cutHP==0.55 :
             self.mj_shape["TTbar_fakeW"]      = "GausErfExp_ttbar_failSubjetTau21cut" # "ErfExp" #  "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"                                                                 
             self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut"  
 
@@ -570,7 +570,7 @@ class initialiseFits:
           self.mj_shape["signal_data"]          = "ExpGaus" #"Gaus_ttbar"
           self.mj_shape["signal_mc"]            = "ExpGaus" #"Gaus_ttbar"
 
-      if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
+      if options.ptbinmin == 500 : # and options.tau2tau1cutHP==0.55 :
           self.mj_shape["bkg_mc_fail"]          = "ExpGaus" 
           self.mj_shape["bkg_data_fail"]        = "ExpGaus" 
 
