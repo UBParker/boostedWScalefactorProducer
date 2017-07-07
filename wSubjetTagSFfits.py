@@ -657,7 +657,7 @@ class initialiseFits:
 
       # Directory and input files
       if not options.salsetup: 
-        self.file_Directory         = "/uscms_data/d3/aparker/Wtag/ForkofB2GTTBar_V4Branch/CMSSW_8_0_22/src/Analysis/B2GTTbar/test/pyttbarfw/"
+        self.file_Directory         = "/uscms_data/d3/aparker/2017Wtagging/CMSSW_7_4_7/src/LooseWP0p55/300To500/boostedWScalefactorProducer/V5Trees/"#"/uscms_data/d3/aparker/Wtag/ForkofB2GTTBar_V4Branch/CMSSW_8_0_22/src/Analysis/B2GTTbar/test/pyttbarfw/"
       else:
         self.file_Directory         = "/Users/rappoccio/fwlite/B2G/boostedWScalefactorProducer/data/"
       #self.file_Directory = "/Users/rappoccio/fwlite/B2G/boostedWScalefactorProducer/data/"
