@@ -1143,7 +1143,7 @@ class initialiseFits:
                 wd2isWdfar = True
                 self.dRb_Wdfar = getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2")
             # If the farthest (from the reco W) daughter quark from the gen W is closer to the reco W than the reco b then the event is considered a REAL W (ttbar matched) otherwise it is a FAKE W (ttbar unmatched)                                                                                                                                                                                    
-          if (self.dRW_Wdfar < self.dRb_Wdfar)  and  (self.dRb_Wdfar > 0.4)   :# and (self.dRW_Wdfar < 0.4)
+          if (self.dRW_Wdfar < self.dRb_Wdfar)  and  (self.dRb_Wdfar > 0.5)   and (self.dRW_Wdfar < 0.4) :
              isRealW = 1
              isFakeW = 0
           else:
