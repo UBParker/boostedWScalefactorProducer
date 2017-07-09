@@ -1116,7 +1116,7 @@ class initialiseFits:
           #if self.ak8subjet0PuppiSD_m > 50. : print"Fat jet SD subjet 0 mass is {0:2.2f} ,tau21 is {1:2.2f}, pt is {2:2.2f}".format( self.ak8PuppiSD_m , wtagger,  self.ak8PuppiSDJetP4_Subjet0.Perp() )
 
           ### Gen matching for ttbar only
-       
+          '''
           isRealW = None
           isFakeW = None
           self.dRW_Wdfar = None
@@ -1149,8 +1149,9 @@ class initialiseFits:
           else:
             isRealW = 0
             isFakeW = 1
+          '''
 
-          ''' OLD gen matching criteria
+          # OLD gen matching criteria
           isRealW = None
           isFakeW = None
           #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or 
@@ -1163,15 +1164,14 @@ class initialiseFits:
               isRealW = 0
               isFakeW = 1
           elif self.subjet1isW :
-            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < 0.4)  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < 0.4)  and  min(getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2"), getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1")) > 0.4  :
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < 0.4)  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < 0.4)  and  min(getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2"), getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1")) > 0.5  :
             #if (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")) :  
               isRealW = 1
               isFakeW = 0
             else:
               isRealW = 0
               isFakeW = 1
-          '''
-
+          
           ### See how many gen matched Ws pass and fail the tau21 cut
 
           if  isRealW == 1 :
