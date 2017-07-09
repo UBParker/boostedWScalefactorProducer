@@ -1156,7 +1156,7 @@ class initialiseFits:
           isFakeW = None
           #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") > 0.40) or  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") > 0.4) or 
           if self.subjet0isW :
-            if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < 0.4)  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < 0.4)  and  min(getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2"), getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1")) > 0.4  :
+            if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < 0.4)  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < 0.4)  and  min(getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2"), getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1")) > 0.5  :
             #if (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b"))  and  (getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") < getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")) :
               isRealW = 1
               isFakeW = 0

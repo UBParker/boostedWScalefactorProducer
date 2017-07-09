@@ -533,7 +533,8 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
 
       if( TString(label).Contains("_STop_failSubjetTau21cut" ) ) {
         rrv_c_Exp       = new RooRealVar(("rrv_c_Exp"+label+"_"+channel+spectrum).c_str(),("rrv_c_Exp"+label+"_"+channel+spectrum).c_str(),-0.03,-0.5,0.5);
-        rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),84,60,150); //Too narrow limits here often lead to error!! eg max 80
+        rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),84,60,150);
+        //Too narrow limits here often lead to error!! eg max 80
         rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),9.33,8.22,60);
         
 	  if(TString(wtagger_label.c_str()).Contains("Puppi")){
@@ -620,24 +621,31 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
 
           if (TString(label.c_str()).Contains("bkg") and !TString(label.c_str()).Contains("fail")){
             std::cout<<"For this 500-inf pt bin the model forpass bkg is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
-            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),89,86.,95.);
+            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),84,82.,95.);
             rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 19.33 , 16., 100. );
           } // end if bkg pass
           if (!TString(label.c_str()).Contains("bkg") and !TString(label.c_str()).Contains("fail")){
             std::cout<<"For this 500-inf pt bin the model for signal pass is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
-            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),86,80.,92.);
-            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 16.88 , 15.3 , 100. );
+            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,80.,92.);
+            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 6.88 , 5.3 , 100. );
           } // end if signal pass
           if (!TString(label.c_str()).Contains("bkg") and TString(label.c_str()).Contains("fail")){
             std::cout<<"For this 500-inf pt bin the model for signal pass is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
-            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),82,75.,85.);
-            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 16.44 , 12.3 , 100. );
+            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),81,75.,85.);
+            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 11.44 , 8.3 , 100. );
           } // end if signal fail
           if (TString(label.c_str()).Contains("bkg") and TString(label.c_str()).Contains("fail")){
             std::cout<<"For this 500-inf pt bin the model for signal pass is  "<<  model << "and tstring is"<< wtagger_label.c_str()    << std::endl;
-            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),76,70.,85.);
-            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 14.55 , 13., 100. );
+            rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),80,75.,85.);
+            rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(), 14.55 , 10., 100. );
           } // end if bkg fail
+
+	  if( TString(label).Contains("_STop" ) and !TString(label).Contains("failSubjetTau21cut" )  ) {
+	    //rrv_c_Exp       = new RooRealVar(("rrv_c_Exp"+label+"_"+channel+spectrum).c_str(),("rrv_c_Exp"+label+"_"+channel+spectrum).c_str(),-0.03,-0.5,0.5);
+	    rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),91,84,99);
+	    rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),8.33,4.22,20);
+          }
+
 
         } // end if 500-inf
 
