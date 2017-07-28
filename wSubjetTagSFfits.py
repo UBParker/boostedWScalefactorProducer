@@ -1,4 +1,4 @@
-#/Usr50/bin/env python
+#/Usr/bin/env python
 from optparse import OptionParser
 import ROOT
 import sys
@@ -29,6 +29,10 @@ parser.add_option('--noQCD',dest="noQCD", default=False, action="store_true", he
 parser.add_option('--noST',dest="noST", default=False, action="store_true", help="Don't use ST")
 
 (options, args) = parser.parse_args()
+
+herwig = False # True
+if herwig == True :
+    print"!!!!!!!!!!!!!!!!!!!! USING HERWIG TTBAR MC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 if options.ptbinmax < 0. :
     options.ptbinmax = float('inf')
@@ -246,7 +250,7 @@ def getSF():
 
 def doFitsToMatchedTT():
     workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")
-    ttMC_fitter = initialiseFits("em", options.sample, 50, 140, workspace4fit_)
+    ttMC_fitter = initialiseFits("em", options.sample, 10, 165, workspace4fit_)
 
     ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_realW")
     ttMC_fitter.get_mj_dataset(ttMC_fitter.file_TTbar_mc,"_TTbar_fakeW")
@@ -257,10 +261,10 @@ def doFitsToMatchedTT():
     print"FakeWs Passing tau21 cut :(  {0}".format(ttMC_fitter.countFakeWsInPass)
     print"FakeWs Failing tau21 cut :)  {0}".format(ttMC_fitter.countFakeWsInFail)
     print"..............................................."
-    if  ttMC_fitter.whighMass : # <--- FIX THIS:  reference to whighMass redefine as self.whighMass   
-      print"   Here W candidate is most massive subjet     "
-    else :
-      print"   Here W candidate is lowest Bdisc subjet     "
+    #if  ttMC_fitter.whighMass : # <--- FIX THIS:  reference to whighMass redefine as self.whighMass   
+    print"   Here W candidate is most massive subjet     "
+    #else :
+    #  print"   Here W candidate is lowest Bdisc subjet     "
     print"..............................................."
     print"W candidate is SJ 0 :  {0}".format(ttMC_fitter.countWisSJ0)
     print"W candidate is SJ 1 :  {0}".format(ttMC_fitter.countWisSJ1)
@@ -285,7 +289,7 @@ def doFitsToMatchedTT():
         
 def doFitsToMC():
     workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")
-    boostedW_fitter_em = initialiseFits("em", options.sample, 50, 140, workspace4fit_)
+    boostedW_fitter_em = initialiseFits("em", options.sample, 10, 165, workspace4fit_)
     boostedW_fitter_em.get_datasets_fit_minor_bkg()
     print"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     print"RealWs in Pass:  {0}".format(boostedW_fitter_em.countRealWsInPass)
@@ -428,7 +432,7 @@ def GetWtagScalefactors( workspace,fitter):
 class initialiseFits:
 
     # Constructor: Input is channel (mu,ele,em), range in mj and a workspace
-    def __init__(self, in_channel, in_sample, in_mj_min=50, in_mj_max=140, input_workspace=None):
+    def __init__(self, in_channel, in_sample, in_mj_min=10, in_mj_max=165, input_workspace=None):
       
       RooAbsPdf.defaultIntegratorConfig().setEpsRel(1e-9)
       RooAbsPdf.defaultIntegratorConfig().setEpsAbs(1e-9)
@@ -454,38 +458,38 @@ class initialiseFits:
       
       # Fit functions for matched tt MC
 
-      self.mj_shape["TTbar_realW"]      =  "Gaus_ttbar"
-      self.mj_shape["TTbar_realW_fail"] =  "Gaus_ttbar"
-      self.mj_shape["TTbar_fakeW"]      =  "ErfExp"
-      self.mj_shape["TTbar_fakeW_fail"] =  "ErfExp"
+      self.mj_shape["TTbar_realW"]      =  "DeuxGaus" #"Gaus_Sig" # "Gaus_Sig"# "Gaus_ttbar"
+      self.mj_shape["TTbar_realW_fail"] =  "Gaus_SigFail" # "Gaus_SigFail"#"Gaus"# "Gaus_ttbar" 
+      self.mj_shape["TTbar_fakeW"]      =  "Poly5" # "Gaus_QCD" # "ErfExp"
+      self.mj_shape["TTbar_fakeW_fail"] =   "ErfExp"
       if options.ptbinmin == 500 : # and options.tau2tau1cutHP==0.55 :
-            self.mj_shape["TTbar_fakeW"]      = "GausErfExp_ttbar_failSubjetTau21cut" # "ErfExp" #  "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"                                                                 
-            self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut"  
+            self.mj_shape["TTbar_fakeW"]      = "GausErfExp_ttbar_failSubjetTau21cut" #"Gaus_QCD" #  "Poly5" #"GausErfExp_ttbar_failSubjetTau21cut"#"Poly5" # ""Gaus_QCD" #  "GausErfExp_ttbar_failSubjetTau21cut" # "ErfExp" #  "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"                                                                 
+            self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut" #"Gaus_QCD" #  "Poly5" #"GausErfExp_ttbar_failSubjetTau21cut"# "Poly5" # ""Gaus_QCD" #  "GausErfExp_ttbar_failSubjetTau21cut"  
 
       if (options.useDDT): 
         self.mj_shape["TTbar_realW_fail"]       = "GausChebychev_ttbar_failSubjetTau21cut"  
         
       # Fit functions for minor backgrounds
 
-      self.mj_shape["WJets0"]             = "ExpGaus"
-      self.mj_shape["WJets0_fail"]        = "Exp"
+      self.mj_shape["WJets0"]             =  "ExpGaus"
+      self.mj_shape["WJets0_fail"]        =  "ExpGaus" #"Landau" #"Gaus" # "ExpGaus"
 
       if not options.noQCD :
-          self.mj_shape["QCD"]                =  "ExpGaus" #"Gaus_QCD"                                                                                                    
-          self.mj_shape["QCD_fail"]           =  "ExpGaus" #"Gaus_QCD"                                                                                                    
+          self.mj_shape["QCD"]                = "Poly5"#  "ExpGaus" #"Gaus_QCD"                                                                                                    
+          self.mj_shape["QCD_fail"]           =  "ExpGaus"  #"ExpGaus" #"Gaus_QCD"                                                                                                    
           if ( (options.ptbinmin == 300 and options.ptbinmax == 500) or (options.ptbinmin == 200  and options.ptbinmax != 300) ) and options.tau2tau1cutHP==0.55 :
               self.mj_shape["QCD"]                =  "DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                         
               self.mj_shape["QCD_fail"]           = "DeuxGausChebychev" # "GausChebychev_QCD" #"DeuxGaus" #"Exp"                                                          
           if options.ptbinmin == 500  and options.tau2tau1cutHP==0.55 :
-              self.mj_shape["QCD"]                =  "ExpGaus"#"Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                                           
-              self.mj_shape["QCD_fail"]           = "ExpGaus"#"Gaus_QCD"                                                                                                  
+              self.mj_shape["QCD"]                =  "Poly5"#"ExpGaus"#"Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                                           
+              self.mj_shape["QCD_fail"]           = "Gaus_QCD" # "ExpGaus" # "Gaus_QCD"                                                                                                  
           if options.ptbinmin == 200  and options.ptbinmax == 300 and options.tau2tau1cutHP==0.55 :
               self.mj_shape["QCD"]                =  "Gaus_QCD"
               self.mj_shape["QCD_fail"]           = "Gaus_QCD"
 
       if not options.noST :
-          self.mj_shape["STop"]               = "ExpGaus"
-          self.mj_shape["STop_fail"]          = "ExpGaus"  
+          self.mj_shape["STop"]               =  "Poly5" #"ExpGaus"
+          self.mj_shape["STop_fail"]          =  "ExpGaus"  
 
 #      if (options.useN2DDT):
 #        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"
@@ -561,8 +565,8 @@ class initialiseFits:
           self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
           self.mj_shape["bkg_data_fail"]        = "DeuxGausChebychev" # "GausChebychev_QCD" # "DeuxGaus"  #"ExpGaus"
 
-          self.mj_shape["signal_mc_fail"]       = "ExpGaus" #"Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
-          self.mj_shape["signal_data_fail"]     = "ExpGaus"                                                                                                                                                   
+          self.mj_shape["signal_mc_fail"]       = "Gaus" #"Gaus_ttbar" #"ExpGaus"                                                                                                                                                   
+          self.mj_shape["signal_data_fail"]     = "Gaus"                                                                                                                                                   
 
           self.mj_shape["bkg_data"]             =  "ExpGaus"
           self.mj_shape["bkg_mc"]               =  "ExpGaus"
@@ -570,18 +574,18 @@ class initialiseFits:
           self.mj_shape["signal_data"]          = "ExpGaus" #"Gaus_ttbar"
           self.mj_shape["signal_mc"]            = "ExpGaus" #"Gaus_ttbar"
 
-      if options.ptbinmin == 500 : # and options.tau2tau1cutHP==0.55 :
-          self.mj_shape["bkg_mc_fail"]          = "ExpGaus" 
-          self.mj_shape["bkg_data_fail"]        = "ExpGaus" 
+      if options.ptbinmin == 500 and options.tau2tau1cutHP==0.55 :
+          self.mj_shape["bkg_mc_fail"]          =  "ExpGaus"   #"Gaus_bkg" #"ExpGaus" 
+          self.mj_shape["bkg_data_fail"]        =  "ExpGaus"  #"Gaus_bkg" #"ExpGaus" 
 
-          self.mj_shape["signal_mc_fail"]       = "ExpGaus" # "DeuxGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus" #"Gaus_ttbar" #"ExpGaus"   
-          self.mj_shape["signal_data_fail"]     = "ExpGaus" # "DeuxGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
+          self.mj_shape["signal_mc_fail"]       = "Gaus_SigFail"#"Gaus" #"ExpGaus" # "DeuxGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus" #"Gaus_ttbar" #"ExpGaus"   
+          self.mj_shape["signal_data_fail"]     = "Gaus_SigFail"#"Gaus" # "ExpGaus" # "DeuxGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
 
-          self.mj_shape["bkg_data"]             =  "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
-          self.mj_shape["bkg_mc"]               =  "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
+          self.mj_shape["bkg_data"]             = "Poly5"# "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
+          self.mj_shape["bkg_mc"]               = "Poly5"# "ExpGaus" #"GausChebychev_ttbar_failSubjetTau21cut" #"ExpGaus"
 
-          self.mj_shape["signal_data"]          = "ExpGaus" # "Gaus"#"Gaus_ttbar"                                                                                                                                                                                                                                         
-          self.mj_shape["signal_mc"]            = "ExpGaus" #"Gaus" # "Gaus_ttbar"  
+          self.mj_shape["signal_data"]          = "DeuxGaus" #"ExpGaus" # "Gaus"#"Gaus_ttbar"                                                                                                                                                                                                                                         
+          self.mj_shape["signal_mc"]            = "DeuxGaus"# "ExpGaus" #"Gaus" # "Gaus_ttbar"  
 
       if options.ptbinmin == 200 and options.ptbinmax != 300  and options.tau2tau1cutHP==0.55 :
           self.mj_shape["bkg_mc_fail"]          = "DeuxGausChebychev" # "DeuxGaus" #"Exp"
@@ -619,7 +623,7 @@ class initialiseFits:
       # self.Lumi=2198. #74
       if options.use76X: self.Lumi=35800. #76
           
-      self.BinWidth_mj = 7.
+      self.BinWidth_mj = 5. #5.#7.
       self.narrow_factor = 1.
 
       self.BinWidth_mj = self.BinWidth_mj/self.narrow_factor
@@ -652,7 +656,7 @@ class initialiseFits:
       rrv_mass_j.setRange("sb_lo",self.mj_sideband_lo_min,self.mj_sideband_lo_max) # 30-65 GeV
       rrv_mass_j.setRange("signal_region",self.mj_signal_min,self.mj_signal_max)   # 65-105 GeV
       rrv_mass_j.setRange("sb_hi",self.mj_sideband_hi_min,self.mj_sideband_hi_max) # 105-135 GeV
-      rrv_mass_j.setRange("controlsample_fitting_range",50,140) # ---> what is this????
+      rrv_mass_j.setRange("controlsample_fitting_range",10,165) # ---> what is this????
         
 
       # Directory and input files
@@ -685,11 +689,16 @@ class initialiseFits:
       if options.v5 :   
         self.nameTag = "June11"
         self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_June1.root
-        self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_June1.root
+        if not herwig:
+            self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_June1.root
+            self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") 
+        if  herwig:
+            self.file_pseudodata        = ("pseudodata2_highmass_"+ self.nameTag +".root")
+            self.file_TTbar_mc          = ("TT_TuneEE5C_highmass_"+ self.nameTag +".root") 
         self.file_WJets0_mc         = ("wjets_highmass_"+ self.nameTag +".root ") # wjets_highmass_June1.root
         if not options.noQCD :
             self.file_QCD_mc             = ("QCD_highmass_"+ self.nameTag +".root") # QCD_highmass_June1.root
-        self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") # ttbarTuneCUETP8M2T4_highmass_June1.root
+        #self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") # ttbarTuneCUETP8M2T4_highmass_June1.root
         if not options.noST :
             self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root") # ST_highmass_June1.root
 
@@ -718,7 +727,7 @@ class initialiseFits:
       wp = wp.replace(".","v")
       ptBin = "ptSubjet"+str(options.ptbinmin)+"To"+str(options.ptbinmax)+"_ttSF0p9"
       subjetBtag = "subjetisBmedCSV"
-      fitrangeis = "_fit50to140"
+      fitrangeis = "_fit10to165"
       self.wtagger_label = self.wtagger_label + "%s%s%s%s%s%s"%(wp,in_sample,postfix, ptBin, subjetBtag, fitrangeis ) 
 
       
@@ -740,12 +749,12 @@ class initialiseFits:
       
       # Cuts (dont need these cuts if they are already implemented in ROOT tree)
       self.vpt_cut      = 150   # hadronic and leptonic W cut
-      self.mass_lvj_max = 5000. # invariant mass of 3 body max
+      self.mass_lvj_max = 500000. # invariant mass of 3 body max
       self.mass_lvj_min = 0.    # invariant mass of 3 body min
       self.pfMET_cut    = 40.    # missing transverse energy
       self.lpt_cut      = 53.    # lepton pT
       self.AK8_pt_min   = 200.
-      self.AK8_pt_max   = 10000.
+      self.AK8_pt_max   = 1000000000.
       if self.channel  == "el":
         self.pfMET_cut = 80.
         self.lpt_cut = 53.      
@@ -1116,17 +1125,18 @@ class initialiseFits:
           #if self.ak8subjet0PuppiSD_m > 50. : print"Fat jet SD subjet 0 mass is {0:2.2f} ,tau21 is {1:2.2f}, pt is {2:2.2f}".format( self.ak8PuppiSD_m , wtagger,  self.ak8PuppiSDJetP4_Subjet0.Perp() )
 
           ### Gen matching for ttbar only
-          '''
+          
           isRealW = None
           isFakeW = None
           self.dRW_Wdfar = None
+          self.dRW_b = None
           self.dRb_Wdfar = None
           wd1isWdfar = False
           wd2isWdfar = False
 
           if self.subjet0isW :
             self.dRW_Wdfar = max(getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1"), getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2") )
-
+            self.dRW_b = getattr(treeIn,"JetGenMatched_DeltaR_pup0_b")
             if self.dRW_Wdfar == getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1"):
                 wd1isWdfar = True
                 self.dRb_Wdfar = getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1")
@@ -1135,7 +1145,7 @@ class initialiseFits:
                 self.dRb_Wdfar = getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2")
           if self.subjet1isW :
             self.dRW_Wdfar = max(getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1"), getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd2") )
-
+            self.dRW_b = getattr(treeIn,"JetGenMatched_DeltaR_pup1_b")
             if self.dRW_Wdfar == getattr(treeIn,"JetGenMatched_DeltaR_pup1_Wd1"):
                 wd1isWdfar = True
                 self.dRb_Wdfar = getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd1")
@@ -1143,14 +1153,14 @@ class initialiseFits:
                 wd2isWdfar = True
                 self.dRb_Wdfar = getattr(treeIn,"JetGenMatched_DeltaR_pup0_Wd2")
             # If the farthest (from the reco W) daughter quark from the gen W is closer to the reco W than the reco b then the event is considered a REAL W (ttbar matched) otherwise it is a FAKE W (ttbar unmatched)                                                                                                                                                                                    
-          if (self.dRW_Wdfar < self.dRb_Wdfar)  and  (self.dRb_Wdfar > 0.5)   and (self.dRW_Wdfar < 0.4) :
+          if (self.dRW_Wdfar < self.dRW_b)  and  (self.dRW_Wdfar < 0.4) :
              isRealW = 1
              isFakeW = 0
           else:
             isRealW = 0
             isFakeW = 1
+          
           '''
-
           # OLD gen matching criteria
           isRealW = None
           isFakeW = None
@@ -1171,7 +1181,7 @@ class initialiseFits:
             else:
               isRealW = 0
               isFakeW = 1
-          
+          '''          
           ### See how many gen matched Ws pass and fail the tau21 cut
 
           if  isRealW == 1 :
@@ -1381,7 +1391,7 @@ class initialiseFits:
 class doWtagFits():
     def __init__(self ):
         self.workspace4fit_ = RooWorkspace("workspace4fit_","workspace4fit_")                           # create workspace
-        self.boostedW_fitter_em = initialiseFits("em", options.sample, 50, 140, self.workspace4fit_)    # Define all shapes to be used for Mj, define regions (SB,signal) and input files. 
+        self.boostedW_fitter_em = initialiseFits("em", options.sample, 10, 165, self.workspace4fit_)    # Define all shapes to be used for Mj, define regions (SB,signal) and input files. 
         self.boostedW_fitter_em.get_datasets_fit_minor_bkg()                                            # Loop over intrees to create datasets om Mj and fit the single MCs.
        
         print "Printing workspace:"; self.workspace4fit_.Print(); print ""

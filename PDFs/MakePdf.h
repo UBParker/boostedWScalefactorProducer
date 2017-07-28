@@ -7,6 +7,8 @@
 #include "RooRealVar.h"
 #include "RooFormulaVar.h"
 #include "RooGaussian.h"
+#include "RooPolynomial.h"
+#include "RooLandau.h"
 #include "RooAbsPdf.h"
 #include "RooAddPdf.h"
 #include "RooGenericPdf.h"
