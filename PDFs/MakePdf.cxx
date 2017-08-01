@@ -468,6 +468,28 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Making gaus for signal fail" << std::endl;
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),70,65,95);
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),8.33 ,7.,35);
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+	RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),35,20,40);
+	RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),8.33 ,7.,55);
+      } // 200-300 
+
+      RooGaussian* model_pdf       = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      std::cout << "Done" << std::endl;
+      return model_pdf ;
+    }
+
+    if( model == "Gaus_Fake"){
+
+      std::cout << "Making gaus for signal fail" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),70,65,95);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),8.33 ,7.,35);
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),60,20,60);// was 65
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),28.33 ,17.,45);
+      } // 200-300                                                                                                                                                                                       
+
       RooGaussian* model_pdf       = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
       std::cout << "Done" << std::endl;
       return model_pdf ;
@@ -478,6 +500,23 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Making gaus for signal fail" << std::endl;
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),90,70,100);
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),12.33 ,7.,25);
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),70,65,110);
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),12.33 ,17.,69.);
+
+      }// end if 300-500    
+
+      RooGaussian* model_pdf       = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      std::cout << "Done" << std::endl;
+      return model_pdf ;
+    }
+
+    if( model == "Gaus_tiny"){
+
+      std::cout << "Making gaus for signal fail" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),60,30,100);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),62.33 ,55.,225);
       RooGaussian* model_pdf       = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
       std::cout << "Done" << std::endl;
       return model_pdf ;
@@ -505,7 +544,7 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Making gaus" << std::endl;
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),57,45,60);
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,10.,55);
-      //      RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+    
       std::cout << "Done" << std::endl;
      
       if( TString(wtagger_label.c_str()).Contains("300To500")  ){
@@ -514,8 +553,12 @@ cubic , x, RooArgList(poly_c1, poly_c2,
 	RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,20.,43.);
 
       }// end if 300-500
-      //      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),57,45,60);
-      // RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,10.,55);
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),37,20,40);
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,17.,43.);
+
+      }// end if 200-300 
       RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
     return model_pdf ;
     }
@@ -526,6 +569,14 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Making Breit-Wigner " << std::endl;
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),90,80,100);
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,5.,55);
+     
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),35,20,40);
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,5.,35.);
+
+      }// end if 200-300  
+
       RooBreitWigner* model_pdf       = new RooBreitWigner(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
       std::cout << "Done" << std::endl;
       return model_pdf ;
@@ -539,6 +590,12 @@ cubic , x, RooArgList(poly_c1, poly_c2,
 
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),50,35,110);
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),15.33 ,6.,55);
+    
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),30,20,45);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,5.,55.);
+
+    }// end if 200-300 
       RooLandau* model_pdf       = new RooLandau(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
       std::cout << "Done" << std::endl;
       return model_pdf ;
@@ -549,7 +606,6 @@ cubic , x, RooArgList(poly_c1, poly_c2,
     if( model == "LandauGaus"){
 
       std::cout << "Making Landau * Gaussian " << std::endl;
-
       RooRealVar* rrv_mean1_lan   = new RooRealVar(("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),50,35,110);
       RooRealVar* rrv_sigma1_lan  = new RooRealVar(("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),15.33 ,6.,55);
       RooLandau* lan       = new RooLandau(("lan"+label+"_"+channel+spectrum).c_str(),("lan"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_lan,*rrv_sigma1_lan);
@@ -558,6 +614,25 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),12,5,14);
 
 
+
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+      RooRealVar* rrv_mean1_lan   = new RooRealVar(("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),30,20,45);
+      RooRealVar* rrv_sigma1_lan  = new RooRealVar(("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),15.33 ,6.,55);
+      RooLandau* lan       = new RooLandau(("lan"+label+"_"+channel+spectrum).c_str(),("lan"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_lan,*rrv_sigma1_lan);
+
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),30,20,45);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),12,5,24);
+      }
+      if( TString(wtagger_label.c_str()).Contains("300To500")  ){
+	RooRealVar* rrv_mean1_lan   = new RooRealVar(("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),50,35,110);
+	RooRealVar* rrv_sigma1_lan  = new RooRealVar(("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),15.33 ,6.,55);
+	RooLandau* lan       = new RooLandau(("lan"+label+"_"+channel+spectrum).c_str(),("lan"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_lan,*rrv_sigma1_lan);
+
+	RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,75,110);
+	RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),12,5,14);
+
+
+      }// 300-500
       RooGaussian* gaus1 = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);                         
 
       std::cout<< "######## Testing 1,2 ########"<<std::endl;                                                                                                                                           
@@ -586,6 +661,20 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Making gaus2" << std::endl;
       RooRealVar* rrv_mean2_gaus   = new RooRealVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),50,45,59);
       RooRealVar* rrv_sigma2_gaus  = new RooRealVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),12,4.,35);
+
+
+      if(TString(wtagger_label.c_str()).Contains("200To300") ) {
+	RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,65,94);
+	RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),32,25,64);
+
+	std::cout << "Done" << std::endl;
+	std::cout << "Making gaus2" << std::endl;
+	RooRealVar* rrv_mean2_gaus   = new RooRealVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),50,45,65);
+	RooRealVar* rrv_sigma2_gaus  = new RooRealVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),22,15.,65);
+
+    
+      } // 200-300
+
 
       //      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),50,50,165);
       // RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),30,18.,70);
@@ -1799,6 +1888,57 @@ cubic , x, RooArgList(poly_c1, poly_c2,
   // FOR MC FITS TO MATCHED TT MC!!!    
   else if( TString(label).Contains("realW") or TString(label).Contains("fakeW")){
 
+    if( model == "Gaus_Fake"){
+
+      std::cout << "Making gaus for signal fail" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),70,65,95);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),8.33 ,7.,35);
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),60,20,60);
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),28.33 ,17.,45);
+      } // 200-300                                                                                                                                                                                      \
+                                                                                                                                                                                                         
+
+      RooGaussian* model_pdf       = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      std::cout << "Done" << std::endl;
+      return model_pdf ;
+    }
+
+    if( model == "Gaus_bkg"){
+
+      std::cout << "Making gaus" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),57,45,60);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,10.,55);
+
+      std::cout << "Done" << std::endl;
+
+      if( TString(wtagger_label.c_str()).Contains("300To500")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),87,80,95);
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,20.,43.);
+
+      }// end if 300-500                                                                                                                                                                                 
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+        RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),47,20,65);
+        RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,10.,43.);
+
+      }// end if 200-300                                                                                                                                                                                 
+      RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      return model_pdf ;
+    }
+
+
+    if( model == "Gaus_tiny"){
+
+      std::cout << "Making gaus for signal fail" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),60,30,100);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),62.33 ,55.,225);
+      RooGaussian* model_pdf       = new RooGaussian(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
+      std::cout << "Done" << std::endl;
+      return model_pdf ;
+    }
 
     if( model == "LandauGaus"){
 
@@ -1831,6 +1971,18 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Making Breit-Wigner " << std::endl;
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),87,80,100);
       RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,5.,55);
+      if( TString(wtagger_label.c_str()).Contains("200To300")  ){
+
+	if( (TString(label).Contains("realW"))  ){
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),47,80,100);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,5.,55);
+	} // realW    
+	if( (TString(label).Contains("fakeW"))  ){
+	  RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),47,20,65);
+	  RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22.33 ,5.,55);
+	} // fakeW  
+      } // end if 200-300
+
       RooBreitWigner* model_pdf       = new RooBreitWigner(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus);
       std::cout << "Done" << std::endl;
       return model_pdf ;
@@ -1841,7 +1993,7 @@ cubic , x, RooArgList(poly_c1, poly_c2,
 
       std::cout << "Making Landau" << std::endl;
 
-      RooRealVar* rrv_mean1_lan   = new RooRealVar(("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),50,35,110);
+      RooRealVar* rrv_mean1_lan   = new RooRealVar(("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_lan"+label+"_"+channel+spectrum).c_str(),50,20,110);
       RooRealVar* rrv_sigma1_lan  = new RooRealVar(("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_lan"+label+"_"+channel+spectrum).c_str(),15.33 ,6.,55);
       RooLandau* model_pdf       = new RooLandau(("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_lan ,*rrv_sigma1_lan);
       std::cout << "Done" << std::endl;
