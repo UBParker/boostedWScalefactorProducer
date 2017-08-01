@@ -394,8 +394,8 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
 
   RooPlot* xframe_data = rrv_mass_j->frame( RooFit::Bins(int(rrv_mass_j->getBins())));
   RooPlot* xframe_data_fail = rrv_mass_j->frame( RooFit::Bins(int(rrv_mass_j->getBins())));
-  xframe_data->GetYaxis()->SetTitle(" Events / (5 GeV)");
-  xframe_data_fail->GetYaxis()->SetTitle(" Events / (5 GeV)");
+  xframe_data->GetYaxis()->SetTitle(" Events ");
+  xframe_data_fail->GetYaxis()->SetTitle(" Events ");
   xframe_data     ->GetYaxis()->SetTitleOffset(1.39);
   xframe_data_fail->GetYaxis()->SetTitleOffset(1.39);
   
@@ -476,9 +476,9 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   combData_p_f_data->plotOn(xframe_data,RooFit::Name("data_invisible"),RooFit::Cut(cut.Data()),RooFit::MarkerSize(1.5),RooFit::DataError(RooAbsData::SumW2),RooFit::XErrorSize(0));
 
   simPdf_data->plotOn(xframe_data,RooFit::Name("Data fit"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::LineStyle(kSolid), RooFit::LineColor(kBlue)); //,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets));
-//  cut.Form("model_bkg_data_%s_mj,model_STop_%s_mj,model_VV_%s_mj,model_WJets0_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
-  cut.Form("model_bkg_data_%s_mj,model_STop_%s_mj,model_WJets0_%s_mj,model_QCD_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
-  simPdf_data->plotOn(xframe_data,RooFit::Name("dat fit bkg_invisible"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()), RooFit::LineStyle(kDashed), RooFit::LineColor(kBlue));//,RooFit::Normalization(scale_number_TTbar_STop_QCD_WJets));
+  //cut.Form("model_bkg_data_%s_mj,model_STop_%s_mj,model_VV_%s_mj,model_WJets0_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
+cut.Form("model_bkg_data_%s_mj,model_STop_%s_mj,model_WJets0_%s_mj,model_QCD_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
+simPdf_data->plotOn(xframe_data,RooFit::Name("dat fit bkg_invisible"),RooFit::Slice(*category_p_f,"pass"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()), RooFit::LineStyle(kDashed), RooFit::LineColor(kBlue));
 
 
 
@@ -544,11 +544,11 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   combData_p_f_data->plotOn(xframe_data_fail,RooFit::Name("data_invisible"),RooFit::Cut(cut.Data()),RooFit::MarkerSize(1.5),RooFit::DataError(RooAbsData::SumW2),RooFit::XErrorSize(0));
 
     std::cout << "Getting there... 2" << std::endl;
-  simPdf_data->plotOn(xframe_data_fail,RooFit::Name("Data fit"),RooFit::Slice(*category_p_f,"fail"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"),RooFit::LineStyle(kSolid), RooFit::LineColor(kBlue));
-  simPdf_data->plotOn(xframe_data_fail,RooFit::Name("data_fit_invisible"),RooFit::Slice(*category_p_f,"fail"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"));
+    simPdf_data->plotOn(xframe_data_fail,RooFit::Name("Data fit"),RooFit::Slice(*category_p_f,"fail"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"),RooFit::LineStyle(kSolid), RooFit::LineColor(kBlue));
+    simPdf_data->plotOn(xframe_data_fail,RooFit::Name("data_fit_invisible"),RooFit::Slice(*category_p_f,"fail"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"));
 //  cut.Form("model_bkg_data_failSubjetTau21cut_%s_mj,model_STop_failSubjetTau21cut_%s_mj,model_VV_failSubjetTau21cut_%s_mj,model_WJets0_failSubjetTau21cut_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
-  cut.Form("model_bkg_data_failSubjetTau21cut_%s_mj,model_STop_failSubjetTau21cut_%s_mj,model_WJets0_failSubjetTau21cut_%s_mj,model_QCD_failSubjetTau21cut_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
-  simPdf_data->plotOn(xframe_data_fail,RooFit::Name("data fit bkg"),RooFit::Slice(*category_p_f,"fail"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()),RooFit::LineStyle(kDashed), RooFit::LineColor(kBlue));
+    cut.Form("model_bkg_data_failSubjetTau21cut_%s_mj,model_STop_failSubjetTau21cut_%s_mj,model_WJets0_failSubjetTau21cut_%s_mj,model_QCD_failSubjetTau21cut_%s_mj",channel.c_str(),channel.c_str(),channel.c_str(),channel.c_str());
+    simPdf_data->plotOn(xframe_data_fail,RooFit::Name("data fit bkg"),RooFit::Slice(*category_p_f,"fail"),RooFit::ProjWData(RooArgSet(*category_p_f),*combData_p_f_data),RooFit::NormRange("controlsample_fitting_range"), RooFit::Components(cut.Data()),RooFit::LineStyle(kDashed), RooFit::LineColor(kBlue));
 
 
   std::cout << "Getting there... 3" << std::endl;
@@ -568,7 +568,7 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   
  
   // TLegend*  theLeg = new TLegend(0.1564883,0.7073171,0.9205686,0.8968293,"","NDC");
-  TLegend*  theLeg = new TLegend(0.3885213,0.6640827,0.9774937,0.8992248,"","NDC");
+   TLegend*  theLeg = new TLegend(0.388,0.6640827,0.9774937,0.8992248,"","NDC");    //(0.3885213,0.6640827,0.9774937,0.8992248,"","NDC");
   theLeg->SetName("theLegend");
   // theLeg->SetNColumns(3);
   theLeg->SetNColumns(2);
@@ -578,32 +578,42 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   theLeg->SetLineColor(0);
   theLeg->SetLineWidth(0);
   theLeg->SetLineStyle(0);
-  theLeg->SetTextSize(0.039);
+  theLeg->SetTextSize(0.031);
   theLeg->SetTextFont(42);
-  // theLeg->AddEntry(xframe_data->findObject("data")       ,"CMS data"            ,"PLE");
+  theLeg->AddEntry(xframe_data->findObject("data")       ,"Data"            ,"PLE");
  //  theLeg->AddEntry(xframe_data->findObject("TTbar_realW"),"t#bar{t} (merged)"   ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
- //  theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
+  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
+  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");
+  theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F"); 
+  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
+  theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                   ,"F");
+
+theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
   //  theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("VV")         ,"WW/WZ/ZZ"            ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
  //  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
-  theLeg->AddEntry(xframe_data->findObject("data")       ,"Data"            ,"PLE"); 
+  theLeg->AddEntry(xframe_data->findObject("dat fit bkg_invisible")       ,"Data fit (unmerged)"            ,"L"); 
   // theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
-  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
-
- theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
- theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F"); 
- theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");  
+  // theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L"); 
+  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L"); 
+  //theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
+ theLeg->AddEntry(xframe_data->findObject("mc fit bkg_invisible")     ,"MC fit (unmerged)"              ,"L");
+  // DATA1 1theLeg->AddEntry(xframe_data->findObject("Data fit")   ,"Data fit"            ,"L");
+ // theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F"); 
+ // theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");  
  //theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F");
 // theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");  
-  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
+//  theLeg->AddEntry(xframe_data->findObject("STop")       ,"Single top"          ,"F");
   //  theLeg->AddEntry(xframe_data->findObject("MC fit")     ,"MC fit"              ,"L");
   //  theLeg->AddEntry(xframe_data->findObject("WJets")      ,"W+jets"              ,"F");
-  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");
- 
+  //  theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                 ,"F"); 
+  // theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F");
+ // theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                   ,"F"); 
+ //theLeg->AddEntry(xframe_data->findObject("TTbar_fakeW"),"t#bar{t} (unmerged)" ,"F");
  //  theLeg->AddEntry(xframe_data->findObject("TTbar"),     "t#bar{t}"             ,"F"); 
-  theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                 ,"F");
+  //  theLeg->AddEntry(xframe_data->findObject("QCD")        ,"QCD"                 ,"F");
   
   xframe_data->addObject(theLeg);
   xframe_data_fail->addObject(theLeg);
@@ -617,35 +627,48 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
   RooRealVar* rrv_sigma_gaus_data    = workspace->var(("rrv_sigma1_gaus_ttbar_data"+label+"_"+tmp_channel).c_str());
   RooRealVar* rrv_mean_gaus_TotalMC  = workspace->var(("rrv_mean1_gaus_ttbar_TotalMC"+label+"_"+tmp_channel).c_str());
   RooRealVar* rrv_sigma_gaus_TotalMC = workspace->var(("rrv_sigma1_gaus_ttbar_TotalMC"+label+"_"+tmp_channel).c_str());
-
-  if(rrv_mean_gaus_TotalMC){
-    TString latex ; latex.Form("Mean_{MC } = %3.1f #pm %2.1f",rrv_mean_gaus_TotalMC->getVal(),rrv_mean_gaus_TotalMC->getError());
-    TLatex* tl_MC_mean  = new TLatex(0.25 ,0.62,latex.Data());
-    latex.Form("Sigma_{MC }= %2.1f #pm %2.1f",rrv_sigma_gaus_TotalMC->getVal(),rrv_sigma_gaus_TotalMC->getError());
-    TLatex* tl_MC_sigma = new TLatex(0.25 ,0.57,latex.Data());
+  // rrv_mean1_gaus
+  /*
+  if(rrv_mean1_gaus_TotalMC){
+    TString latex ;
+    TString latex2 ; 
+    latex.Form("Mean_{MC } = %3.1f #pm %2.1f",rrv_mean_gaus_TotalMC->getVal(),rrv_mean_gaus_TotalMC->getError());
+    TLatex* tl_MC_mean  = new TLatex(0.142 ,0.68 ,latex.Data());
+    latex2.Form("Sigma_{MC }= %2.1f #pm %2.1f",rrv_sigma_gaus_TotalMC->getVal(),rrv_sigma_gaus_TotalMC->getError());
+    TLatex* tl_MC_sigma = new TLatex(0.142 ,0.61 ,latex2.Data());
     tl_MC_mean->SetNDC(); tl_MC_sigma->SetNDC();
     tl_MC_mean->SetTextSize(0.03);
     tl_MC_sigma->SetTextSize(0.03);
-    // xframe_data.addObject(tl_MC_mean);
-    // xframe_data.addObject(tl_MC_sigma);
-
+    xframe_data->addObject(tl_MC_mean);
+    xframe_data->addObject(tl_MC_sigma);
+    xframe_data_fail->addObject(tl_MC_mean);
+    xframe_data_fail->addObject(tl_MC_sigma);
   }
-  if(rrv_mean_gaus_data){
-    TString latex ; latex.Form("Mean_{data} = %3.1f #pm %2.1f",rrv_mean_gaus_data->getVal(),rrv_mean_gaus_data->getError());
-    TLatex* tl_data_mean  = new TLatex(0.25 ,0.62,latex.Data());
-    latex.Form("Sigma_{data}= %2.1f #pm %2.1f",rrv_sigma_gaus_data->getVal(),rrv_sigma_gaus_data->getError());
-    TLatex* tl_data_sigma = new TLatex(0.25 ,0.57,latex.Data());
+  if(rrv_mean1_gaus_data){
+    TString latex3 ;
+    TString latex4 ;
+    latex3.Form("Mean_{data} = %3.1f #pm %2.1f",rrv_mean_gaus_data->getVal(),rrv_mean_gaus_data->getError());
+    TLatex* tl_data_mean  = new TLatex(0.142 ,0.58,latex3.Data());
+    latex4.Form("Sigma_{data}= %2.1f #pm %2.1f",rrv_sigma_gaus_data->getVal(),rrv_sigma_gaus_data->getError());
+    TLatex* tl_data_sigma = new TLatex(0.142 ,0.5,latex4.Data());
     tl_data_mean->SetNDC(); tl_data_sigma->SetNDC();
     tl_data_mean->SetTextSize(0.03);
     tl_data_sigma->SetTextSize(0.03);
-    // xframe_data.addObject(tl_data_mean); xframe_data.addObject(tl_data_sigma);
+    xframe_data->addObject(tl_data_mean); 
+    xframe_data->addObject(tl_data_sigma);
+    xframe_data_fail->addObject(tl_data_mean);
+    xframe_data_fail->addObject(tl_data_sigma);
   }
+
+  
+
   // if(wtagger.c_str()  ){ // WORKING HERE TO ADD PT CUT LABELS
   if (TString(wtagger).Contains("200To300") ){
     TString latex ; latex.Form("200 < p_{T} < 300 (GeV)");
     TLatex* pt_label  = new TLatex(0.25 ,0.62,latex.Data());
     pt_label->SetNDC();
     pt_label->SetTextSize(0.03);
+    // xframe_data->addObject(pt_label);
   }
   if (TString(wtagger).Contains("300To500") ){
     TString latex ; latex.Form("300 < p_{T} < 500 (GeV)");
@@ -665,8 +688,53 @@ void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::st
     pt_label->SetNDC();
     pt_label->SetTextSize(0.03);
   }
+  */
 
+  /*
+if(TString(wtagger.c_str()).Contains("200To300") ) {
+  TString latexpt ; latexpt.Form("200 < p_{T} (GeV) < 300");
+  TLatex* pt_label  = new TLatex(0.58 ,0.62,latexpt.Data());
+  pt_label->SetNDC();
+  pt_label->SetTextSize(0.035);
+  xframe_data->addObject(pt_label);
+  xframe_data_fail->addObject(pt_label);
+  } 
 
+ if(TString(wtagger.c_str()).Contains("300To500") ) {
+   TString latexpt ; latexpt.Form("300 < p_{T} (GeV) < 500");
+   TLatex* pt_label  = new TLatex(0.58 ,0.62,latexpt.Data());
+   pt_label->SetNDC();
+   pt_label->SetTextSize(0.035);
+   xframe_data->addObject(pt_label);
+   xframe_data_fail->addObject(pt_label);
+ }
+
+if(TString(wtagger.c_str()).Contains("500Toinf") ) {
+*/ 
+ TString latexpt ; latexpt.Form("500 < p_{T} GeV");
+  TLatex* pt_label  = new TLatex(0.63 ,0.62,latexpt.Data());
+  pt_label->SetNDC();
+  pt_label->SetTextSize(0.042);
+  xframe_data->addObject(pt_label);
+  xframe_data_fail->addObject(pt_label);
+  //  }
+
+  //TString latexSim ; latexSim.Form("Simulation");
+  //TLatex* sim_label  = new TLatex(0.142 ,0.808 ,latexSim.Data());//0.142 ,0.808                                                                                                                                 
+  //sim_label->SetNDC();
+  //sim_label->SetTextSize(0.035);
+  //xframe_data->addObject(sim_label);
+  //xframe_data_fail->addObject(sim_label);
+
+  TString latexPre ; latexPre.Form("Preliminary");
+  TLatex* pre_label  = new TLatex(0.142 ,0.768 ,latexPre.Data());
+  pre_label->SetNDC();
+  pre_label->SetTextSize(0.035);
+  xframe_data->addObject(pre_label);
+  xframe_data_fail->addObject(pre_label);
+
+  // xframe_data->addObject(pt_label);
+  //xframe_data_fail->addObject(pt_label);
 
   xframe_data->GetYaxis()->SetRangeUser(1e-2,xframe_data->GetMaximum()*1.4);
   xframe_data_fail->GetYaxis()->SetRangeUser(1e-2,xframe_data_fail->GetMaximum()*1.4);
