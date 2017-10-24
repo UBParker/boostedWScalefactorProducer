@@ -30,7 +30,7 @@ parser.add_option('--noST',dest="noST", default=False, action="store_true", help
 
 (options, args) = parser.parse_args()
 
-herwig = False # True
+herwig =  True
 if herwig == True :
     print"!!!!!!!!!!!!!!!!!!!! USING HERWIG TTBAR MC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
