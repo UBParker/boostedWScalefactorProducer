@@ -134,7 +134,7 @@ void fit_mj_single_MC(RooWorkspace* workspace, const std::string & fileName, con
 void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::string,std::string > mj_shape, std::map<std::string,int> color_palet, std::vector<std::string>* constraintlist_data, std::vector<std::string>* constraintlist_MC, const std::string & label, const std::string & channel, const std::string & wtagger, const double & ca8_ungroomed_pt_min, const double & ca8_ungroomed_pt_max){
   
   
-  float ttSF = 0.9 ; //0.667028210351; // powheg80X
+  float ttSF =  0.9;   
 //  float ttSF = 1.;
   
 
@@ -301,7 +301,7 @@ void ScaleFactorTTbarControlSampleFit(RooWorkspace* workspace, std::map<std::str
 void DrawScaleFactorTTbarControlSample(RooWorkspace* workspace, std::map<std::string,int> color_palet, const std::string & label, const std::string & channel, const std::string & wtagger,const double & ca8_ungroomed_pt_min, const double & ca8_ungroomed_pt_max, const std::string & sample){
   
   //  float ttSF = 0.667028210351;
-  float ttSF = 0.9 ;
+  float ttSF = 0.9 ;  // PYTHIA 0.9 ;
   std::cout<< "Using tt scalefactor of " << ttSF << std::endl;
 
   RooRealVar* rrv_mass_j = workspace->var("rrv_mass_j");
@@ -711,8 +711,8 @@ if(TString(wtagger.c_str()).Contains("200To300") ) {
 
 if(TString(wtagger.c_str()).Contains("500Toinf") ) {
 */ 
- TString latexpt ; latexpt.Form("500 < p_{T} GeV");
-  TLatex* pt_label  = new TLatex(0.63 ,0.62,latexpt.Data());
+ TString latexpt ; latexpt.Form("300 < p_{T} GeV < 500");
+  TLatex* pt_label  = new TLatex(0.58 ,0.62,latexpt.Data());
   pt_label->SetNDC();
   pt_label->SetTextSize(0.042);
   xframe_data->addObject(pt_label);

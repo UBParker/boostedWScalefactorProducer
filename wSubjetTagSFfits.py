@@ -30,7 +30,7 @@ parser.add_option('--noST',dest="noST", default=False, action="store_true", help
 
 (options, args) = parser.parse_args()
 
-herwig = False # True
+herwig =  False #True
 if herwig == True :
     print"!!!!!!!!!!!!!!!!!!!! USING HERWIG TTBAR MC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
@@ -463,11 +463,15 @@ class initialiseFits:
       self.mj_shape["TTbar_fakeW"]      =  "Poly5" # "Gaus_QCD" # "ErfExp"
       self.mj_shape["TTbar_fakeW_fail"] =   "ErfExp"
       if options.ptbinmin == 500 : # and options.tau2tau1cutHP==0.55 :
-            self.mj_shape["TTbar_fakeW"]      = "GausErfExp_ttbar_failSubjetTau21cut" #"Gaus_QCD" #  "Poly5" #"GausErfExp_ttbar_failSubjetTau21cut"#"Poly5" # ""Gaus_QCD" #  "GausErfExp_ttbar_failSubjetTau21cut" # "ErfExp" #  "GausErfExp_ttbar"  #"GausErfExp_ttbar_fakeW"                                                                 
-            self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut" #"Gaus_QCD" #  "Poly5" #"GausErfExp_ttbar_failSubjetTau21cut"# "Poly5" # ""Gaus_QCD" #  "GausErfExp_ttbar_failSubjetTau21cut"  
+            self.mj_shape["TTbar_fakeW"]      = "GausErfExp_ttbar_failSubjetTau21cut"
+            self.mj_shape["TTbar_fakeW_fail"] = "GausErfExp_ttbar_failSubjetTau21cut"
       if options.ptbinmin == 300 :
           self.mj_shape["TTbar_realW"]      =  "Breit-Wigner" #"ExpGaus" 
           self.mj_shape["TTbar_fakeW"]      =  "Gaus_bkg" #"GausErfExp_ttbar_failSubjetTau21cut" #"Poly5"
+          #if herwig :
+          #    self.mj_shape["TTbar_fakeW"]      =  "Breit-Wigner" # "Gaus_bkg"
+          #    self.mj_shape["TTbar_realW_fail"]      = "Gaus_tiny" #"Breit-Wigner"
+             
           self.mj_shape["TTbar_fakeW_fail"] = "LandauGaus" #"GausErfExp_ttbar_failSubjetTau21cut" 
 
       if options.ptbinmin == 200 :
@@ -594,9 +598,12 @@ class initialiseFits:
 
           self.mj_shape["bkg_data"]             =  "ExpGaus" #"Gaus_bkg" #"ExpGaus"
           self.mj_shape["bkg_mc"]               =  "ExpGaus" #"Gaus_bkg" #"ExpGaus"
+          #if herwig == True :
+          #    self.mj_shape["bkg_data"]         =  "Breit-Wigner"  #"Gaus_Fake" #"ExpGaus"                                                                                                                     
+          #    self.mj_shape["bkg_mc"]           =  "Breit-Wigner"  #"Gaus_Fake" #"Gaus_bkg" #"ExpGaus"  
 
-          self.mj_shape["signal_data"]          = "Breit-Wigner" # "ExpGaus" #"Gaus_ttbar"
-          self.mj_shape["signal_mc"]            = "Breit-Wigner" # "ExpGaus" #"Gaus_ttbar"
+          self.mj_shape["signal_data"]          =  "Breit-Wigner"  #"ExpGaus" #"Gaus_ttbar"
+          self.mj_shape["signal_mc"]            =  "Breit-Wigner"  #"ExpGaus" #"Gaus_ttbar"
 
       if options.ptbinmin == 500 and options.tau2tau1cutHP==0.55 :
           self.mj_shape["bkg_mc_fail"]          =  "ExpGaus"   #"Gaus_bkg" #"ExpGaus" 
@@ -711,7 +718,7 @@ class initialiseFits:
         self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
         self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_STop_76X_PUPPISD.root")
       if options.v5 :   
-        self.nameTag = "June11"
+        self.nameTag = "AK8Sept17" # <-- 350 GeV  # 400GeV AK8 Pt cut "June11"
         self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_June1.root
         if not herwig:
             self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_June1.root
@@ -1261,12 +1268,16 @@ class initialiseFits:
             if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet0.Perp() <= options.ptbinmax ): continue
           elif self.subjet1isW :
             if not (options.ptbinmin <= self.ak8PuppiSDJetP4_Subjet1.Perp() <= options.ptbinmax ): continue
-          
+      
+          #tmp_scale_to_lumi = 1.0
           if i==0: 
-            tmp_scale_to_lumi =  getattr(treeIn2,"SemiLeptLumiweight")  ## weigth for xs and lumi
+            if self.nameTag == "AK8Sept17":
+              tmp_scale_to_lumi =  0.1923 # I filled the lumi weights wrong in these trees so this is a workaround
+            if self.nameTag != "AK8Sept17":
+              tmp_scale_to_lumi =  getattr(treeIn2,"SemiLeptLumiweight")  ## weigth for xs and lumi
           #print "TString(label). {}".format(TString(label))
           if not TString(label).Contains("data"):
-            tmp_event_weight     =  getattr(treeIn2,"SemiLeptLumiweight") * getattr(treeIn2,"SemiLeptAllotherweights")
+            tmp_event_weight     =  tmp_scale_to_lumi * getattr(treeIn2,"SemiLeptAllotherweights")
             tmp_event_weight4fit =  tmp_event_weight 
             #print"WEIGHT:::  tmp_event_weight4fit {0:2.2f} ".format( tmp_event_weight4fit )
             
