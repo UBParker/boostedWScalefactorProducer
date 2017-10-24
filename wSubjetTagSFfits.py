@@ -30,7 +30,7 @@ parser.add_option('--noST',dest="noST", default=False, action="store_true", help
 
 (options, args) = parser.parse_args()
 
-herwig = False # True
+herwig =  True #False
 if herwig == True :
     print"!!!!!!!!!!!!!!!!!!!! USING HERWIG TTBAR MC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
@@ -472,8 +472,8 @@ class initialiseFits:
 
       if options.ptbinmin == 200 :
           self.mj_shape["TTbar_realW"]      =  "Breit-Wigner" #"ExpGaus"                                                                                                                                 
-          self.mj_shape["TTbar_fakeW"]      =  "Gaus_Fake" #"Breit-Wigner"# "Gaus_bkg" #"GausErfExp_ttbar_failSubjetTau21cut" #"Poly5"                                                                                                
-          self.mj_shape["TTbar_fakeW_fail"] = "Landau" #"GausErfExp_ttbar_failSubjetTau21cut"                                                                                                        
+          self.mj_shape["TTbar_fakeW"]      = "Gaus_FlatTop"# "CB1" #"2Gaus_ttbar" #"DeuxGausFake" #"Breit-Wigner"# "Gaus_bkg" #"GausErfExp_ttbar_failSubjetTau21cut" #"Poly5"                                                                                                
+          self.mj_shape["TTbar_fakeW_fail"] = "FlatTopTimesLandau"   #"Landau" #"GausErfExp_ttbar_failSubjetTau21cut"                                                                                                        
           self.mj_shape["TTbar_realW_fail"] =  "Gaus_tiny"
 
 
@@ -482,8 +482,8 @@ class initialiseFits:
         
       # Fit functions for minor backgrounds
 
-      self.mj_shape["WJets0"]             =  "Breit-Wigner" #"ExpGaus"
-      self.mj_shape["WJets0_fail"]        =  "ExpGaus" #"Landau" #"Gaus" # "ExpGaus"
+      self.mj_shape["WJets0"]             =  "Landau" #"Gaus_FlatTop" #"Breit-Wigner" #"ExpGaus"
+      self.mj_shape["WJets0_fail"]        =  "Landau" #"ExpGaus" #"Landau" #"Gaus" # "ExpGaus"
 
       if not options.noQCD :
           self.mj_shape["QCD"]                = "Poly5"#  "ExpGaus" #"Gaus_QCD"                                                                                                    
@@ -501,8 +501,8 @@ class initialiseFits:
               self.mj_shape["QCD"]                =  "Poly5"#"ExpGaus"#"Gaus_QCD" #"DeuxGausChebychev" #"GausChebychev_QCD" #"DeuxGaus" # "Exp"                                                                           
               self.mj_shape["QCD_fail"]           = "Gaus_QCD" # "ExpGaus" # "Gaus_QCD"                                                                                                  
           if options.ptbinmin == 200  and options.ptbinmax == 300 and options.tau2tau1cutHP==0.55 :
-              self.mj_shape["QCD"]                =  "Gaus_QCD"
-              self.mj_shape["QCD_fail"]           = "DeuxGausChebychev"#"Gaus_QCD"
+              self.mj_shape["QCD"]                = "Landau" #"Gaus_FlatTop" #"Gaus_QCD"   #"Breit-Wigner"  #"Gaus_Fake" # "Gaus_QCD"
+              self.mj_shape["QCD_fail"]           = "Landau" #"Gaus_QCD" #"DeuxGausChebychev"#"Gaus_QCD"
 
       if not options.noST :
           self.mj_shape["STop"]               =  "Poly5" #"ExpGaus"
@@ -511,9 +511,9 @@ class initialiseFits:
               self.mj_shape["STop"]               = "Breit-Wigner" #  "Poly5" #"ExpGaus"                                                                                                                                      
               self.mj_shape["STop_fail"]          =  "ExpGaus"
           if  (options.ptbinmin == 200 and options.ptbinmax == 300)   and options.tau2tau1cutHP==0.55 :
-              self.mj_shape["STop"]               = "Breit-Wigner" #  "Poly5" #"ExpGaus"                                                                                                                
+              self.mj_shape["STop"]               = "Landau"  #"Gaus_FlatTop" #"Gaus_Fake"# "Breit-Wigner" #  "Poly5" #"ExpGaus"                                                                                                                
                                                                                                                                                                                                          
-              self.mj_shape["STop_fail"]          =  "ExpGaus"
+              self.mj_shape["STop_fail"]          =  "Landau" #"ExpGaus"
 
 #      if (options.useN2DDT):
 #        self.mj_shape["STop_fail"]          = "ErfExpGaus_sp"
@@ -572,17 +572,17 @@ class initialiseFits:
 
 
       if options.ptbinmin == 200 and options.ptbinmax == 300  and options.tau2tau1cutHP==0.55 :
-          self.mj_shape["bkg_mc_fail"]          ="Gaus_bkg" #"Breit-Wigner"# "Landau"
-          self.mj_shape["bkg_data_fail"]        ="Gaus_bkg" # "Breit-Wigner"#"Landau"
+          self.mj_shape["bkg_mc_fail"]          ="FlatTopTimesLandau"# "Landau"  #"FlatTopTimesLandau"# "Gaus_Fake"# "Landau" #"Gaus_bkg" #"Breit-Wigner"# "Landau"
+          self.mj_shape["bkg_data_fail"]        ="FlatTopTimesLandau"# "Landau"  #"FlatTopTimesLandau" #"Gaus_Fake"# "Landau" # "CB1"  # "Gaus_Fake"#"Landau" #"Gaus_bkg" # "Breit-Wigner"#"Landau"
 
-          self.mj_shape["signal_mc_fail"]       = "Gaus_SigFail" #"Breit-Wigner"#  "Gaus_tiny" #"ExpGaus"
-          self.mj_shape["signal_data_fail"]     = "Gaus_SigFail" #"Breit-Wigner"#  "Gaus_tiny" #"ExpGaus"
+          self.mj_shape["signal_mc_fail"]       = "FlatTopTimesLandau"  #"Gaus_Fake"#"Landau" # "CB1" #"Gaus_Fake"#"Landau" #"Gaus_SigFail" #"Breit-Wigner"#  "Gaus_tiny" #"ExpGaus"
+          self.mj_shape["signal_data_fail"]     = "FlatTopTimesLandau"  #"Gaus_Fake"#"Landau" # "CB1" #"Gaus_Fake"#"Landau" #"Gaus_SigFail" #"Breit-Wigner"#  "Gaus_tiny" #"ExpGaus"
 
-          self.mj_shape["bkg_data"]             = "Gaus_Fake" #"DeuxGaus"  #"Poly5" #"Breit-Wigner" #"Gaus_bkg" # "Exp"
-          self.mj_shape["bkg_mc"]               = "Gaus_Fake" #"DeuxGaus"  #"Poly5" #"Breit-Wigner" #"Gaus_bkg" # "Exp"
+          self.mj_shape["bkg_data"]             = "Gaus_FlatTop" #"Gaus_wide" #"Gaus_FlatTop"#"CB1" #"DeuxGaus"  #"Poly5" #"Breit-Wigner" #"Gaus_bkg" # "Exp"
+          self.mj_shape["bkg_mc"]               = "Gaus_FlatTop" #"Gaus_wide" #"Gaus_FlatTop"#"CB1" #"DeuxGaus"  #"Poly5" #"Breit-Wigner" #"Gaus_bkg" # "Exp"
 
-          self.mj_shape["signal_data"]          =  "Gaus_Sig" #"GausErfExp_ttbar" #"Gaus_ttbar"
-          self.mj_shape["signal_mc"]            =  "Gaus_Sig" #"GausErfExp_ttbar" #"Gaus_ttbar"
+          self.mj_shape["signal_data"]          = "FlatTopTimesGaus" # "Gaus_FlatTop" #"CB" #"GausErfExp_ttbar" #"Gaus_ttbar"
+          self.mj_shape["signal_mc"]            = "FlatTopTimesGaus" # "Gaus_FlatTop" #"CB" #"GausErfExp_ttbar" #"Gaus_ttbar"
 
     
       if options.ptbinmin == 300 and options.ptbinmax == 500 and options.tau2tau1cutHP==0.55 :
@@ -647,7 +647,7 @@ class initialiseFits:
       # self.Lumi=2198. #74
       if options.use76X: self.Lumi=35800. #76
           
-      self.BinWidth_mj = 5. #5.#7.
+      self.BinWidth_mj = 7. #5. #5.#7.
       self.narrow_factor = 1.
 
       self.BinWidth_mj = self.BinWidth_mj/self.narrow_factor
@@ -711,7 +711,7 @@ class initialiseFits:
         self.file_TTbar_mc          = ("ttbarTTuneCUETP8M2T4_highmass_"+ self.nameTag +".root") #("ExoDiBosonAnalysis.WWTree_TTbar_powheg_76X_PUPPISD.root")
         self.file_STop_mc           = ("ST_highmass_"+ self.nameTag +".root")# ("ExoDiBosonAnalysis.WWTree_STop_76X_PUPPISD.root")
       if options.v5 :   
-        self.nameTag = "June11"
+        self.nameTag = "June11"   #"AK8Oct17"  #"June11" #"AK8Sept17"# AK8 Pt cut is at 350 GeV instead of 400GeV as is was in -> #"June11"
         self.file_data              = ("singlemuandel_run2016_highmass_"+ self.nameTag +".root") #singlemuandel_run2016_highmass_June1.root
         if not herwig:
             self.file_pseudodata        = ("pseudodata_highmass_"+ self.nameTag +".root") #pseudodata_highmass_June1.root

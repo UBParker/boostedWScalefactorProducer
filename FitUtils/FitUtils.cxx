@@ -711,8 +711,8 @@ if(TString(wtagger.c_str()).Contains("200To300") ) {
 
 if(TString(wtagger.c_str()).Contains("500Toinf") ) {
 */ 
- TString latexpt ; latexpt.Form("500 < p_{T} GeV");
-  TLatex* pt_label  = new TLatex(0.63 ,0.62,latexpt.Data());
+ TString latexpt ; latexpt.Form("200 < p_{T} GeV < 300");
+  TLatex* pt_label  = new TLatex(0.58 ,0.62,latexpt.Data());
   pt_label->SetNDC();
   pt_label->SetTextSize(0.042);
   xframe_data->addObject(pt_label);
