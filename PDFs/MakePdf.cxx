@@ -463,6 +463,55 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       return model_pdf ;
     }
     
+
+    if(model == "CB_500"){
+      std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,77,105);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),19,9,40);
+      RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
+      RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
+      RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus,*rrv_alpha_CB,*rrv_n_CB);
+
+
+      return model_pdf ;
+    }
+
+    if(model == "CB_bkg"){
+      std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),105,95,130);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),31,28,70);
+      RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
+      RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
+      RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus,*rrv_alpha_CB,*rrv_n_CB);
+
+
+      return model_pdf ;
+    }
+
+    if(model == "CB1"){
+      std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),55,28,70);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),29,25,70);
+      RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
+      RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
+      RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus,*rrv_alpha_CB,*rrv_n_CB);
+
+
+      return model_pdf ;
+    }
+
+    if(model == "CB"){
+      std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,70,105);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),29,25,70);
+      RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
+      RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
+      RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus,*rrv_alpha_CB,*rrv_n_CB);
+
+
+      return model_pdf ;
+    }
+
     if( model == "Gaus_SigFail"){
 
       std::cout << "Making gaus for signal fail" << std::endl;
@@ -581,6 +630,18 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       std::cout << "Done" << std::endl;
       return model_pdf ;
     }
+
+    if( model == "Gaus_FlatTop"){
+
+      std::cout << "Making Flat top Gaussian for signal fail" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),80,85,105);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),32.33 ,15.,75.);
+      RooRealVar* rrv_height1_gaus  = new RooRealVar(("rrv_height1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_height1_gaus"+label+"_"+channel+spectrum).c_str(),52.33 ,20.,100.);
+
+      RooGenericPdf* model_pdf       = new RooGenericPdf( ("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str() , "@3 * exp(- pow(((@0 - @1)/ @2),4))" , RooArgSet(*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus, *rrv_height1_gaus));
+
+      std::cout << "Done" << std::endl;
+      return model_pdf ;}
 
 
 
@@ -1001,6 +1062,9 @@ cubic , x, RooArgList(poly_c1, poly_c2,
       RooErfExpPdf* model_pdf       = new RooErfExpPdf(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(),*rrv_x,*rrv_c_ErfExp,*rrv_offset_ErfExp,*rrv_width_ErfExp);
       return model_pdf ;
     }
+
+
+
 
     if( model == "ExpGaus"){
 
@@ -1888,6 +1952,32 @@ cubic , x, RooArgList(poly_c1, poly_c2,
   // FOR MC FITS TO MATCHED TT MC!!!    
   else if( TString(label).Contains("realW") or TString(label).Contains("fakeW")){
 
+
+
+    if(model == "CB1"){
+      std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),55,28,70);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),29,25,70);
+      RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
+      RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
+      RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus,*rrv_alpha_CB,*rrv_n_CB);
+
+
+      return model_pdf ;
+    }
+
+    if(model == "CB"){
+      std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,70,105);
+      RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),29,25,70);
+      RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
+      RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
+      RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus,*rrv_alpha_CB,*rrv_n_CB);
+
+
+      return model_pdf ;
+    }
+
     if( model == "Gaus_Fake"){
 
       std::cout << "Making gaus for signal fail" << std::endl;
@@ -2002,8 +2092,8 @@ cubic , x, RooArgList(poly_c1, poly_c2,
 
     if(model == "CB"){
       std::cout<< "########### Cystal Ball for mj fit ############"<<std::endl;
-      RooRealVar* rrv_mean_CB  = new RooRealVar(("rrv_mean_CB"+label+"_"+channel+spectrum).c_str(),("rrv_mean_CB"+label+"_"+channel+spectrum).c_str(),84,78,88);
-      RooRealVar* rrv_sigma_CB = new RooRealVar(("rrv_sigma_CB"+label+"_"+channel+spectrum).c_str(),("rrv_sigma_CB"+label+"_"+channel+spectrum).c_str(),7,4,10);
+      RooRealVar* rrv_mean_CB  = new RooRealVar(("rrv_mean_CB"+label+"_"+channel+spectrum).c_str(),("rrv_mean_CB"+label+"_"+channel+spectrum).c_str(),84,78,110);
+      RooRealVar* rrv_sigma_CB = new RooRealVar(("rrv_sigma_CB"+label+"_"+channel+spectrum).c_str(),("rrv_sigma_CB"+label+"_"+channel+spectrum).c_str(),17,14,40);
       RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
       RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
       RooCBShape* model_pdf = new RooCBShape(("model_pdf"+label+"_"+channel+spectrum).c_str(),("model_pdf"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean_CB,*rrv_sigma_CB,*rrv_alpha_CB,*rrv_n_CB);
