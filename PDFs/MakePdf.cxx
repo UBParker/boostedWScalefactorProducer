@@ -443,15 +443,26 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       RooRealVar* rrv_height1_gaus  = new RooRealVar(("rrv_height1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_height1_gaus"+label+"_"+channel+spectrum).c_str(),52.33 ,20.,100.);
 
       RooGenericPdf* model_pdf       = new RooGenericPdf( ("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str() , "@3 * exp(- pow(((@0 - @1)/ @2),4))" , RooArgSet(*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus, *rrv_height1_gaus));
- 
-      //RooGenericPdf* model_pdf       = new RooGenericPdf( "model_pdf","model_pdf" , "rrv_height1_gaus * exp(- pow(((rrv_x - rrv_mean1_gaus )/rrv_sigma1_gaus),4))" , RooArgSet(*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus, *rrv_height1_gaus));
-
-     //RooGenericPdf* model_pdf       = new RooGenericPdf( "model_pdf", "rrv_height1_gaus * exp(- pow(((rrv_x - rrv_mean1_gaus )/rrv_sigma1_gaus),4))" , *rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus, *rrv_height1_gaus);
-      // RooGenericPdf* model_pdf       = new RooGenericPdf( "model_pdf", "rrv_height1_gaus * exp(- pow(((rrv_x - rrv_mean1_gaus )/rrv_sigma1_gaus),4))" , rrv_x,rrv_mean1_gaus,rrv_sigma1_gaus, rrv_height1_gaus);
 
       std::cout << "Done" << std::endl;
       return model_pdf ;}														   
-																																											
+
+
+																	
+    if( model == "Gaus_FlatTopTimesLine"){
+
+      std::cout << "Making Flat top Gaussian for signal fail" << std::endl;
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),60,30,100);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),27.33 ,25, 55  ); //15.,75.);
+      RooRealVar* rrv_height1_gaus  = new RooRealVar(("rrv_height1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_height1_gaus"+label+"_"+channel+spectrum).c_str(),52.33 ,20.,100.);
+
+      RooRealVar* rrv_slope_gaus  = new RooRealVar(("rrv_slope_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_slope_gaus"+label+"_"+channel+spectrum).c_str(),-1.5 ,-7.,-1.17);
+      RooRealVar* rrv_intercept_gaus  = new RooRealVar(("rrv_intercept_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_intercept_gaus"+label+"_"+channel+spectrum).c_str(),352.33 ,400.,1000.);
+
+      RooGenericPdf* model_pdf       = new RooGenericPdf( ("gaus1"+label+"_"+channel+spectrum).c_str(),("gaus1"+label+"_"+channel+spectrum).c_str() , "@3 * exp(- pow(((@0 - @1)/ @2),4))  * ( @4 * @0 + @5  ) " , RooArgSet(*rrv_x,*rrv_mean1_gaus,*rrv_sigma1_gaus, *rrv_height1_gaus,*rrv_slope_gaus , *rrv_intercept_gaus ));
+
+      std::cout << "Done" << std::endl;
+      return model_pdf ;}																										
     if( model == "FlatTopTimesLandau"){
       double frac_tmp = 0.3;
 
@@ -486,7 +497,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       // RooRealVar* rrv_sigma1a_gaus  = new RooRealVar(("rrv_sigma1a_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),7.,5.,15);                                                                                                                                                                                                                 
       //RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean0_gaus,*rrv_sigma1a_gaus);                                                                                                                                                                                                        
       RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),55,40,70);
-      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),25,22,65);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),35,32,65);
 
       //std::cout << "Done" << std::endl;                                                                                                                                                                                                                                                                                                                                                         
       //std::cout << "Making gaus2" << std::endl;                                                                                                                                                                                                                                                                                                                                                 
@@ -496,7 +507,7 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
 
       std::cout << "Making Flat top Gaussian : gaus1" << std::endl;
       RooRealVar* rrv_mean2_gaus   = new RooRealVar(("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean2_gaus"+label+"_"+channel+spectrum).c_str(),65,53,100);
-      RooRealVar* rrv_sigma2_gaus  = new RooRealVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),35.33 ,20.,75.);
+      RooRealVar* rrv_sigma2_gaus  = new RooRealVar(("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma2_gaus"+label+"_"+channel+spectrum).c_str(),35.33 ,30.,75.);
       RooRealVar* rrv_height2_gaus  = new RooRealVar(("rrv_height2_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_height2_gaus"+label+"_"+channel+spectrum).c_str(),52.33 ,20.,100.);
 
       RooGenericPdf* gaus2       = new RooGenericPdf( ("gaus2"+label+"_"+channel+spectrum).c_str(),("gaus2"+label+"_"+channel+spectrum).c_str() , "@3 * exp(- pow(((@0 - @1)/ @2),4))" , RooArgSet(*rrv_x,*rrv_mean2_gaus,*rrv_sigma2_gaus, *rrv_height2_gaus));
@@ -523,8 +534,8 @@ RooAbsPdf* MakeGeneralPdf(RooWorkspace* workspace, const std::string & label, co
       //   RooRealVar* rrv_mean0_gaus   = new RooRealVar(("rrv_mean0_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),91,91,110);                                                                                              
       // RooRealVar* rrv_sigma1a_gaus  = new RooRealVar(("rrv_sigma1a_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),7.,5.,15);                                                                                             
       //RooGaussian* model_pdf       = new RooGaussian(("gaus"+label+"_"+channel+spectrum).c_str(),("gaus"+label+"_"+channel+spectrum).c_str(), *rrv_x,*rrv_mean0_gaus,*rrv_sigma1a_gaus);                                                                                    
-      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),80,65,105);
-      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22,15,85);
+      RooRealVar* rrv_mean1_gaus   = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),80,75,95);
+      RooRealVar* rrv_sigma1_gaus  = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),22,9,85);
 
       //std::cout << "Done" << std::endl;
       //std::cout << "Making gaus2" << std::endl;
@@ -1928,7 +1939,7 @@ if( model == "Gaus_Sig"){
 
     if(model == "CB"){
       std::cout<< "####*###### Cystal Ball for mj fit #######*#####"<<std::endl;
-      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),85,70,105);
+      RooRealVar* rrv_mean1_gaus  = new RooRealVar(("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_mean1_gaus"+label+"_"+channel+spectrum).c_str(),80,79,100);
       RooRealVar* rrv_sigma1_gaus = new RooRealVar(("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),("rrv_sigma1_gaus"+label+"_"+channel+spectrum).c_str(),19,12,50);
       RooRealVar* rrv_alpha_CB = new RooRealVar(("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),("rrv_alpha_CB"+label+"_"+channel+spectrum).c_str(),-2,-4,-0.5);
       RooRealVar* rrv_n_CB     = new RooRealVar(("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),("rrv_n_CB"+label+"_"+channel+spectrum).c_str(),2,0.,4);
